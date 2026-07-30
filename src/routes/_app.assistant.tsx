@@ -9,6 +9,9 @@ import {
   firstAidSteps,
   scoreToSeverity,
   severityMeta,
+  severityPriority,
+  suggestedServices,
+  toSeverityScore,
   triageQuestions,
   type Severity,
 } from "@/lib/triage";
@@ -20,7 +23,7 @@ export const Route = createFileRoute("/_app/assistant")({
       {
         name: "description",
         content:
-          "Guided AEGIS triage: answer five questions to get a severity rating and step-by-step first-aid instructions.",
+          "Guided AEGIS triage: answer seven questions to get a 0–100 severity score and step-by-step first-aid instructions.",
       },
       { property: "og:title", content: "AEGIS AI Emergency Assistant" },
       {
@@ -41,7 +44,7 @@ function AssistantPage() {
     {
       id: "intro",
       role: "assistant",
-      text: "I'm the AEGIS assistant. I'll ask five quick questions to rate severity and give you first-aid steps. If anyone is in immediate danger, trigger an SOS first.",
+      text: "I'm the AEGIS assistant. I'll ask seven quick questions to score severity from 0 to 100 and give you first-aid steps. If anyone is in immediate danger, trigger an SOS first.",
     },
     { id: "q0", role: "assistant", text: triageQuestions[0].prompt },
   ]);
@@ -78,14 +81,15 @@ function AssistantPage() {
         ]);
         setIndex(nextIndex);
       } else {
-        const finalSeverity = scoreToSeverity(nextScore);
+        const normalised = toSeverityScore(nextScore);
+        const finalSeverity = scoreToSeverity(normalised);
         setSeverity(finalSeverity);
         setMessages((prev) => [
           ...prev,
           {
             id: "verdict",
             role: "assistant",
-            text: `${severityMeta[finalSeverity].label}. ${severityMeta[finalSeverity].summary}`,
+            text: `Severity ${normalised}/100 — ${severityMeta[finalSeverity].label}. ${severityMeta[finalSeverity].summary}`,
           },
         ]);
         setIndex(nextIndex);
@@ -109,6 +113,14 @@ function AssistantPage() {
   }
 
   const currentQuestion = index < triageQuestions.length ? triageQuestions[index] : null;
+  const severityScore = toSeverityScore(score);
+  const displaySeverity = severity ?? scoreToSeverity(severityScore);
+  const meterTone: Record<Severity, string> = {
+    low: "bg-safe",
+    medium: "bg-primary",
+    high: "bg-warning",
+    critical: "bg-alert",
+  };
 
   return (
     <>
@@ -208,15 +220,62 @@ function AssistantPage() {
           <div className="glass-panel rounded-2xl p-5">
             <h2 className="text-sm font-semibold text-foreground">Severity assessment</h2>
             <p className="mt-3 font-display text-3xl font-semibold text-foreground">
-              {score}
-              <span className="ml-1 text-base font-medium text-muted-foreground">/ 23</span>
+              {severityScore}
+              <span className="ml-1 text-base font-medium text-muted-foreground">/ 100</span>
             </p>
+            <div
+              className="mt-3 h-2 w-full overflow-hidden rounded-full bg-muted"
+              role="progressbar"
+              aria-valuenow={severityScore}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-label="Severity score"
+            >
+              <motion.div
+                animate={{ width: `${severityScore}%` }}
+                transition={{ type: "spring", stiffness: 140, damping: 20 }}
+                className={`h-full rounded-full ${meterTone[displaySeverity]}`}
+              />
+            </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {severity
                 ? severityMeta[severity].summary
                 : `Question ${Math.min(index + 1, triageQuestions.length)} of ${triageQuestions.length}`}
             </p>
+            {severity && (
+              <dl className="mt-4 space-y-2 border-t border-border pt-3 text-sm">
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Priority</dt>
+                  <dd className="text-right font-medium text-foreground">
+                    {severityPriority[severity].priority}
+                  </dd>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <dt className="text-muted-foreground">Response</dt>
+                  <dd className="text-right text-foreground">{severityPriority[severity].eta}</dd>
+                </div>
+              </dl>
+            )}
           </div>
+
+          {severity && (
+            <div className="glass-panel rounded-2xl p-5">
+              <h2 className="text-sm font-semibold text-foreground">Recommended services</h2>
+              <ul className="mt-3 space-y-2">
+                {suggestedServices(answers, severity).map((service) => (
+                  <li
+                    key={service}
+                    className="rounded-xl bg-muted px-3 py-2 text-sm text-foreground"
+                  >
+                    {service}
+                  </li>
+                ))}
+              </ul>
+              <Button asChild variant="outline" className="mt-3 w-full">
+                <Link to="/nearby">Find these nearby</Link>
+              </Button>
+            </div>
+          )}
 
           <div className="glass-panel rounded-2xl p-5">
             <h2 className="text-sm font-semibold text-foreground">First-aid instructions</h2>
