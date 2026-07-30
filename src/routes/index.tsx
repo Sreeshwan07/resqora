@@ -9,7 +9,8 @@ import {
   type LandingStatus,
 } from "@/components/landing/emergency-status-card";
 import { EmergencyConsole } from "@/components/landing/emergency-console";
-import { NearestServicesPanel } from "@/components/landing/nearest-services-panel";
+import { NearestServices } from "@/components/aegis/nearest-services";
+import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useAuth } from "@/hooks/use-auth";
 import { activeEmergencyQuery } from "@/lib/api";
