@@ -80,7 +80,7 @@ function ProfilePage() {
   }, [profile.data]);
 
   useEffect(() => {
-    const base = (contacts.data ?? []).map((c) => ({
+    const base: ContactDraft[] = (contacts.data ?? []).map((c) => ({
       id: c.id,
       name: c.name,
       relationship: c.relationship,
