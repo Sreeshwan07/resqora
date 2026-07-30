@@ -534,6 +534,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_donor_phone: { Args: { _donor_id: string }; Returns: string }
       get_shared_location: { Args: { _token: string }; Returns: Json }
       get_shared_profile: { Args: { _token: string }; Returns: Json }
       has_role: {
@@ -542,6 +543,16 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      search_blood_donors: {
+        Args: { _city?: string; _group?: string }
+        Returns: {
+          available: boolean
+          blood_group: string
+          city: string
+          full_name: string
+          id: string
+        }[]
       }
     }
     Enums: {
