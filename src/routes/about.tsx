@@ -4,6 +4,7 @@ import {
   AlarmClock,
   Bell,
   Bot,
+  Camera,
   Droplets,
   Lock,
   MapPinned,
@@ -45,6 +46,11 @@ const FEATURES = [
     icon: Bot,
     title: "AI emergency assessment",
     body: "Seven guided questions score your situation 0–100, set a priority level and return the right first-aid steps while help is on the way.",
+  },
+  {
+    icon: Camera,
+    title: "AI image analysis",
+    body: "Photograph an accident from the home screen and AEGIS detects the emergency type, estimates severity with a confidence score and writes a responder-ready summary.",
   },
   {
     icon: Radar,
@@ -128,6 +134,11 @@ function AboutPage() {
 
         <section className="mt-12">
           <h2 className="font-display text-2xl font-semibold text-foreground">How it works</h2>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Our mission: make the fastest possible path to help the default. The landing screen
+            carries only two actions — Emergency SOS and Report accident — and everything below
+            explains what happens after you tap.
+          </p>
           <ol className="mt-6 space-y-4 border-l border-border pl-6">
             {WORKFLOW.map((step, index) => (
               <motion.li

@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/system/theme-toggle";
 
 const links = [
-  { label: "Platform", href: "#platform" },
-  { label: "Impact", href: "#impact" },
-  { label: "Stories", href: "#stories" },
+  { label: "About", to: "/about" as const },
+  { label: "Nearby", to: "/nearby" as const },
+  { label: "History", to: "/history" as const },
 ];
 
 export function LandingNav() {
@@ -19,13 +19,13 @@ export function LandingNav() {
         <div className="flex shrink-0 items-center gap-2">
           <nav aria-label="Sections" className="mr-2 hidden items-center gap-1 md:flex">
             {links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
+              <Link
+                key={link.to}
+                to={link.to}
                 className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
                 {link.label}
-              </a>
+              </Link>
             ))}
           </nav>
           <ThemeToggle />
