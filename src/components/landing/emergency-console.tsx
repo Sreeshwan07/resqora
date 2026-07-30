@@ -1,0 +1,274 @@
+import { useRef, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence, motion } from "motion/react";
+import { Camera, ImageUp, Loader2, PhoneCall, Siren, Sparkles, Video } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/use-auth";
+import { contactsQuery } from "@/lib/api";
+import { createEmergency } from "@/lib/emergency";
+import { AMBULANCE_CONTACT } from "@/lib/coordination";
+import { analyzeEmergencyImage, type AccidentAnalysis } from "@/lib/vision.functions";
+import { cn } from "@/lib/utils";
+
+const SEVERITY_STYLES: Record<string, string> = {
+  low: "border-success/40 bg-success/10 text-success",
+  medium: "border-warning/40 bg-warning/10 text-warning",
+  high: "border-alert/40 bg-alert/10 text-alert",
+  critical: "border-alert/60 bg-alert/15 text-alert",
+};
+
+function readFile(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Could not read the file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+/** Videos are analysed from their first clear frame, captured in-browser. */
+function grabVideoFrame(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const video = document.createElement("video");
+    const url = URL.createObjectURL(file);
+    video.preload = "auto";
+    video.muted = true;
+    video.playsInline = true;
+    video.src = url;
+    video.onloadeddata = () => {
+      video.currentTime = Math.min(0.6, (video.duration || 1) / 2);
+    };
+    video.onseeked = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 360;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        URL.revokeObjectURL(url);
+        reject(new Error("Could not read the video"));
+        return;
+      }
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Could not read the video"));
+    };
+  });
+}
+
+export function EmergencyConsole() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const contacts = useQuery(contactsQuery(user?.id));
+  const analyze = useServerFn(analyzeEmergencyImage);
+
+  const cameraRef = useRef<HTMLInputElement>(null);
+  const photoRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [notifying, setNotifying] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<AccidentAnalysis | null>(null);
+
+  const urgent = analysis?.severity === "high" || analysis?.severity === "critical";
+
+  async function handleFile(file: File) {
+    setBusy(true);
+    setAnalysis(null);
+    try {
+      const dataUrl = file.type.startsWith("video/")
+        ? await grabVideoFrame(file)
+        : await readFile(file);
+      setPreview(dataUrl);
+      setAnalysis(await analyze({ data: { imageDataUrl: dataUrl } }));
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Analysis failed");
+    } finally {
+      setBusy(false);
+      for (const ref of [cameraRef, photoRef, videoRef]) {
+        if (ref.current) ref.current.value = "";
+      }
+    }
+  }
+
+  async function notifyContacts() {
+    if (!user) {
+      navigate({ to: "/emergency", search: { auto: true } });
+      return;
+    }
+    setNotifying(true);
+    try {
+      await createEmergency({
+        userId: user.id,
+        type: analysis?.emergencyType ?? "sos",
+        severity: analysis?.severity ?? "high",
+        notes: analysis?.summary,
+        contactCount: contacts.data?.length ?? 0,
+      });
+      await queryClient.invalidateQueries();
+      toast.success("Emergency contacts notified");
+      navigate({ to: "/live" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not notify contacts");
+    } finally {
+      setNotifying(false);
+    }
+  }
+
+  function fileInput(ref: React.RefObject<HTMLInputElement | null>, props: Record<string, string>) {
+    return (
+      <input
+        ref={ref}
+        type="file"
+        className="sr-only"
+        tabIndex={-1}
+        {...props}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void handleFile(file);
+        }}
+      />
+    );
+  }
+
+  return (
+    <section aria-label="Emergency actions" className="space-y-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Button
+          variant="emergency"
+          size="xl"
+          className="h-18 rounded-2xl text-base font-semibold shadow-lg shadow-alert/25 sm:h-20 sm:text-lg"
+          onClick={() => navigate({ to: "/emergency", search: { auto: true } })}
+        >
+          <Siren className="size-6" aria-hidden="true" />
+          Emergency SOS
+        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="glass"
+              size="xl"
+              className="h-18 rounded-2xl text-base font-semibold sm:h-20 sm:text-lg"
+              disabled={busy}
+            >
+              {busy ? (
+                <Loader2 className="size-6 animate-spin" aria-hidden="true" />
+              ) : (
+                <Camera className="size-6" aria-hidden="true" />
+              )}
+              Report accident
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="center" className="w-56 rounded-2xl">
+            <DropdownMenuItem onSelect={() => cameraRef.current?.click()}>
+              <Camera className="size-4" aria-hidden="true" />
+              Take photo
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => photoRef.current?.click()}>
+              <ImageUp className="size-4" aria-hidden="true" />
+              Upload image
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => videoRef.current?.click()}>
+              <Video className="size-4" aria-hidden="true" />
+              Upload video
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {fileInput(cameraRef, {
+          accept: "image/*",
+          capture: "environment",
+          "aria-label": "Take an accident photo",
+        })}
+        {fileInput(photoRef, { accept: "image/*", "aria-label": "Upload an accident image" })}
+        {fileInput(videoRef, { accept: "video/*", "aria-label": "Upload an accident video" })}
+      </div>
+
+      <AnimatePresence>
+        {(analysis || busy) && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="glass-panel rounded-2xl p-4"
+          >
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-4 text-primary" aria-hidden="true" />
+              <h2 className="text-sm font-semibold text-foreground">AI scene analysis</h2>
+            </div>
+            {busy && !analysis ? (
+              <p className="mt-3 text-sm text-muted-foreground">Analysing the scene…</p>
+            ) : analysis ? (
+              <div className="mt-3 space-y-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  {preview && (
+                    <img
+                      src={preview}
+                      alt="Reported emergency scene"
+                      className="h-28 w-full rounded-xl object-cover sm:w-40"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border border-border/60 px-2.5 py-1 text-xs font-semibold capitalize text-foreground">
+                        {analysis.emergencyType}
+                      </span>
+                      <span
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-xs font-semibold uppercase",
+                          SEVERITY_STYLES[analysis.severity],
+                        )}
+                      >
+                        {analysis.severity}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        Confidence {analysis.confidence}%
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">{analysis.summary}</p>
+                    {analysis.recommendedActions.length > 0 && (
+                      <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+                        {analysis.recommendedActions.map((action) => (
+                          <li key={action}>{action}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+
+                {urgent && (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    <Button variant="emergency" disabled={notifying} onClick={notifyContacts}>
+                      {notifying && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
+                      Notify contacts
+                    </Button>
+                    <Button asChild variant="outline">
+                      <a href={`tel:${AMBULANCE_CONTACT.phone.replace(/\s/g, "")}`}>
+                        <PhoneCall className="size-4" aria-hidden="true" />
+                        Call emergency services
+                      </a>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </section>
+  );
+}

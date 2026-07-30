@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/system/theme-toggle";
 
 const links = [
-  { label: "About", to: "/about" as const },
   { label: "Nearby", to: "/nearby" as const },
   { label: "History", to: "/history" as const },
+  { label: "About", to: "/about" as const },
+  { label: "Profile", to: "/profile" as const },
 ];
 
 export function LandingNav() {
