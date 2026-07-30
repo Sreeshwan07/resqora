@@ -8,6 +8,83 @@ export type TriageQuestion = {
 
 export const triageQuestions: TriageQuestion[] = [
   {
+    id: "situation",
+    prompt: "What happened?",
+    options: [
+      { label: "Medical emergency", weight: 3 },
+      { label: "Road accident", weight: 4 },
+      { label: "Fire or smoke", weight: 5 },
+      { label: "Assault or crime", weight: 4 },
+    ],
+  },
+  {
+    id: "breathing",
+    prompt: "Can you (or they) breathe normally?",
+    options: [
+      { label: "Breathing normally", weight: 0 },
+      { label: "Struggling to breathe", weight: 4 },
+      { label: "Not breathing", weight: 8 },
+    ],
+  },
+  {
+    id: "bleeding",
+    prompt: "Is there any bleeding?",
+    options: [
+      { label: "No bleeding", weight: 0 },
+      { label: "Minor bleeding", weight: 2 },
+      { label: "Heavy or spurting", weight: 7 },
+    ],
+  },
+  {
+    id: "mobility",
+    prompt: "Can you move away from danger?",
+    options: [
+      { label: "Yes, freely", weight: 0 },
+      { label: "With difficulty", weight: 3 },
+      { label: "No, trapped or immobile", weight: 6 },
+    ],
+  },
+  {
+    id: "alone",
+    prompt: "Are you alone right now?",
+    options: [
+      { label: "Someone is with me", weight: 0 },
+      { label: "I am completely alone", weight: 3 },
+    ],
+  },
+  {
+    id: "injured",
+    prompt: "How many people are injured?",
+    options: [
+      { label: "Just one", weight: 1 },
+      { label: "Two or three", weight: 4 },
+      { label: "Four or more", weight: 6 },
+    ],
+  },
+  {
+    id: "consciousness",
+    prompt: "Is anyone unconscious?",
+    options: [
+      { label: "Everyone is alert", weight: 0 },
+      { label: "Someone is drowsy or confused", weight: 4 },
+      { label: "Someone is unconscious", weight: 8 },
+    ],
+  },
+];
+
+/** Highest achievable raw score across every question. */
+export const MAX_RAW_SCORE = triageQuestions.reduce(
+  (total, question) => total + Math.max(...question.options.map((option) => option.weight)),
+  0,
+);
+
+/** Normalises the raw weighted score onto the 0–100 severity scale. */
+export function toSeverityScore(raw: number) {
+  return Math.min(100, Math.round((raw / MAX_RAW_SCORE) * 100));
+}
+
+const legacyQuestions: TriageQuestion[] = [
+  {
     id: "consciousness",
     prompt: "Is the person conscious and responding to you?",
     options: [
@@ -16,51 +93,42 @@ export const triageQuestions: TriageQuestion[] = [
       { label: "Unresponsive", weight: 5 },
     ],
   },
-  {
-    id: "breathing",
-    prompt: "How is their breathing?",
-    options: [
-      { label: "Normal", weight: 0 },
-      { label: "Fast or laboured", weight: 3 },
-      { label: "Not breathing", weight: 5 },
-    ],
-  },
-  {
-    id: "bleeding",
-    prompt: "Is there visible bleeding?",
-    options: [
-      { label: "None", weight: 0 },
-      { label: "Minor bleeding", weight: 1 },
-      { label: "Heavy or spurting", weight: 5 },
-    ],
-  },
-  {
-    id: "pain",
-    prompt: "How severe is the pain?",
-    options: [
-      { label: "Mild", weight: 0 },
-      { label: "Moderate", weight: 2 },
-      { label: "Severe / chest pain", weight: 4 },
-    ],
-  },
-  {
-    id: "mobility",
-    prompt: "Can they move safely away from danger?",
-    options: [
-      { label: "Yes, freely", weight: 0 },
-      { label: "With difficulty", weight: 2 },
-      { label: "No, trapped or immobile", weight: 4 },
-    ],
-  },
 ];
+void legacyQuestions;
 
 export type Severity = "low" | "medium" | "high" | "critical";
 
+/** Accepts the normalised 0–100 severity score. */
 export function scoreToSeverity(score: number): Severity {
-  if (score >= 12) return "critical";
-  if (score >= 7) return "high";
-  if (score >= 3) return "medium";
+  if (score >= 70) return "critical";
+  if (score >= 45) return "high";
+  if (score >= 20) return "medium";
   return "low";
+}
+
+export const severityPriority: Record<Severity, { priority: string; eta: string }> = {
+  low: { priority: "P4 — routine", eta: "Advice only, no dispatch required" },
+  medium: { priority: "P3 — standard", eta: "Responder assigned within ~15 minutes" },
+  high: { priority: "P2 — urgent", eta: "Responder assigned within ~8 minutes" },
+  critical: { priority: "P1 — immediate", eta: "Nearest unit dispatched immediately" },
+};
+
+/** Emergency services suggested from the answers given. */
+export function suggestedServices(answers: Record<string, string>, severity: Severity): string[] {
+  const services = new Set<string>();
+  if (severity !== "low") services.add("Ambulance / paramedics");
+  if (answers.situation === "Fire or smoke") services.add("Fire & rescue");
+  if (answers.situation === "Assault or crime") services.add("Police");
+  if (answers.situation === "Road accident") {
+    services.add("Police");
+    services.add("Fire & rescue");
+  }
+  if (answers.bleeding === "Heavy or spurting") services.add("Blood bank / trauma centre");
+  if (answers.breathing === "Not breathing" || answers.consciousness === "Someone is unconscious") {
+    services.add("Advanced life support unit");
+  }
+  if (services.size === 0) services.add("Nearest pharmacy or clinic");
+  return [...services];
 }
 
 export const severityMeta: Record<
@@ -95,8 +163,10 @@ export function firstAidSteps(answers: Record<string, string>, severity: Severit
   if (answers.breathing === "Not breathing") {
     steps.push("Start CPR: 30 chest compressions at 100–120/min, then 2 rescue breaths. Repeat.");
     steps.push("Send someone for an AED if one is nearby.");
-  } else if (answers.consciousness === "Unresponsive") {
+  } else if (answers.consciousness === "Someone is unconscious") {
     steps.push("Place them in the recovery position on their side and keep the airway open.");
+  } else if (answers.breathing === "Struggling to breathe") {
+    steps.push("Sit them upright, loosen tight clothing and keep the air around them clear.");
   }
 
   if (answers.bleeding === "Heavy or spurting") {
@@ -106,8 +176,12 @@ export function firstAidSteps(answers: Record<string, string>, severity: Severit
     steps.push("Clean the wound with water and cover it with a sterile dressing.");
   }
 
-  if (answers.pain === "Severe / chest pain") {
-    steps.push("Keep them still and seated. Loosen tight clothing and monitor breathing closely.");
+  if (answers.situation === "Fire or smoke") {
+    steps.push("Stay low under the smoke and move to fresh air immediately — never re-enter a burning space.");
+  }
+
+  if (answers.alone === "I am completely alone") {
+    steps.push("Unlock the door if you safely can, so responders can reach you without delay.");
   }
 
   if (answers.mobility === "No, trapped or immobile") {
