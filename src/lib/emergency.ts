@@ -13,21 +13,29 @@ export const EMERGENCY_TYPES = [
 export const STATUS_FLOW = [
   { key: "created", label: "SOS triggered", detail: "Alert created on your device." },
   { key: "locating", label: "Location captured", detail: "GPS coordinates attached to the alert." },
+  { key: "ai_analysis", label: "AI analysis started", detail: "AEGIS is scoring severity and routing priority." },
   { key: "contacts_notified", label: "Contacts notified", detail: "Your 3 trusted contacts were alerted." },
-  { key: "dispatched", label: "Responders dispatched", detail: "Nearest response unit assigned." },
-  { key: "en_route", label: "Help en route", detail: "Responder is moving to your location." },
+  { key: "active", label: "Emergency active", detail: "Responders are engaged and tracking your location." },
   { key: "resolved", label: "Resolved", detail: "Emergency closed." },
 ] as const;
 
 export type EmergencyStatus = (typeof STATUS_FLOW)[number]["key"];
 
+/** Statuses used before the current workflow, kept so old history still reads well. */
+const LEGACY_LABELS: Record<string, string> = {
+  dispatched: "Responders dispatched",
+  en_route: "Help en route",
+};
+
 export function statusIndex(status: string) {
   const index = STATUS_FLOW.findIndex((step) => step.key === status);
+  if (index === -1 && status in LEGACY_LABELS) return STATUS_FLOW.length - 2;
   return index === -1 ? 0 : index;
 }
 
 export function statusLabel(status: string) {
   if (status === "cancelled") return "Cancelled";
+  if (status in LEGACY_LABELS) return LEGACY_LABELS[status];
   return STATUS_FLOW[statusIndex(status)].label;
 }
 
@@ -75,6 +83,14 @@ export async function createEmergency(options: {
     );
   }
 
+  await supabase.from("emergencies").update({ status: "ai_analysis" }).eq("id", data.id);
+  await logEvent(
+    data.id,
+    options.userId,
+    "AI analysis started",
+    "Severity scoring and response priority calculated from your emergency type.",
+  );
+
   await supabase.from("emergencies").update({ status: "contacts_notified" }).eq("id", data.id);
   await logEvent(
     data.id,
@@ -82,6 +98,15 @@ export async function createEmergency(options: {
     "Contacts notified",
     `${options.contactCount} trusted contact${options.contactCount === 1 ? "" : "s"} alerted with your live location.`,
   );
+
+  await supabase.from("emergencies").update({ status: "active" }).eq("id", data.id);
+  await logEvent(
+    data.id,
+    options.userId,
+    "Emergency active",
+    "Responders are engaged and following your live location.",
+  );
+
   await notify(options.userId, {
     category: "emergency",
     title: "Emergency alert sent",
