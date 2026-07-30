@@ -83,19 +83,6 @@ export function toSeverityScore(raw: number) {
   return Math.min(100, Math.round((raw / MAX_RAW_SCORE) * 100));
 }
 
-const legacyQuestions: TriageQuestion[] = [
-  {
-    id: "consciousness",
-    prompt: "Is the person conscious and responding to you?",
-    options: [
-      { label: "Fully alert", weight: 0 },
-      { label: "Drowsy or confused", weight: 3 },
-      { label: "Unresponsive", weight: 5 },
-    ],
-  },
-];
-void legacyQuestions;
-
 export type Severity = "low" | "medium" | "high" | "critical";
 
 /** Accepts the normalised 0–100 severity score. */
