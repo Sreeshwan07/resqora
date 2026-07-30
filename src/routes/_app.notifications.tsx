@@ -46,11 +46,11 @@ function NotificationsPage() {
   const { data, isLoading } = useQuery(notificationsQuery(user?.id));
   const [tab, setTab] = useState<(typeof tabs)[number]>("all");
 
-  const unread = (data ?? []).filter((item) => !item.read_at).length;
+  const unread = (data ?? []).filter((item) => !item.read).length;
 
   const items = useMemo(() => {
     const all = data ?? [];
-    if (tab === "unread") return all.filter((item) => !item.read_at);
+    if (tab === "unread") return all.filter((item) => !item.read);
     if (tab === "emergency") return all.filter((item) => item.category === "emergency");
     return all;
   }, [data, tab]);
@@ -59,9 +59,9 @@ function NotificationsPage() {
     if (!user) return;
     const { error } = await supabase
       .from("notifications")
-      .update({ read_at: new Date().toISOString() })
+      .update({ read: true })
       .eq("user_id", user.id)
-      .is("read_at", null);
+      .eq("read", false);
     if (error) {
       toast.error(error.message);
       return;
@@ -72,7 +72,7 @@ function NotificationsPage() {
 
   async function markOne(id: string) {
     if (!user) return;
-    await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id);
+    await supabase.from("notifications").update({ read: true }).eq("id", id);
     await queryClient.invalidateQueries({ queryKey: ["notifications", user.id] });
   }
 
@@ -136,7 +136,7 @@ function NotificationsPage() {
                 transition={{ duration: 0.22, delay: index * 0.03 }}
                 className={cn(
                   "glass-panel flex items-start gap-4 rounded-2xl p-4",
-                  !item.read_at && "ring-1 ring-primary/30",
+                  !item.read && "ring-1 ring-primary/30",
                 )}
               >
                 <span
@@ -152,7 +152,7 @@ function NotificationsPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                    {!item.read_at && (
+                    {!item.read && (
                       <span className="size-2 rounded-full bg-primary" aria-label="Unread" />
                     )}
                   </div>
@@ -161,7 +161,7 @@ function NotificationsPage() {
                     {new Date(item.created_at).toLocaleString()}
                   </p>
                 </div>
-                {!item.read_at && (
+                {!item.read && (
                   <Button size="sm" variant="ghost" onClick={() => markOne(item.id)}>
                     Mark read
                   </Button>

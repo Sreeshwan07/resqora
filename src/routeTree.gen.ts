@@ -20,6 +20,7 @@ import { Route as AppEmergencyRouteImport } from './routes/_app.emergency'
 import { Route as AppHistoryRouteImport } from './routes/_app.history'
 import { Route as AppLiveRouteImport } from './routes/_app.live'
 import { Route as AppNearbyRouteImport } from './routes/_app.nearby'
+import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 
@@ -77,6 +78,11 @@ const AppNearbyRoute = AppNearbyRouteImport.update({
   path: '/nearby',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -99,6 +105,7 @@ export interface FileRoutesByFullPath {
   '/history': typeof AppHistoryRoute
   '/live': typeof AppLiveRoute
   '/nearby': typeof AppNearbyRoute
+  '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
 }
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/history': typeof AppHistoryRoute
   '/live': typeof AppLiveRoute
   '/nearby': typeof AppNearbyRoute
+  '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
 }
@@ -129,6 +137,7 @@ export interface FileRoutesById {
   '/_app/history': typeof AppHistoryRoute
   '/_app/live': typeof AppLiveRoute
   '/_app/nearby': typeof AppNearbyRoute
+  '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/settings': typeof AppSettingsRoute
 }
@@ -145,6 +154,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/live'
     | '/nearby'
+    | '/notifications'
     | '/profile'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
@@ -159,6 +169,7 @@ export interface FileRouteTypes {
     | '/history'
     | '/live'
     | '/nearby'
+    | '/notifications'
     | '/profile'
     | '/settings'
   id:
@@ -174,6 +185,7 @@ export interface FileRouteTypes {
     | '/_app/history'
     | '/_app/live'
     | '/_app/nearby'
+    | '/_app/notifications'
     | '/_app/profile'
     | '/_app/settings'
   fileRoutesById: FileRoutesById
@@ -265,6 +277,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNearbyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/profile': {
       id: '/_app/profile'
       path: '/profile'
@@ -289,6 +308,7 @@ interface AppRouteChildren {
   AppHistoryRoute: typeof AppHistoryRoute
   AppLiveRoute: typeof AppLiveRoute
   AppNearbyRoute: typeof AppNearbyRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
 }
@@ -300,6 +320,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppHistoryRoute: AppHistoryRoute,
   AppLiveRoute: AppLiveRoute,
   AppNearbyRoute: AppNearbyRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
 }
