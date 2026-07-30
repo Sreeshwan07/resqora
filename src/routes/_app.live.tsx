@@ -11,6 +11,11 @@ import { MapPreview } from "@/components/aegis/map-preview";
 import { EmergencyAlerts } from "@/components/aegis/emergency-alerts";
 import { ShareSos } from "@/components/aegis/share-sos";
 import { LiveStatusControls } from "@/components/aegis/live-status-controls";
+import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
+import { NearestServices } from "@/components/aegis/nearest-services";
+import { useLivePosition } from "@/hooks/use-live-position";
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -23,7 +28,7 @@ import {
   profileQuery,
 } from "@/lib/api";
 import { coordsOf, copyText, mapsLink } from "@/lib/alerts";
-import { statusLabel } from "@/lib/emergency";
+import { formatDuration, statusLabel } from "@/lib/emergency";
 
 export const Route = createFileRoute("/_app/live")({
   head: () => ({
@@ -52,10 +57,25 @@ function LiveLocationPage() {
   const profile = useQuery(profileQuery(user?.id));
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const { position, address, denied } = useLivePosition();
+  const [elapsed, setElapsed] = useState(0);
 
   const emergency = active.data;
   const coords = coordsOf(emergency);
   const emergencyId = emergency?.id;
+  const startedAt = emergency?.started_at;
+
+  useEffect(() => {
+    if (!startedAt) {
+      setElapsed(0);
+      return;
+    }
+    const begin = new Date(startedAt).getTime();
+    const tick = () => setElapsed(Math.max(0, Math.round((Date.now() - begin) / 1000)));
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [startedAt]);
 
   const refreshLocation = useCallback(
     async (options: { silent?: boolean; log?: boolean } = {}) => {
