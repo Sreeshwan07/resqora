@@ -110,6 +110,7 @@ export function NearestServices({
         {entries.map((service, index) => (
           <motion.li
             key={service.id}
+            className="min-w-0"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: index * 0.04 }}
