@@ -1,4 +1,10 @@
-export type ServiceCategory = "hospital" | "police" | "fire" | "pharmacy" | "shelter";
+export type ServiceCategory =
+  | "hospital"
+  | "police"
+  | "fire"
+  | "blood_bank"
+  | "pharmacy"
+  | "shelter";
 
 export type NearbyService = {
   id: string;
@@ -17,6 +23,7 @@ export const serviceCategories: { value: ServiceCategory | "all"; label: string 
   { value: "hospital", label: "Hospitals" },
   { value: "police", label: "Police" },
   { value: "fire", label: "Fire" },
+  { value: "blood_bank", label: "Blood banks" },
   { value: "pharmacy", label: "Pharmacies" },
   { value: "shelter", label: "Shelters" },
 ];
@@ -109,5 +116,38 @@ export const nearbyServices: NearbyService[] = [
     phone: "+1 555 0195",
     open24h: true,
     rating: 4.4,
+  },
+  {
+    id: "svc-9",
+    name: "City Blood Bank & Donor Centre",
+    category: "blood_bank",
+    distanceKm: 2.3,
+    etaMinutes: 8,
+    address: "31 Meridian Avenue",
+    phone: "+1 555 0126",
+    open24h: true,
+    rating: 4.6,
+  },
+  {
+    id: "svc-10",
+    name: "Red Cross Blood Reserve",
+    category: "blood_bank",
+    distanceKm: 5.1,
+    etaMinutes: 16,
+    address: "64 Harbour Road",
+    phone: "+1 555 0157",
+    open24h: false,
+    rating: 4.3,
+  },
+  {
+    id: "svc-11",
+    name: "Fire Station 12 — Rescue Unit",
+    category: "fire",
+    distanceKm: 3.8,
+    etaMinutes: 12,
+    address: "88 Foundry Street",
+    phone: "+1 555 0139",
+    open24h: true,
+    rating: 4.6,
   },
 ];

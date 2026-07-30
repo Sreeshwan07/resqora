@@ -277,7 +277,7 @@ function ProfilePage() {
 
         <div className="space-y-4">
           <SafetyScoreCard score={score} hints={[]} />
-          <MedicalIdCard profile={profile.data} />
+          <MedicalIdCard profile={profile.data} contacts={contacts.data ?? []} showQr />
         </div>
       </div>
     </>

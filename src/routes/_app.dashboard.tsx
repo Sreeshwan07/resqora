@@ -3,8 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Bell,
+  Bot,
   Clock,
+  Compass,
+  Lightbulb,
   LayoutDashboard,
+  MapPin,
   PhoneCall,
   Siren,
   Users,
@@ -27,6 +31,21 @@ import {
   profileQuery,
 } from "@/lib/api";
 import { formatDuration, statusLabel } from "@/lib/emergency";
+import { nearbyServices } from "@/lib/nearby-services";
+
+const QUICK_ACTIONS = [
+  { to: "/emergency", label: "Trigger SOS", description: "Alert contacts & responders", icon: Siren },
+  { to: "/assistant", label: "AI assistant", description: "Guided triage in a minute", icon: Bot },
+  { to: "/nearby", label: "Nearby help", description: "Hospitals, police, fire", icon: Compass },
+  { to: "/live", label: "Live location", description: "Share your exact position", icon: MapPin },
+] as const;
+
+const SAFETY_TIPS = [
+  "Keep your phone charged above 30% — location sharing needs battery.",
+  "Tell one trusted contact your route before travelling at night.",
+  "Learn the recovery position; it keeps an unconscious airway open.",
+  "Store your blood group and allergies in your medical ID today.",
+];
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
@@ -136,6 +155,32 @@ function DashboardPage() {
           <SafetyScoreCard score={score} hints={hints} />
 
           <div className="glass-panel rounded-2xl p-5">
+            <h2 className="text-sm font-semibold text-foreground">Quick actions</h2>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {QUICK_ACTIONS.map((action) => (
+                <Link
+                  key={action.to}
+                  to={action.to}
+                  className="group flex items-center gap-3 rounded-2xl border border-border bg-card/60 p-4 transition hover:border-primary/40 hover:bg-primary/5"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                    <action.icon className="size-5" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-medium text-foreground">
+                      {action.label}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {action.description}
+                    </span>
+                  </span>
+                  <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <div className="glass-panel rounded-2xl p-5">
             <div className="flex items-center justify-between gap-3">
               <h2 className="text-sm font-semibold text-foreground">Recent activity</h2>
               <Button asChild variant="ghost" size="sm">
@@ -182,7 +227,48 @@ function DashboardPage() {
         </div>
 
         <div className="space-y-4">
-          <MedicalIdCard profile={profile.data} />
+          <MedicalIdCard profile={profile.data} contacts={contacts.data ?? []} />
+
+          <div className="glass-panel rounded-2xl p-5">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="text-sm font-semibold text-foreground">Nearby services</h2>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/nearby">View all</Link>
+              </Button>
+            </div>
+            <ul className="mt-3 space-y-3">
+              {[...nearbyServices]
+                .sort((a, b) => a.distanceKm - b.distanceKm)
+                .slice(0, 3)
+                .map((service) => (
+                  <li key={service.id} className="flex items-center gap-3">
+                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-alert/10 text-alert">
+                      <MapPin className="size-4" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">{service.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {service.distanceKm} km · {service.etaMinutes} min away
+                      </p>
+                    </div>
+                  </li>
+                ))}
+            </ul>
+          </div>
+
+          <div className="glass-panel rounded-2xl p-5">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <Lightbulb className="size-4 text-warning" aria-hidden="true" />
+              Safety tips
+            </h2>
+            <ul className="mt-3 space-y-2.5">
+              {SAFETY_TIPS.map((tip) => (
+                <li key={tip} className="text-sm text-muted-foreground">
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </div>
 
           <div className="glass-panel rounded-2xl p-5">
             <h2 className="text-sm font-semibold text-foreground">Emergency contacts</h2>
