@@ -3,6 +3,7 @@ import type { Session, User } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { markSessionActive, shouldForceSignOut } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 
 type AuthContextValue = {
   session: Session | null;
@@ -23,6 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (nextSession) markSessionActive();
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      }
+      if (event === "SIGNED_IN" && nextSession?.user) {
+        void logActivity(nextSession.user.id, "Signed in", nextSession.user.email ?? undefined);
       }
     });
 

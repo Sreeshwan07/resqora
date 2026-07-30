@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Bell, LogOut, MapPin, Moon, Settings as SettingsIcon, ShieldCheck, Sun } from "lucide-react";
@@ -11,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery, type Profile } from "@/lib/api";
+import { pushPermission, requestPushPermission, showPush } from "@/lib/push";
 import { cn } from "@/lib/utils";
 import type { Theme } from "@/types";
 
@@ -44,6 +46,11 @@ function SettingsPage() {
   const queryClient = useQueryClient();
   const { theme, setTheme } = useTheme();
   const { data: profile } = useQuery(profileQuery(user?.id));
+  const [permission, setPermission] = useState<ReturnType<typeof pushPermission>>("default");
+
+  useEffect(() => {
+    setPermission(pushPermission());
+  }, []);
 
   async function update(patch: Partial<Profile>) {
     if (!user) return;
@@ -125,6 +132,42 @@ function SettingsPage() {
               checked={profile?.notify_system ?? true}
               onChange={(value) => update({ notify_system: value })}
             />
+            <Separator />
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">Device push notifications</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {permission === "unsupported"
+                    ? "This browser does not support notifications."
+                    : permission === "granted"
+                      ? "Enabled — check-in reminders and emergency updates appear on this device."
+                      : permission === "denied"
+                        ? "Blocked in your browser settings. Re-allow notifications for this site."
+                        : "Allow AEGIS to send check-in reminders and disaster alerts to this device."}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant={permission === "granted" ? "outline" : "hero"}
+                disabled={permission === "unsupported" || permission === "denied"}
+                onClick={async () => {
+                  if (permission === "granted") {
+                    showPush("AEGIS test alert", "Push notifications are working on this device.");
+                    return;
+                  }
+                  const result = await requestPushPermission();
+                  setPermission(result);
+                  if (result === "granted") {
+                    showPush("Push notifications enabled", "AEGIS can now reach you on this device.");
+                    toast.success("Push notifications enabled");
+                  } else {
+                    toast.error("Notification permission was not granted");
+                  }
+                }}
+              >
+                {permission === "granted" ? "Send test" : "Enable"}
+              </Button>
+            </div>
           </div>
         </section>
 

@@ -14,16 +14,22 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AppActivityRouteImport } from './routes/_app.activity'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
+import { Route as AppCheckinsRouteImport } from './routes/_app.checkins'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppDonorsRouteImport } from './routes/_app.donors'
 import { Route as AppEmergencyRouteImport } from './routes/_app.emergency'
 import { Route as AppHistoryRouteImport } from './routes/_app.history'
 import { Route as AppLiveRouteImport } from './routes/_app.live'
 import { Route as AppNearbyRouteImport } from './routes/_app.nearby'
+import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as MTokenRouteImport } from './routes/m.$token'
+import { Route as STokenRouteImport } from './routes/s.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -49,6 +55,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
   path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppActivityRoute = AppActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAdminRoute = AppAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -59,9 +70,19 @@ const AppAssistantRoute = AppAssistantRouteImport.update({
   path: '/assistant',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCheckinsRoute = AppCheckinsRouteImport.update({
+  id: '/checkins',
+  path: '/checkins',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDonorsRoute = AppDonorsRouteImport.update({
+  id: '/donors',
+  path: '/donors',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmergencyRoute = AppEmergencyRouteImport.update({
@@ -84,6 +105,11 @@ const AppNearbyRoute = AppNearbyRouteImport.update({
   path: '/nearby',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNotesRoute = AppNotesRouteImport.update({
+  id: '/notes',
+  path: '/notes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNotificationsRoute = AppNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
@@ -99,38 +125,60 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const MTokenRoute = MTokenRouteImport.update({
+  id: '/m/$token',
+  path: '/m/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const STokenRoute = STokenRouteImport.update({
+  id: '/s/$token',
+  path: '/s/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AppActivityRoute
   '/admin': typeof AppAdminRoute
   '/assistant': typeof AppAssistantRoute
+  '/checkins': typeof AppCheckinsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/donors': typeof AppDonorsRoute
   '/emergency': typeof AppEmergencyRoute
   '/history': typeof AppHistoryRoute
   '/live': typeof AppLiveRoute
   '/nearby': typeof AppNearbyRoute
+  '/notes': typeof AppNotesRoute
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
+  '/m/$token': typeof MTokenRoute
+  '/s/$token': typeof STokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/activity': typeof AppActivityRoute
   '/admin': typeof AppAdminRoute
   '/assistant': typeof AppAssistantRoute
+  '/checkins': typeof AppCheckinsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/donors': typeof AppDonorsRoute
   '/emergency': typeof AppEmergencyRoute
   '/history': typeof AppHistoryRoute
   '/live': typeof AppLiveRoute
   '/nearby': typeof AppNearbyRoute
+  '/notes': typeof AppNotesRoute
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
+  '/m/$token': typeof MTokenRoute
+  '/s/$token': typeof STokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -139,16 +187,22 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_app/activity': typeof AppActivityRoute
   '/_app/admin': typeof AppAdminRoute
   '/_app/assistant': typeof AppAssistantRoute
+  '/_app/checkins': typeof AppCheckinsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/donors': typeof AppDonorsRoute
   '/_app/emergency': typeof AppEmergencyRoute
   '/_app/history': typeof AppHistoryRoute
   '/_app/live': typeof AppLiveRoute
   '/_app/nearby': typeof AppNearbyRoute
+  '/_app/notes': typeof AppNotesRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/m/$token': typeof MTokenRoute
+  '/s/$token': typeof STokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -157,32 +211,44 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/reset-password'
+    | '/activity'
     | '/admin'
     | '/assistant'
+    | '/checkins'
     | '/dashboard'
+    | '/donors'
     | '/emergency'
     | '/history'
     | '/live'
     | '/nearby'
+    | '/notes'
     | '/notifications'
     | '/profile'
     | '/settings'
+    | '/m/$token'
+    | '/s/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/onboarding'
     | '/reset-password'
+    | '/activity'
     | '/admin'
     | '/assistant'
+    | '/checkins'
     | '/dashboard'
+    | '/donors'
     | '/emergency'
     | '/history'
     | '/live'
     | '/nearby'
+    | '/notes'
     | '/notifications'
     | '/profile'
     | '/settings'
+    | '/m/$token'
+    | '/s/$token'
   id:
     | '__root__'
     | '/'
@@ -190,16 +256,22 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/reset-password'
+    | '/_app/activity'
     | '/_app/admin'
     | '/_app/assistant'
+    | '/_app/checkins'
     | '/_app/dashboard'
+    | '/_app/donors'
     | '/_app/emergency'
     | '/_app/history'
     | '/_app/live'
     | '/_app/nearby'
+    | '/_app/notes'
     | '/_app/notifications'
     | '/_app/profile'
     | '/_app/settings'
+    | '/m/$token'
+    | '/s/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -208,6 +280,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  MTokenRoute: typeof MTokenRoute
+  STokenRoute: typeof STokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -247,6 +321,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/activity': {
+      id: '/_app/activity'
+      path: '/activity'
+      fullPath: '/activity'
+      preLoaderRoute: typeof AppActivityRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/admin': {
       id: '/_app/admin'
       path: '/admin'
@@ -261,11 +342,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAssistantRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/checkins': {
+      id: '/_app/checkins'
+      path: '/checkins'
+      fullPath: '/checkins'
+      preLoaderRoute: typeof AppCheckinsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/donors': {
+      id: '/_app/donors'
+      path: '/donors'
+      fullPath: '/donors'
+      preLoaderRoute: typeof AppDonorsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/emergency': {
@@ -296,6 +391,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNearbyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/notes': {
+      id: '/_app/notes'
+      path: '/notes'
+      fullPath: '/notes'
+      preLoaderRoute: typeof AppNotesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/notifications': {
       id: '/_app/notifications'
       path: '/notifications'
@@ -317,30 +419,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/m/$token': {
+      id: '/m/$token'
+      path: '/m/$token'
+      fullPath: '/m/$token'
+      preLoaderRoute: typeof MTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/s/$token': {
+      id: '/s/$token'
+      path: '/s/$token'
+      fullPath: '/s/$token'
+      preLoaderRoute: typeof STokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppActivityRoute: typeof AppActivityRoute
   AppAdminRoute: typeof AppAdminRoute
   AppAssistantRoute: typeof AppAssistantRoute
+  AppCheckinsRoute: typeof AppCheckinsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDonorsRoute: typeof AppDonorsRoute
   AppEmergencyRoute: typeof AppEmergencyRoute
   AppHistoryRoute: typeof AppHistoryRoute
   AppLiveRoute: typeof AppLiveRoute
   AppNearbyRoute: typeof AppNearbyRoute
+  AppNotesRoute: typeof AppNotesRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppActivityRoute: AppActivityRoute,
   AppAdminRoute: AppAdminRoute,
   AppAssistantRoute: AppAssistantRoute,
+  AppCheckinsRoute: AppCheckinsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDonorsRoute: AppDonorsRoute,
   AppEmergencyRoute: AppEmergencyRoute,
   AppHistoryRoute: AppHistoryRoute,
   AppLiveRoute: AppLiveRoute,
   AppNearbyRoute: AppNearbyRoute,
+  AppNotesRoute: AppNotesRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
@@ -354,6 +478,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  MTokenRoute: MTokenRoute,
+  STokenRoute: STokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -9,6 +9,8 @@ import { EmptyState } from "@/components/system/empty-state";
 import { PanelSkeleton } from "@/components/system/loading-skeletons";
 import { MapPreview } from "@/components/aegis/map-preview";
 import { EmergencyAlerts } from "@/components/aegis/emergency-alerts";
+import { ShareSos } from "@/components/aegis/share-sos";
+import { LiveStatusControls } from "@/components/aegis/live-status-controls";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -66,8 +68,16 @@ function LiveLocationPage() {
           .update({
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
+            location_updated_at: new Date().toISOString(),
           })
           .eq("id", emergencyId);
+        await supabase.from("location_pings").insert({
+          emergency_id: emergencyId,
+          user_id: user.id,
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        });
         if (options.log !== false) {
           await logEvent(
             emergencyId,
@@ -93,7 +103,7 @@ function LiveLocationPage() {
     if (!emergencyId) return;
     const id = window.setInterval(() => {
       void refreshLocation({ silent: true, log: false });
-    }, 15000);
+    }, 10000);
     return () => window.clearInterval(id);
   }, [emergencyId, refreshLocation]);
 
@@ -140,7 +150,7 @@ function LiveLocationPage() {
               <Detail label="Longitude" value={coords ? coords.lng.toFixed(6) : "Unavailable"} />
               <Detail
                 label="Live location status"
-                value={coords ? "Sharing — auto refresh every 15s" : "Waiting for GPS permission"}
+                value={coords ? "Sharing — auto refresh every 10s" : "Waiting for GPS permission"}
               />
               <Detail
                 label="Last updated"
@@ -175,6 +185,28 @@ function LiveLocationPage() {
                   </span>
                 )}
               </Button>
+            </div>
+            <div className="border-t border-border p-5">
+              <h2 className="text-sm font-semibold text-foreground">Emergency status</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Update everyone tracking this emergency instantly.
+              </p>
+              <div className="mt-4">
+                <LiveStatusControls emergency={emergency} />
+              </div>
+            </div>
+            <div className="border-t border-border p-5">
+              <h2 className="text-sm font-semibold text-foreground">Share SOS</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Send your live location through WhatsApp, SMS or email.
+              </p>
+              <div className="mt-4">
+                <ShareSos
+                  emergency={emergency}
+                  profile={profile.data}
+                  contacts={contacts.data ?? []}
+                />
+              </div>
             </div>
             <div className="border-t border-border p-5">
               <h2 className="text-sm font-semibold text-foreground">Contact alerts</h2>

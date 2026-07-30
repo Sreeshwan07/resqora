@@ -75,10 +75,15 @@ export function MedicalIdCard({
   profile,
   contacts = [],
   showQr = false,
+  qrValue,
+  qrCaption,
 }: {
   profile: Profile | null | undefined;
   contacts?: EmergencyContact[];
   showQr?: boolean;
+  /** Overrides the QR payload — pass a secure /m/<token> URL to open the live profile page. */
+  qrValue?: string;
+  qrCaption?: string;
 }) {
   const age = ageFromDob(profile?.date_of_birth);
   const rows = [
@@ -148,12 +153,12 @@ export function MedicalIdCard({
       </dl>
       {showQr && (
         <div className="flex items-center gap-4 border-t border-border bg-muted/30 p-5">
-          <MedicalIdQr value={medicalIdPayload(profile, contacts)} />
+          <MedicalIdQr value={qrValue || medicalIdPayload(profile, contacts)} />
           <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground">Responder QR code</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Any responder can scan this to read your blood group, allergies, conditions,
-              medications and trusted contacts — no app or login required.
+              {qrCaption ||
+                "Any responder can scan this to read your blood group, allergies, conditions, medications and trusted contacts — no app or login required."}
             </p>
           </div>
         </div>

@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_logs: {
+        Row: {
+          action: string
+          created_at: string
+          detail: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          detail?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          detail?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      blood_donors: {
+        Row: {
+          available: boolean
+          blood_group: string
+          city: string
+          created_at: string
+          full_name: string
+          id: string
+          last_donation_date: string | null
+          phone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available?: boolean
+          blood_group: string
+          city: string
+          created_at?: string
+          full_name: string
+          id?: string
+          last_donation_date?: string | null
+          phone: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available?: boolean
+          blood_group?: string
+          city?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          last_donation_date?: string | null
+          phone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       emergencies: {
         Row: {
           address: string | null
@@ -21,6 +84,8 @@ export type Database = {
           duration_seconds: number | null
           id: string
           latitude: number | null
+          live_status: string
+          location_updated_at: string | null
           longitude: number | null
           notes: string | null
           resolved_at: string | null
@@ -37,6 +102,8 @@ export type Database = {
           duration_seconds?: number | null
           id?: string
           latitude?: number | null
+          live_status?: string
+          location_updated_at?: string | null
           longitude?: number | null
           notes?: string | null
           resolved_at?: string | null
@@ -53,6 +120,8 @@ export type Database = {
           duration_seconds?: number | null
           id?: string
           latitude?: number | null
+          live_status?: string
+          location_updated_at?: string | null
           longitude?: number | null
           notes?: string | null
           resolved_at?: string | null
@@ -126,6 +195,113 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "emergency_events_emergency_id_fkey"
+            columns: ["emergency_id"]
+            isOneToOne: false
+            referencedRelation: "emergencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emergency_notes: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      favorite_places: {
+        Row: {
+          address: string | null
+          category: string
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          name: string
+          phone: string | null
+          place_key: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          phone?: string | null
+          place_key: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          phone?: string | null
+          place_key?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      location_pings: {
+        Row: {
+          accuracy: number | null
+          created_at: string
+          emergency_id: string
+          id: string
+          latitude: number
+          longitude: number
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string
+          emergency_id: string
+          id?: string
+          latitude: number
+          longitude: number
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string
+          emergency_id?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_pings_emergency_id_fkey"
             columns: ["emergency_id"]
             isOneToOne: false
             referencedRelation: "emergencies"
@@ -244,6 +420,94 @@ export type Database = {
         }
         Relationships: []
       }
+      safety_checkins: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          due_at: string
+          emergency_id: string | null
+          id: string
+          label: string
+          note: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          due_at: string
+          emergency_id?: string | null
+          id?: string
+          label: string
+          note?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          due_at?: string
+          emergency_id?: string | null
+          id?: string
+          label?: string
+          note?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "safety_checkins_emergency_id_fkey"
+            columns: ["emergency_id"]
+            isOneToOne: false
+            referencedRelation: "emergencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      share_links: {
+        Row: {
+          active: boolean
+          created_at: string
+          emergency_id: string | null
+          expires_at: string | null
+          id: string
+          kind: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          emergency_id?: string | null
+          expires_at?: string | null
+          id?: string
+          kind?: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          emergency_id?: string | null
+          expires_at?: string | null
+          id?: string
+          kind?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_links_emergency_id_fkey"
+            columns: ["emergency_id"]
+            isOneToOne: false
+            referencedRelation: "emergencies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -270,6 +534,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_shared_location: { Args: { _token: string }; Returns: Json }
+      get_shared_profile: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

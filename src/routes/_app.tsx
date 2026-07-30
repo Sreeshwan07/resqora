@@ -1,6 +1,7 @@
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 import { AppLayout } from "@/components/layouts/app-layout";
 import { supabase } from "@/integrations/supabase/client";
+import { useCheckinWatcher } from "@/hooks/use-checkin-watcher";
 
 export const Route = createFileRoute("/_app")({
   ssr: false,
@@ -15,6 +16,8 @@ export const Route = createFileRoute("/_app")({
 });
 
 function AppShellRoute() {
+  // Watches safety check-ins app-wide and escalates missed ones to SOS.
+  useCheckinWatcher();
   return (
     <AppLayout>
       <Outlet />
