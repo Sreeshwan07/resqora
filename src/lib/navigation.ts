@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard,
+  Home,
   Siren,
   MapPinned,
   History,
@@ -15,15 +15,17 @@ import {
   NotebookPen,
   Droplets,
   Activity,
+  Info,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
 export const primaryNav: NavItem[] = [
-  { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard, description: "Overview" },
+  { label: "Home", to: "/dashboard", icon: Home, description: "Fast emergency actions" },
   { label: "Emergency", to: "/emergency", icon: Siren, description: "Trigger assistance" },
   { label: "Nearby", to: "/nearby", icon: MapPinned, description: "Responders around you" },
   { label: "History", to: "/history", icon: History, description: "Past incidents" },
   { label: "Profile", to: "/profile", icon: UserRound, description: "Your safety identity" },
+  { label: "About", to: "/about", icon: Info, description: "How AEGIS works" },
   { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
 ];
 
