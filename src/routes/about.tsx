@@ -4,6 +4,7 @@ import {
   AlarmClock,
   Bell,
   Bot,
+  Camera,
   Droplets,
   Lock,
   MapPinned,
