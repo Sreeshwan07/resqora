@@ -67,7 +67,30 @@ async function googleNearby(
   const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!lovableKey || !connectorKey) throw new Error("Google Maps connector not linked");
 
-  const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
+  // Blood banks have no reliable nearby-search type, so they use a ranked text search.
+  const isText = category === "blood_bank";
+  const endpoint = isText
+    ? `${GATEWAY_URL}/places/v1/places:searchText`
+    : `${GATEWAY_URL}/places/v1/places:searchNearby`;
+  const body = isText
+    ? {
+        textQuery: "blood bank",
+        maxResultCount: Math.max(perCategory, 5),
+        rankPreference: "DISTANCE",
+        locationBias: {
+          circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: 30000 },
+        },
+      }
+    : {
+        includedTypes: GOOGLE_TYPES[category],
+        maxResultCount: Math.max(perCategory, 5),
+        rankPreference: "DISTANCE",
+        locationRestriction: {
+          circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: 30000 },
+        },
+      };
+
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${lovableKey}`,
@@ -76,14 +99,7 @@ async function googleNearby(
       "X-Goog-FieldMask":
         "places.id,places.displayName,places.formattedAddress,places.location,places.nationalPhoneNumber,places.internationalPhoneNumber,places.currentOpeningHours.openNow",
     },
-    body: JSON.stringify({
-      includedTypes: GOOGLE_TYPES[category],
-      maxResultCount: Math.max(perCategory, 5),
-      rankPreference: "DISTANCE",
-      locationRestriction: {
-        circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: 30000 },
-      },
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const body = await res.text();
