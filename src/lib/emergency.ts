@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { getCurrentPosition, logEvent, notify, type Emergency } from "@/lib/api";
+import { logActivity } from "@/lib/activity";
 
 export const EMERGENCY_TYPES = [
   { value: "medical", label: "Medical" },
@@ -112,6 +113,7 @@ export async function createEmergency(options: {
     title: "Emergency alert sent",
     body: "Your trusted contacts and nearby responders have been notified.",
   });
+  await logActivity(options.userId, "SOS activated", `${options.type} emergency triggered`);
 
   const { data: fresh } = await supabase.from("emergencies").select("*").eq("id", data.id).single();
   return (fresh ?? data) as Emergency;
@@ -144,6 +146,7 @@ export async function resolveEmergency(emergency: Emergency) {
     title: "Emergency resolved",
     body: "Glad you're safe. A summary was added to your history.",
   });
+  await logActivity(emergency.user_id, "Emergency closed", "Emergency resolved");
 }
 
 export async function cancelEmergency(emergency: Emergency) {
