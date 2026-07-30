@@ -278,6 +278,41 @@ export async function findNearbyServices(
 
 /** Forward geocode a typed address / city into coordinates. */
 export async function geocodePlace(query: string) {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (lovableKey && connectorKey) {
+    try {
+      const res = await fetch(
+        `${GATEWAY_URL}/maps/api/geocode/json?address=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${lovableKey}`,
+            "X-Connection-Api-Key": connectorKey,
+          },
+        },
+      );
+      if (res.ok) {
+        const data = (await res.json()) as {
+          results?: Array<{
+            formatted_address: string;
+            geometry: { location: { lat: number; lng: number } };
+          }>;
+        };
+        const hit = data.results?.[0];
+        if (hit) {
+          return {
+            lat: hit.geometry.location.lat,
+            lng: hit.geometry.location.lng,
+            label: hit.formatted_address,
+          };
+        }
+        return null;
+      }
+      console.error(`Geocoding failed [${res.status}]: ${await res.text()}`);
+    } catch (error) {
+      console.error("Google geocoding failed, falling back", error);
+    }
+  }
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
   const res = await fetch(url, { headers: { "User-Agent": "AEGIS-emergency-app" } });
   if (!res.ok) throw new Error(`Geocoding failed (${res.status})`);
