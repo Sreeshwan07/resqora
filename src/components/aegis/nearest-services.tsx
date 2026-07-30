@@ -99,7 +99,7 @@ export function NearestServices({
   const entries = nearestFor(position, categories);
 
   return (
-    <section aria-label={title} className="glass-panel rounded-3xl p-4 sm:p-5">
+    <section aria-label={title} className="glass-panel rounded-2xl p-4">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-sm font-semibold text-foreground">{title}</h2>
         <p className="text-[11px] text-muted-foreground">

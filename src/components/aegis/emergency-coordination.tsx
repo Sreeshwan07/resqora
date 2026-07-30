@@ -26,7 +26,7 @@ export function EmergencyCoordination({
   const services = nearestFor(position, categories);
 
   return (
-    <section aria-label="Emergency coordination" className="glass-panel rounded-3xl p-4 sm:p-5">
+    <section aria-label="Emergency coordination" className="glass-panel rounded-2xl p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
           <Radio className="size-4 text-primary" aria-hidden="true" />
