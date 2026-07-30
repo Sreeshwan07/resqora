@@ -3,9 +3,13 @@ import { motion } from "motion/react";
 import { AppSidebar } from "@/components/layouts/app-sidebar";
 import { AppTopbar } from "@/components/layouts/app-topbar";
 import { MobileNav } from "@/components/layouts/mobile-nav";
+import { GlobalSosButton } from "@/components/aegis/global-sos";
+import { LiveLocationCard } from "@/components/aegis/live-location-card";
+import { useLivePosition } from "@/hooks/use-live-position";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
+  const { position, address, denied } = useLivePosition();
 
   return (
     <div className="flex min-h-dvh w-full bg-background aurora">
@@ -19,11 +23,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="mx-auto w-full max-w-6xl space-y-8"
           >
+            <LiveLocationCard position={position} address={address} denied={denied} />
             {children}
           </motion.div>
         </main>
       </div>
       <MobileNav />
+      <GlobalSosButton />
     </div>
   );
 }
