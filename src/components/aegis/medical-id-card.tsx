@@ -38,7 +38,7 @@ export function medicalIdPayload(
   return lines.join("\n");
 }
 
-function MedicalIdQr({ value }: { value: string }) {
+export function MedicalIdQr({ value }: { value: string }) {
   const [dataUrl, setDataUrl] = useState<string | null>(null);
 
   useEffect(() => {
