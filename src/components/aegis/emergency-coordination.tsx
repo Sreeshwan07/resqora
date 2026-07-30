@@ -26,7 +26,7 @@ export function EmergencyCoordination({
   const services = nearestFor(position, categories);
 
   return (
-    <section aria-label="Emergency coordination" className="glass-panel rounded-3xl p-4 sm:p-5">
+    <section aria-label="Emergency coordination" className="glass-panel rounded-2xl p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
           <Radio className="size-4 text-primary" aria-hidden="true" />
@@ -45,6 +45,7 @@ export function EmergencyCoordination({
         {services.map((service, index) => (
           <motion.li
             key={service.id}
+            className="min-w-0"
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25, delay: index * 0.04 }}

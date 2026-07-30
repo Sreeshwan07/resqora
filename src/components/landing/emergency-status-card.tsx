@@ -45,7 +45,7 @@ export function EmergencyStatusCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       aria-label="Live safety status"
-      className={cn("glass-panel rounded-3xl border p-4 sm:p-5", meta.ring)}
+      className={cn("glass-panel rounded-2xl border p-4", meta.ring)}
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">

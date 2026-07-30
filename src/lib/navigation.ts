@@ -108,7 +108,7 @@ export const supportNav: NavItem[] = [
 export const mobileNav: NavItem[] = [
   primaryNav[0],
   primaryNav[2],
-  primaryNav[1],
   primaryNav[3],
+  primaryNav[5],
   primaryNav[4],
 ];

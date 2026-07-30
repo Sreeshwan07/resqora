@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { AlarmClock, ArrowRight, Info, QrCode, Radar } from "lucide-react";
 import { LandingNav } from "@/components/landing/landing-nav";
 import { SiteFooter } from "@/components/landing/site-footer";
 import {
@@ -9,6 +8,7 @@ import {
   type LandingStatus,
 } from "@/components/landing/emergency-status-card";
 import { EmergencyConsole } from "@/components/landing/emergency-console";
+import { EmergencyContactsCard } from "@/components/landing/emergency-contacts-card";
 import { NearestServices } from "@/components/aegis/nearest-services";
 import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
 import { useLivePosition } from "@/hooks/use-live-position";
@@ -61,7 +61,7 @@ function Index() {
     <div className="min-h-dvh bg-background">
       <LandingNav />
       <main className="aurora">
-        <div className="mx-auto w-full max-w-4xl space-y-4 px-4 py-6 sm:px-6 sm:py-10">
+        <div className="mx-auto w-full max-w-4xl space-y-3 px-4 py-4 sm:space-y-4 sm:px-6 sm:py-8">
           <h1 className="sr-only">AEGIS — Autonomous Emergency Grid Intelligence Shield</h1>
 
           <EmergencyStatusCard
@@ -72,7 +72,13 @@ function Index() {
             denied={denied}
           />
 
-          <EmergencyConsole position={position} />
+          <EmergencyConsole />
+
+          <NearestServices position={position} />
+
+          <EmergencyContactsCard
+            notified={Boolean(emergency && emergency.status !== "created")}
+          />
 
           {emergency && emergency.status !== "resolved" && (
             <EmergencyCoordination
@@ -81,29 +87,6 @@ function Index() {
               position={position}
             />
           )}
-
-          <NearestServices position={position} />
-
-          <nav aria-label="Quick links" className="grid gap-2 sm:grid-cols-4">
-            {[
-              { to: "/live", label: "Live location", icon: Radar },
-              { to: "/checkins", label: "Safety check-in", icon: AlarmClock },
-              { to: "/profile", label: "Medical ID QR", icon: QrCode },
-              { to: "/about", label: "About AEGIS", icon: Info },
-            ].map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="glass-panel flex items-center justify-between gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-              >
-                <span className="inline-flex min-w-0 items-center gap-2">
-                  <item.icon className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                  <span className="truncate">{item.label}</span>
-                </span>
-                <ArrowRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              </Link>
-            ))}
-          </nav>
         </div>
       </main>
       <SiteFooter />
