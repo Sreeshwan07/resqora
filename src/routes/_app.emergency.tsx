@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "motion/react";
-import { CheckCircle2, Loader2, MapPin, Siren, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { CheckCircle2, Copy, Loader2, MapPin, Siren, Timer, X } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/system/page-header";
 import { StatusIndicator } from "@/components/system/status-indicator";
+import { ConfirmModal } from "@/components/system/confirm-modal";
 import { SosButton } from "@/components/aegis/sos-button";
 import { CrashDetectionPanel } from "@/components/aegis/crash-detection";
+import { EmergencyAlerts } from "@/components/aegis/emergency-alerts";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -26,12 +28,14 @@ import {
   emergencyEventsQuery,
   profileQuery,
 } from "@/lib/api";
+import { coordsOf, copyText, mapsLink } from "@/lib/alerts";
 import {
   EMERGENCY_TYPES,
   STATUS_FLOW,
   advanceEmergency,
   cancelEmergency,
   createEmergency,
+  formatDuration,
   resolveEmergency,
   statusIndex,
   statusLabel,
@@ -67,6 +71,23 @@ function EmergencyPage() {
   const [type, setType] = useState("sos");
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingType, setPendingType] = useState<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
+
+  const current = active.data;
+
+  useEffect(() => {
+    if (!current) {
+      setElapsed(0);
+      return;
+    }
+    const startedAt = new Date(current.started_at).getTime();
+    const tick = () => setElapsed(Math.max(0, Math.round((Date.now() - startedAt) / 1000)));
+    tick();
+    const id = window.setInterval(tick, 1000);
+    return () => window.clearInterval(id);
+  }, [current]);
 
   async function refresh() {
     await queryClient.invalidateQueries();
@@ -84,12 +105,17 @@ function EmergencyPage() {
       });
       await refresh();
       toast.success("SOS sent — your contacts have been alerted");
-      navigate({ to: "/live" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not send SOS");
     } finally {
       setBusy(false);
     }
+  }
+
+  function requestSos(emergencyType = type) {
+    if (busy || current) return;
+    setPendingType(emergencyType);
+    setConfirmOpen(true);
   }
 
   async function handleAdvance() {
@@ -124,8 +150,8 @@ function EmergencyPage() {
     await queryClient.invalidateQueries({ queryKey: ["profile", user.id] });
   }
 
-  const current = active.data;
   const currentStep = current ? statusIndex(current.status) : -1;
+  const coords = coordsOf(current);
 
   return (
     <>
@@ -144,13 +170,42 @@ function EmergencyPage() {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="glass-panel rounded-3xl p-6">
-          <SosButton onTrigger={() => trigger()} disabled={busy || Boolean(current)} active={Boolean(current)} />
+          <SosButton
+            onTrigger={() => requestSos()}
+            disabled={busy || Boolean(current)}
+            active={Boolean(current)}
+          />
 
           {current ? (
             <div className="mt-4 space-y-4">
-              <p className="text-center text-sm text-muted-foreground">
-                An emergency is already active. Track it live or close it below.
-              </p>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid gap-3 rounded-2xl border border-alert/40 bg-alert/5 p-4 sm:grid-cols-2"
+              >
+                <LiveDetail
+                  label="Emergency ID"
+                  value={current.id.slice(0, 8).toUpperCase()}
+                />
+                <LiveDetail label="Status" value={statusLabel(current.status)} />
+                <LiveDetail
+                  label="Elapsed"
+                  value={formatDuration(elapsed)}
+                  icon={<Timer className="size-3.5" aria-hidden="true" />}
+                />
+                <LiveDetail
+                  label="Started"
+                  value={new Date(current.started_at).toLocaleTimeString()}
+                />
+                <LiveDetail
+                  label="Latitude"
+                  value={coords ? coords.lat.toFixed(6) : "Awaiting GPS"}
+                />
+                <LiveDetail
+                  label="Longitude"
+                  value={coords ? coords.lng.toFixed(6) : "Awaiting GPS"}
+                />
+              </motion.div>
               <div className="flex flex-wrap justify-center gap-2">
                 <Button asChild variant="hero">
                   <Link to="/live">
@@ -158,9 +213,21 @@ function EmergencyPage() {
                     Live tracking
                   </Link>
                 </Button>
+                <Button
+                  variant="outline"
+                  disabled={!coords}
+                  onClick={async () => {
+                    if (!coords) return;
+                    await copyText(mapsLink(coords));
+                    toast.success("Location link copied");
+                  }}
+                >
+                  <Copy className="size-4" />
+                  Copy location
+                </Button>
                 <Button variant="outline" onClick={handleAdvance} disabled={busy}>
                   {busy && <Loader2 className="size-4 animate-spin" />}
-                  Simulate next update
+                  Advance status
                 </Button>
                 <Button variant="outline" onClick={handleResolve} disabled={busy}>
                   <CheckCircle2 className="size-4" />
@@ -170,6 +237,22 @@ function EmergencyPage() {
                   <X className="size-4" />
                   Cancel
                 </Button>
+              </div>
+
+              <div className="border-t border-border pt-4">
+                <h2 className="text-sm font-semibold text-foreground">
+                  Emergency notification centre
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Messages delivered to your trusted contacts across SMS, WhatsApp and email.
+                </p>
+                <div className="mt-4">
+                  <EmergencyAlerts
+                    emergency={current}
+                    profile={profile.data}
+                    contacts={contacts.data ?? []}
+                  />
+                </div>
               </div>
             </div>
           ) : (
@@ -213,7 +296,7 @@ function EmergencyPage() {
           <CrashDetectionPanel
             enabled={profile.data?.crash_detection ?? true}
             onToggle={toggleCrashDetection}
-            onConfirm={() => trigger("accident")}
+            onConfirm={() => requestSos("accident")}
             busy={busy}
           />
 
@@ -253,13 +336,55 @@ function EmergencyPage() {
               </ol>
             )}
             {events.data && events.data.length > 0 && (
-              <p className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
-                Latest: {events.data[events.data.length - 1].label}
-              </p>
+              <AnimatePresence initial={false}>
+                <motion.p
+                  key={events.data[events.data.length - 1].id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground"
+                >
+                  Latest: {events.data[events.data.length - 1].label}
+                </motion.p>
+              </AnimatePresence>
             )}
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title="Emergency SOS"
+        description="Are you sure you want to request emergency assistance?"
+        cancelLabel="Cancel"
+        confirmLabel="Send SOS"
+        tone="emergency"
+        onConfirm={() => {
+          const chosen = pendingType ?? type;
+          setPendingType(null);
+          void trigger(chosen).then(() => navigate({ to: "/live" }));
+        }}
+      />
     </>
+  );
+}
+
+function LiveDetail({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+        {icon}
+        {label}
+      </p>
+      <p className="mt-0.5 font-mono text-sm font-medium text-foreground">{value}</p>
+    </div>
   );
 }
