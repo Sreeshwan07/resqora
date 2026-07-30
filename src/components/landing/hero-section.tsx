@@ -16,7 +16,7 @@ export function HeroSection() {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground backdrop-blur-md">
             <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
-            AI-Powered Emergency Intelligence Platform
+            Autonomous Emergency Grid Intelligence Shield
           </span>
           <h1 className="mt-6 text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">
             <span className="text-gradient">Emergency Assistance in Seconds</span>

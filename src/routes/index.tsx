@@ -61,7 +61,7 @@ function Index() {
       <LandingNav />
       <main className="aurora">
         <div className="mx-auto w-full max-w-4xl space-y-4 px-4 py-6 sm:px-6 sm:py-10">
-          <h1 className="sr-only">AEGIS — AI-Powered Emergency Intelligence Platform</h1>
+          <h1 className="sr-only">AEGIS — Autonomous Emergency Grid Intelligence Shield</h1>
 
           <EmergencyStatusCard
             status={status}

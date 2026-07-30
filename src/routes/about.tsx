@@ -29,7 +29,7 @@ export const Route = createFileRoute("/about")({
         content:
           "How AEGIS works: one-tap SOS, AI triage, live location sharing, medical ID, safety check-ins, trusted contacts, blood donors and nearby responders.",
       },
-      { property: "og:title", content: "About AEGIS — AI-Powered Emergency Intelligence" },
+      { property: "og:title", content: "About AEGIS — Autonomous Emergency Grid Intelligence Shield" },
       {
         property: "og:description",
         content: "The complete AEGIS emergency workflow, explained step by step.",
@@ -119,7 +119,7 @@ function AboutPage() {
         >
           <Badge variant="secondary" className="rounded-full">
             <Sparkles className="size-3.5" aria-hidden="true" />
-            AI-Powered Emergency Intelligence
+            Autonomous Emergency Grid Intelligence Shield
           </Badge>
           <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
             What AEGIS is
