@@ -1,21 +1,21 @@
 import { motion } from "motion/react";
-import { Navigation, PhoneCall } from "lucide-react";
+import { Droplets, Flame, Navigation, PhoneCall, ShieldCheck, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { mapsDirectionsLink } from "@/lib/alerts";
 import { PANEL_CATEGORIES, PANEL_LABEL, nearestOf } from "@/lib/coordination";
 import type { LivePosition } from "@/hooks/use-live-position";
 
-const ICONS: Record<string, string> = {
-  hospital: "🏥",
-  police: "🚓",
-  fire: "🚒",
-  blood_bank: "🩸",
-};
+const ICONS = {
+  hospital: Stethoscope,
+  police: ShieldCheck,
+  fire: Flame,
+  blood_bank: Droplets,
+} as const;
 
 export function NearestServicesPanel({ position }: { position: LivePosition | null }) {
   const coords = position ? { lat: position.lat, lng: position.lng } : null;
   const entries = PANEL_CATEGORIES.map((category) => ({
-    category,
+    category: category as keyof typeof ICONS,
     service: nearestOf(category),
   })).filter((entry) => entry.service);
 
@@ -28,7 +28,9 @@ export function NearestServicesPanel({ position }: { position: LivePosition | nu
         </p>
       </div>
       <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-        {entries.map((entry, index) => (
+        {entries.map((entry, index) => {
+          const Icon = ICONS[entry.category];
+          return (
           <motion.li
             key={entry.category}
             initial={{ opacity: 0, y: 8 }}
@@ -36,8 +38,8 @@ export function NearestServicesPanel({ position }: { position: LivePosition | nu
             transition={{ duration: 0.25, delay: index * 0.04 }}
             className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/60 p-3"
           >
-            <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-base">
-              {ICONS[entry.category]}
+            <span aria-hidden="true" className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <Icon className="size-4" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
@@ -65,7 +67,8 @@ export function NearestServicesPanel({ position }: { position: LivePosition | nu
               </Button>
             </div>
           </motion.li>
-        ))}
+          );
+        })}
       </ul>
     </section>
   );
