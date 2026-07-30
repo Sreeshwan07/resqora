@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppEmergencyRouteImport } from './routes/_app.emergency'
+import { Route as AppNearbyRouteImport } from './routes/_app.nearby'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,16 +34,23 @@ const AppEmergencyRoute = AppEmergencyRouteImport.update({
   path: '/emergency',
   getParentRoute: () => AppRoute,
 } as any)
+const AppNearbyRoute = AppNearbyRouteImport.update({
+  id: '/nearby',
+  path: '/nearby',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
   '/emergency': typeof AppEmergencyRoute
+  '/nearby': typeof AppNearbyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof AppDashboardRoute
   '/emergency': typeof AppEmergencyRoute
+  '/nearby': typeof AppNearbyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -50,13 +58,20 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/emergency': typeof AppEmergencyRoute
+  '/_app/nearby': typeof AppNearbyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/emergency'
+  fullPaths: '/' | '/dashboard' | '/emergency' | '/nearby'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/emergency'
-  id: '__root__' | '/' | '/_app' | '/_app/dashboard' | '/_app/emergency'
+  to: '/' | '/dashboard' | '/emergency' | '/nearby'
+  id:
+    | '__root__'
+    | '/'
+    | '/_app'
+    | '/_app/dashboard'
+    | '/_app/emergency'
+    | '/_app/nearby'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -94,17 +109,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEmergencyRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/nearby': {
+      id: '/_app/nearby'
+      path: '/nearby'
+      fullPath: '/nearby'
+      preLoaderRoute: typeof AppNearbyRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppEmergencyRoute: typeof AppEmergencyRoute
+  AppNearbyRoute: typeof AppNearbyRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppEmergencyRoute: AppEmergencyRoute,
+  AppNearbyRoute: AppNearbyRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
