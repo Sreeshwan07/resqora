@@ -60,7 +60,6 @@ function SettingsPage() {
       <div className="space-y-8">
         {groups.map((group) => (
           <section key={group.title} className="space-y-4">
-            <SectionHeading eyebrow={group.title} title={group.title} align="left" />
             <Card className="rounded-2xl">
               <CardHeader className="flex-row items-center gap-3 space-y-0">
                 <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
