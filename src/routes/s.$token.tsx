@@ -144,12 +144,3 @@ function Field({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
-import { createFileRoute } from '@tanstack/react-router'
-
-export const Route = createFileRoute('/s/$token')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/s/$token"!</div>
-}
