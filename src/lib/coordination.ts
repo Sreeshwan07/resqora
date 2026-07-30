@@ -11,10 +11,11 @@ const PLAN: Record<string, ServiceCategory[]> = {
   medical: ["hospital", "pharmacy"],
   crime: ["police", "hospital"],
   natural: ["shelter", "hospital", "fire"],
+  flood: ["shelter", "hospital", "police"],
   sos: ["hospital", "police"],
 };
 
-const ROLE_LABEL: Record<ServiceCategory, string> = {
+export const ROLE_LABEL: Record<ServiceCategory, string> = {
   hospital: "Hospital & ambulance",
   police: "Police response",
   fire: "Fire & rescue",
@@ -22,6 +23,20 @@ const ROLE_LABEL: Record<ServiceCategory, string> = {
   pharmacy: "Pharmacy",
   shelter: "Disaster helpline & shelter",
 };
+
+export const AMBULANCE_CONTACT = {
+  name: "AEGIS ambulance dispatch",
+  phone: "+1 555 0100",
+};
+
+/** Service categories that matter for an emergency type, most relevant first. */
+export function coordinationCategories(type: string, severity?: string | null) {
+  const categories = [...(PLAN[type] ?? PLAN.sos)];
+  if ((severity === "critical" || severity === "high") && !categories.includes("blood_bank")) {
+    categories.push("blood_bank");
+  }
+  return categories;
+}
 
 export function nearestOf(category: ServiceCategory) {
   return nearbyServices
