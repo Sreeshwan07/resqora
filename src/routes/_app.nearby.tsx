@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import {
   Building2,
   Clock3,
+  Droplets,
   Flame,
   MapPinned,
   Navigation,
@@ -20,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { mapsDirectionsLink } from "@/lib/alerts";
 import {
   nearbyServices,
   serviceCategories,
@@ -48,6 +50,7 @@ const categoryIcon: Record<ServiceCategory, typeof Building2> = {
   hospital: Building2,
   police: Shield,
   fire: Flame,
+  blood_bank: Droplets,
   pharmacy: Pill,
   shelter: Navigation,
 };
@@ -76,7 +79,7 @@ function NearbyPage() {
       <PageHeader
         icon={MapPinned}
         title="Nearby services"
-        description="The closest hospitals, police, fire crews, pharmacies and shelters around you."
+        description="The closest hospitals, police, fire crews, blood banks, pharmacies and shelters around you."
       />
 
       <div className="glass-panel space-y-4 rounded-2xl p-5">
@@ -185,7 +188,7 @@ function NearbyPage() {
                       </Button>
                       <Button asChild size="sm" variant="outline">
                         <a
-                          href={`https://www.openstreetmap.org/search?query=${encodeURIComponent(service.address)}`}
+                          href={mapsDirectionsLink(`${service.name}, ${service.address}`)}
                           target="_blank"
                           rel="noreferrer"
                         >
