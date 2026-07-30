@@ -22,7 +22,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery } from "@/lib/api";
-import { BLOOD_GROUPS, donorSearchQuery, myDonorQuery } from "@/lib/aegis-data";
+import { BLOOD_GROUPS, donorSearchQuery, myDonorQuery, revealDonorPhone } from "@/lib/aegis-data";
 import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/_app/donors")({
@@ -221,11 +221,24 @@ function DonorsPage() {
                     <Badge className="rounded-full bg-alert text-alert-foreground">
                       {donor.blood_group}
                     </Badge>
-                    <Button asChild size="sm" variant="outline">
-                      <a href={`tel:${donor.phone.replace(/[^\d+]/g, "")}`}>
-                        <Phone className="size-4" />
-                        Call
-                      </a>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const phone = await revealDonorPhone(donor.id);
+                          if (!phone) {
+                            toast.error("This donor is no longer available");
+                            return;
+                          }
+                          window.location.href = `tel:${phone.replace(/[^\d+]/g, "")}`;
+                        } catch {
+                          toast.error("Could not reach this donor right now");
+                        }
+                      }}
+                    >
+                      <Phone className="size-4" />
+                      Call
                     </Button>
                   </div>
                 </motion.li>
