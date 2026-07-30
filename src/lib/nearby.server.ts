@@ -38,6 +38,82 @@ const OVERPASS_ENDPOINTS = [
   "https://overpass.kumi.systems/api/interpreter",
 ];
 
+const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
+
+const GOOGLE_TYPES: Record<PlaceCategory, string[]> = {
+  hospital: ["hospital"],
+  police: ["police"],
+  fire: ["fire_station"],
+  blood_bank: ["blood_donation_facility"],
+};
+
+type GooglePlace = {
+  id: string;
+  displayName?: { text?: string };
+  formattedAddress?: string;
+  nationalPhoneNumber?: string;
+  internationalPhoneNumber?: string;
+  currentOpeningHours?: { openNow?: boolean };
+  location?: { latitude: number; longitude: number };
+};
+
+/** Google Places (New) nearby search through the Lovable connector gateway. */
+async function googleNearby(
+  origin: { lat: number; lng: number },
+  category: PlaceCategory,
+  perCategory: number,
+): Promise<NearbyPlace[]> {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!lovableKey || !connectorKey) throw new Error("Google Maps connector not linked");
+
+  const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${lovableKey}`,
+      "X-Connection-Api-Key": connectorKey,
+      "Content-Type": "application/json",
+      "X-Goog-FieldMask":
+        "places.id,places.displayName,places.formattedAddress,places.location,places.nationalPhoneNumber,places.internationalPhoneNumber,places.currentOpeningHours.openNow",
+    },
+    body: JSON.stringify({
+      includedTypes: GOOGLE_TYPES[category],
+      maxResultCount: Math.max(perCategory, 5),
+      rankPreference: "DISTANCE",
+      locationRestriction: {
+        circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: 30000 },
+      },
+    }),
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    console.error(`Google Places request failed [${res.status}]: ${body}`);
+    throw new Error(`Google Places request failed [${res.status}]`);
+  }
+  const data = (await res.json()) as { places?: GooglePlace[] };
+  return (data.places ?? [])
+    .filter((place) => place.location && place.displayName?.text)
+    .map((place) => {
+      const lat = place.location!.latitude;
+      const lng = place.location!.longitude;
+      const distanceKm = Number(haversineKm(origin, { lat, lng }).toFixed(2));
+      return {
+        id: place.id,
+        name: place.displayName!.text!,
+        category,
+        lat,
+        lng,
+        address: place.formattedAddress ?? "",
+        phone: place.nationalPhoneNumber ?? place.internationalPhoneNumber ?? null,
+        openNow: place.currentOpeningHours?.openNow ?? null,
+        distanceKm,
+        etaMinutes: etaMinutes(distanceKm),
+      } satisfies NearbyPlace;
+    })
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, perCategory);
+}
+
 const FILTERS: Record<PlaceCategory, string[]> = {
   hospital: ['["amenity"="hospital"]', '["healthcare"="hospital"]'],
   police: ['["amenity"="police"]'],
@@ -122,6 +198,23 @@ export async function findNearbyServices(
     fire: [],
     blood_bank: [],
   };
+
+  if (process.env.LOVABLE_API_KEY && process.env.GOOGLE_MAPS_API_KEY) {
+    try {
+      const categories = Object.keys(result) as PlaceCategory[];
+      const lists = await Promise.all(
+        categories.map((category) =>
+          googleNearby(origin, category, perCategory).catch(() => [] as NearbyPlace[]),
+        ),
+      );
+      categories.forEach((category, index) => {
+        result[category] = lists[index];
+      });
+      if (categories.some((category) => result[category].length > 0)) return result;
+    } catch (error) {
+      console.error("Google Places lookup failed, falling back to OpenStreetMap", error);
+    }
+  }
 
   let elements: OverpassElement[] = [];
   for (const radius of [8000, 25000, 60000]) {
