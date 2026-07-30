@@ -1,12 +1,14 @@
+import { useCallback, useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { motion } from "motion/react";
-import { Copy, Loader2, MapPin, Radar, RefreshCcw, Share2 } from "lucide-react";
+import { Copy, ExternalLink, Loader2, Radar, RefreshCcw } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/system/page-header";
 import { StatusIndicator } from "@/components/system/status-indicator";
 import { EmptyState } from "@/components/system/empty-state";
 import { PanelSkeleton } from "@/components/system/loading-skeletons";
+import { MapPreview } from "@/components/aegis/map-preview";
+import { EmergencyAlerts } from "@/components/aegis/emergency-alerts";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,7 +18,9 @@ import {
   emergencyEventsQuery,
   getCurrentPosition,
   logEvent,
+  profileQuery,
 } from "@/lib/api";
+import { coordsOf, copyText, mapsLink } from "@/lib/alerts";
 import { statusLabel } from "@/lib/emergency";
 
 export const Route = createFileRoute("/_app/live")({
@@ -43,40 +47,59 @@ function LiveLocationPage() {
   const active = useQuery(activeEmergencyQuery(user?.id));
   const events = useQuery(emergencyEventsQuery(active.data?.id));
   const contacts = useQuery(contactsQuery(user?.id));
+  const profile = useQuery(profileQuery(user?.id));
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const emergency = active.data;
-  const coords =
-    emergency?.latitude != null && emergency?.longitude != null
-      ? { lat: emergency.latitude, lng: emergency.longitude }
-      : null;
+  const coords = coordsOf(emergency);
+  const emergencyId = emergency?.id;
 
-  async function refreshLocation() {
-    if (!emergency || !user) return;
-    try {
-      const position = await getCurrentPosition();
-      await supabase
-        .from("emergencies")
-        .update({
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        })
-        .eq("id", emergency.id);
-      await logEvent(
-        emergency.id,
-        user.id,
-        "Location updated",
-        `${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`,
-      );
-      await queryClient.invalidateQueries();
-      toast.success("Location refreshed");
-    } catch {
-      toast.error("Could not read your GPS position");
-    }
-  }
+  const refreshLocation = useCallback(
+    async (options: { silent?: boolean; log?: boolean } = {}) => {
+      if (!emergencyId || !user) return;
+      setRefreshing(true);
+      try {
+        const position = await getCurrentPosition();
+        await supabase
+          .from("emergencies")
+          .update({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          })
+          .eq("id", emergencyId);
+        if (options.log !== false) {
+          await logEvent(
+            emergencyId,
+            user.id,
+            "Location updated",
+            `${position.coords.latitude.toFixed(5)}, ${position.coords.longitude.toFixed(5)}`,
+          );
+        }
+        await queryClient.invalidateQueries({ queryKey: ["active-emergency", user.id] });
+        setUpdatedAt(new Date());
+        if (!options.silent) toast.success("Location refreshed");
+      } catch {
+        if (!options.silent) toast.error("Could not read your GPS position");
+      } finally {
+        setRefreshing(false);
+      }
+    },
+    [emergencyId, user, queryClient],
+  );
 
-  function copyCoords() {
+  // Keep responders on a fresh fix while an emergency is running.
+  useEffect(() => {
+    if (!emergencyId) return;
+    const id = window.setInterval(() => {
+      void refreshLocation({ silent: true, log: false });
+    }, 15000);
+    return () => window.clearInterval(id);
+  }, [emergencyId, refreshLocation]);
+
+  async function copyCoords() {
     if (!coords) return;
-    void navigator.clipboard.writeText(`${coords.lat}, ${coords.lng}`);
+    await copyText(`${coords.lat}, ${coords.lng}`);
     toast.success("Coordinates copied");
   }
 
@@ -111,57 +134,60 @@ function LiveLocationPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="glass-panel overflow-hidden rounded-3xl">
-            <div className="relative grid h-72 place-items-center bg-linear-to-br from-primary/10 via-background to-alert/10 sm:h-96">
-              <div
-                aria-hidden="true"
-                className="absolute inset-0 opacity-40 [background-image:linear-gradient(to_right,var(--color-border)_1px,transparent_1px),linear-gradient(to_bottom,var(--color-border)_1px,transparent_1px)] [background-size:44px_44px]"
-              />
-              <div className="relative grid place-items-center">
-                <motion.span
-                  animate={{ scale: [1, 1.7], opacity: [0.5, 0] }}
-                  transition={{ duration: 2.2, repeat: Infinity, ease: "easeOut" }}
-                  className="absolute size-24 rounded-full bg-alert/30"
-                />
-                <span className="relative grid size-12 place-items-center rounded-full bg-alert text-alert-foreground shadow-lg shadow-alert/40">
-                  <MapPin className="size-6" aria-hidden="true" />
-                </span>
-              </div>
-              <p className="absolute bottom-4 rounded-full bg-background/80 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur">
-                Interactive map integration placeholder
-              </p>
-            </div>
+            <MapPreview coords={coords} />
             <div className="grid gap-4 border-t border-border p-5 sm:grid-cols-2">
               <Detail label="Latitude" value={coords ? coords.lat.toFixed(6) : "Unavailable"} />
               <Detail label="Longitude" value={coords ? coords.lng.toFixed(6) : "Unavailable"} />
-              <Detail label="Emergency type" value={emergency.type} className="capitalize" />
-              <Detail label="Started" value={new Date(emergency.started_at).toLocaleTimeString()} />
+              <Detail
+                label="Live location status"
+                value={coords ? "Sharing — auto refresh every 15s" : "Waiting for GPS permission"}
+              />
+              <Detail
+                label="Last updated"
+                value={
+                  refreshing
+                    ? "Updating…"
+                    : updatedAt
+                      ? updatedAt.toLocaleTimeString()
+                      : new Date(emergency.started_at).toLocaleTimeString()
+                }
+              />
             </div>
             <div className="flex flex-wrap gap-2 border-t border-border p-5">
-              <Button variant="hero" onClick={refreshLocation}>
-                <RefreshCcw className="size-4" />
+              <Button variant="hero" onClick={() => refreshLocation()} disabled={refreshing}>
+                <RefreshCcw className={`size-4 ${refreshing ? "animate-spin" : ""}`} />
                 Refresh GPS
               </Button>
               <Button variant="outline" onClick={copyCoords} disabled={!coords}>
                 <Copy className="size-4" />
-                Copy coordinates
+                Copy location
               </Button>
               <Button variant="outline" disabled={!coords} asChild={Boolean(coords)}>
                 {coords ? (
-                  <a
-                    href={`https://www.openstreetmap.org/?mlat=${coords.lat}&mlon=${coords.lng}#map=17/${coords.lat}/${coords.lng}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <Share2 className="size-4" />
-                    Open in maps
+                  <a href={mapsLink(coords)} target="_blank" rel="noreferrer">
+                    <ExternalLink className="size-4" />
+                    Open in Google Maps
                   </a>
                 ) : (
                   <span>
-                    <Share2 className="size-4" />
-                    Open in maps
+                    <ExternalLink className="size-4" />
+                    Open in Google Maps
                   </span>
                 )}
               </Button>
+            </div>
+            <div className="border-t border-border p-5">
+              <h2 className="text-sm font-semibold text-foreground">Contact alerts</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Every trusted contact received your name, time, address, coordinates and map link.
+              </p>
+              <div className="mt-4">
+                <EmergencyAlerts
+                  emergency={emergency}
+                  profile={profile.data}
+                  contacts={contacts.data ?? []}
+                />
+              </div>
             </div>
           </div>
 
