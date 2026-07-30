@@ -34,6 +34,9 @@ import {
 } from "@/lib/nearby-services";
 
 export const Route = createFileRoute("/_app/nearby")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    category: typeof search.category === "string" ? search.category : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Nearby emergency services — AEGIS" },
@@ -62,10 +65,15 @@ const categoryIcon: Record<ServiceCategory, typeof Building2> = {
 
 function NearbyPage() {
   const { user } = useAuth();
+  const search = Route.useSearch();
   const queryClient = useQueryClient();
   const favorites = useQuery(favoritesQuery(user?.id));
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<ServiceCategory | "all">("all");
+  const [category, setCategory] = useState<ServiceCategory | "all">(
+    (serviceCategories.some((item) => item.value === search.category)
+      ? (search.category as ServiceCategory)
+      : "all") satisfies ServiceCategory | "all",
+  );
   const [openOnly, setOpenOnly] = useState(false);
 
   const favoriteByKey = useMemo(() => {
