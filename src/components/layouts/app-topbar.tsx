@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Bell, Menu, Search, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
@@ -8,9 +9,23 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/system/theme-toggle";
 import { StatusIndicator } from "@/components/system/status-indicator";
 import { primaryNav } from "@/lib/navigation";
+import { useAuth } from "@/hooks/use-auth";
+import { activeEmergencyQuery, notificationsQuery, profileQuery } from "@/lib/api";
 
 export function AppTopbar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user } = useAuth();
+  const { data: profile } = useQuery(profileQuery(user?.id));
+  const { data: notifications } = useQuery(notificationsQuery(user?.id));
+  const { data: activeEmergency } = useQuery(activeEmergencyQuery(user?.id));
+
+  const unread = (notifications ?? []).filter((item) => !item.read).length;
+  const initials = (profile?.full_name ?? user?.email ?? "AE")
+    .split(/[\s@.]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-xl">
@@ -43,16 +58,40 @@ export function AppTopbar() {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-1.5">
-          <StatusIndicator status="safe" label="All clear" className="hidden sm:inline-flex" />
+          {activeEmergency ? (
+            <StatusIndicator
+              status="critical"
+              label="Emergency active"
+              pulse
+              className="hidden sm:inline-flex"
+            />
+          ) : (
+            <StatusIndicator status="safe" label="All clear" className="hidden sm:inline-flex" />
+          )}
           <ThemeToggle />
-          <Button variant="ghost" size="icon" aria-label="Notifications" className="rounded-xl">
-            <Bell className="size-5" />
+          <Button
+            asChild
+            variant="ghost"
+            size="icon"
+            aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
+            className="relative rounded-xl"
+          >
+            <Link to="/notifications">
+              <Bell className="size-5" />
+              {unread > 0 && (
+                <span className="absolute right-1 top-1 grid min-w-4 place-items-center rounded-full bg-alert px-1 text-[10px] font-bold leading-4 text-alert-foreground">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
           </Button>
-          <Avatar className="size-9">
-            <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-              AE
-            </AvatarFallback>
-          </Avatar>
+          <Link to="/profile" aria-label="Your profile">
+            <Avatar className="size-9">
+              <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
+                {initials || "AE"}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
         </div>
       </div>
       {menuOpen && (
