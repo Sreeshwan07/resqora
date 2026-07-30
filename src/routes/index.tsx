@@ -73,7 +73,15 @@ function Index() {
 
           <EmergencyConsole position={position} />
 
-          <NearestServicesPanel position={position} />
+          {emergency && emergency.status !== "resolved" && (
+            <EmergencyCoordination
+              type={emergency.type}
+              severity={emergency.severity}
+              position={position}
+            />
+          )}
+
+          <NearestServices position={position} />
 
           <nav aria-label="Quick links" className="grid gap-2 sm:grid-cols-4">
             {[
