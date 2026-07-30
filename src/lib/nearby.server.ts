@@ -55,16 +55,6 @@ type OverpassElement = {
 };
 
 function buildQuery(lat: number, lng: number, radius: number) {
-  const parts: string[] = [];
-  for (const [category, filters] of Object.entries(FILTERS)) {
-    for (const filter of filters) {
-      for (const kind of ["node", "way", "relation"]) {
-        parts.push(`${kind}${filter}(around:${radius},${lat},${lng})->.${"x"};`);
-      }
-    }
-    void category;
-  }
-  // Simpler: one union of everything, categorised client-side from tags.
   const union = Object.values(FILTERS)
     .flat()
     .flatMap((filter) =>
