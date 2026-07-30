@@ -7,6 +7,10 @@ import {
   Settings,
   LifeBuoy,
   ShieldCheck,
+  Bot,
+  Bell,
+  Radar,
+  Gauge,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -19,14 +23,42 @@ export const primaryNav: NavItem[] = [
   { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
 ];
 
+export const assistantNav: NavItem = {
+  label: "AI Assistant",
+  to: "/assistant",
+  icon: Bot,
+  description: "Triage & first aid",
+};
+
+export const liveLocationNav: NavItem = {
+  label: "Live Location",
+  to: "/live",
+  icon: Radar,
+  description: "Active emergency tracking",
+};
+
+export const notificationsNav: NavItem = {
+  label: "Notifications",
+  to: "/notifications",
+  icon: Bell,
+  description: "Alerts & updates",
+};
+
+export const adminNav: NavItem = {
+  label: "Admin",
+  to: "/admin",
+  icon: Gauge,
+  description: "Platform analytics",
+};
+
 export const navSections: NavSection[] = [
   {
     title: "Response",
-    items: primaryNav.slice(0, 3),
+    items: [...primaryNav.slice(0, 3), assistantNav, liveLocationNav],
   },
   {
     title: "Records",
-    items: primaryNav.slice(3, 4),
+    items: [primaryNav[3], notificationsNav],
   },
   {
     title: "Account",

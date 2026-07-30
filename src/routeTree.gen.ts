@@ -11,10 +11,17 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AppAdminRouteImport } from './routes/_app.admin'
+import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppEmergencyRouteImport } from './routes/_app.emergency'
 import { Route as AppHistoryRouteImport } from './routes/_app.history'
+import { Route as AppLiveRouteImport } from './routes/_app.live'
 import { Route as AppNearbyRouteImport } from './routes/_app.nearby'
+import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 
@@ -26,6 +33,31 @@ const IndexRoute = IndexRouteImport.update({
 const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAssistantRoute = AppAssistantRouteImport.update({
+  id: '/assistant',
+  path: '/assistant',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
@@ -42,9 +74,19 @@ const AppHistoryRoute = AppHistoryRouteImport.update({
   path: '/history',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLiveRoute = AppLiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNearbyRoute = AppNearbyRouteImport.update({
   id: '/nearby',
   path: '/nearby',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AppRoute,
 } as any)
 const AppProfileRoute = AppProfileRouteImport.update({
@@ -60,19 +102,33 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/admin': typeof AppAdminRoute
+  '/assistant': typeof AppAssistantRoute
   '/dashboard': typeof AppDashboardRoute
   '/emergency': typeof AppEmergencyRoute
   '/history': typeof AppHistoryRoute
+  '/live': typeof AppLiveRoute
   '/nearby': typeof AppNearbyRoute
+  '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/admin': typeof AppAdminRoute
+  '/assistant': typeof AppAssistantRoute
   '/dashboard': typeof AppDashboardRoute
   '/emergency': typeof AppEmergencyRoute
   '/history': typeof AppHistoryRoute
+  '/live': typeof AppLiveRoute
   '/nearby': typeof AppNearbyRoute
+  '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/settings': typeof AppSettingsRoute
 }
@@ -80,10 +136,17 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_app/admin': typeof AppAdminRoute
+  '/_app/assistant': typeof AppAssistantRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/emergency': typeof AppEmergencyRoute
   '/_app/history': typeof AppHistoryRoute
+  '/_app/live': typeof AppLiveRoute
   '/_app/nearby': typeof AppNearbyRoute
+  '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/settings': typeof AppSettingsRoute
 }
@@ -91,29 +154,50 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/reset-password'
+    | '/admin'
+    | '/assistant'
     | '/dashboard'
     | '/emergency'
     | '/history'
+    | '/live'
     | '/nearby'
+    | '/notifications'
     | '/profile'
     | '/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/reset-password'
+    | '/admin'
+    | '/assistant'
     | '/dashboard'
     | '/emergency'
     | '/history'
+    | '/live'
     | '/nearby'
+    | '/notifications'
     | '/profile'
     | '/settings'
   id:
     | '__root__'
     | '/'
     | '/_app'
+    | '/auth'
+    | '/onboarding'
+    | '/reset-password'
+    | '/_app/admin'
+    | '/_app/assistant'
     | '/_app/dashboard'
     | '/_app/emergency'
     | '/_app/history'
+    | '/_app/live'
     | '/_app/nearby'
+    | '/_app/notifications'
     | '/_app/profile'
     | '/_app/settings'
   fileRoutesById: FileRoutesById
@@ -121,6 +205,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  OnboardingRoute: typeof OnboardingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -138,6 +225,41 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_app/admin': {
+      id: '/_app/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/assistant': {
+      id: '/_app/assistant'
+      path: '/assistant'
+      fullPath: '/assistant'
+      preLoaderRoute: typeof AppAssistantRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/dashboard': {
       id: '/_app/dashboard'
@@ -160,11 +282,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHistoryRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/live': {
+      id: '/_app/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof AppLiveRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/nearby': {
       id: '/_app/nearby'
       path: '/nearby'
       fullPath: '/nearby'
       preLoaderRoute: typeof AppNearbyRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/profile': {
@@ -185,19 +321,27 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
+  AppAssistantRoute: typeof AppAssistantRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppEmergencyRoute: typeof AppEmergencyRoute
   AppHistoryRoute: typeof AppHistoryRoute
+  AppLiveRoute: typeof AppLiveRoute
   AppNearbyRoute: typeof AppNearbyRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppSettingsRoute: typeof AppSettingsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
+  AppAssistantRoute: AppAssistantRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppEmergencyRoute: AppEmergencyRoute,
   AppHistoryRoute: AppHistoryRoute,
+  AppLiveRoute: AppLiveRoute,
   AppNearbyRoute: AppNearbyRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppSettingsRoute: AppSettingsRoute,
 }
@@ -207,7 +351,20 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRoute,
+  OnboardingRoute: OnboardingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
