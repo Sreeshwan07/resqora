@@ -47,6 +47,11 @@ const FEATURES = [
     body: "Seven guided questions score your situation 0–100, set a priority level and return the right first-aid steps while help is on the way.",
   },
   {
+    icon: Camera,
+    title: "AI image analysis",
+    body: "Photograph an accident from the home screen and AEGIS detects the emergency type, estimates severity with a confidence score and writes a responder-ready summary.",
+  },
+  {
     icon: Radar,
     title: "Live location sharing",
     body: "During an emergency your GPS position refreshes every 10 seconds and can be opened by anyone holding your secure tracking link — no app required.",
