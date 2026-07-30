@@ -2,13 +2,14 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Clock, History, MapPin, Siren } from "lucide-react";
+import { Clock, History, MapPin, Search, Siren } from "lucide-react";
 import { PageHeader } from "@/components/system/page-header";
 import { StatCard } from "@/components/system/stat-card";
 import { StatusIndicator } from "@/components/system/status-indicator";
 import { EmptyState } from "@/components/system/empty-state";
 import { PanelSkeleton } from "@/components/system/loading-skeletons";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { emergenciesQuery } from "@/lib/api";
 import { formatDuration, statusLabel } from "@/lib/emergency";
@@ -38,14 +39,24 @@ function HistoryPage() {
   const { user } = useAuth();
   const { data, isLoading } = useQuery(emergenciesQuery(user?.id));
   const [filter, setFilter] = useState<(typeof filters)[number]>("all");
+  const [search, setSearch] = useState("");
 
   const items = useMemo(() => {
-    const all = data ?? [];
-    if (filter === "all") return all;
-    if (filter === "active")
-      return all.filter((item) => item.status !== "resolved" && item.status !== "cancelled");
-    return all.filter((item) => item.status === filter);
-  }, [data, filter]);
+    let all = data ?? [];
+    if (filter === "active") {
+      all = all.filter((item) => item.status !== "resolved" && item.status !== "cancelled");
+    } else if (filter !== "all") {
+      all = all.filter((item) => item.status === filter);
+    }
+    const term = search.trim().toLowerCase();
+    if (!term) return all;
+    return all.filter((item) =>
+      [item.type, item.status, item.notes ?? "", item.address ?? "", new Date(item.started_at).toLocaleString()]
+        .join(" ")
+        .toLowerCase()
+        .includes(term),
+    );
+  }, [data, filter, search]);
 
   const resolved = (data ?? []).filter((item) => item.status === "resolved");
   const avg =
@@ -67,7 +78,20 @@ function HistoryPage() {
         <StatCard icon={History} label="Resolved" value={String(resolved.length)} />
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative min-w-[220px] flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search by type, status, notes or date"
+            aria-label="Search emergency history"
+            className="pl-9"
+          />
+        </div>
         {filters.map((item) => (
           <button
             key={item}
