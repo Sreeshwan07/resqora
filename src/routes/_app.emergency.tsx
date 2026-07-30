@@ -42,6 +42,9 @@ import {
 } from "@/lib/emergency";
 
 export const Route = createFileRoute("/_app/emergency")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    auto: search.auto === true || search.auto === "true" ? true : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Emergency SOS — AEGIS" },
@@ -62,6 +65,7 @@ export const Route = createFileRoute("/_app/emergency")({
 function EmergencyPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { auto } = Route.useSearch();
   const queryClient = useQueryClient();
   const profile = useQuery(profileQuery(user?.id));
   const contacts = useQuery(contactsQuery(user?.id));
@@ -76,6 +80,18 @@ function EmergencyPage() {
   const [elapsed, setElapsed] = useState(0);
 
   const current = active.data;
+
+  // Landing page "Emergency SOS" arrives with ?auto=true and starts the
+  // existing workflow immediately — no extra questions.
+  useEffect(() => {
+    if (!auto || !user || busy || current || active.isPending || contacts.isPending) return;
+    void (async () => {
+      await trigger("sos");
+      await navigate({ to: "/emergency", search: {}, replace: true });
+      await navigate({ to: "/live" });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auto, user, current, active.isPending, contacts.isPending]);
 
   useEffect(() => {
     if (!current) {
