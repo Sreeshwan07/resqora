@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, PhoneCall, Save, UserRound } from "lucide-react";
+import { Copy, Loader2, PhoneCall, Save, ShieldOff, UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/system/page-header";
 import { MedicalIdCard } from "@/components/aegis/medical-id-card";
@@ -21,6 +21,9 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { computeSafetyScore, contactsQuery, profileQuery } from "@/lib/api";
+import { copyText } from "@/lib/alerts";
+import { ensureMedicalShareLink, revokeShareLink, shareUrl } from "@/lib/share";
+import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/_app/profile")({
   head: () => ({
@@ -277,10 +280,74 @@ function ProfilePage() {
 
         <div className="space-y-4">
           <SafetyScoreCard score={score} hints={[]} />
-          <MedicalIdCard profile={profile.data} contacts={contacts.data ?? []} showQr />
+          <MedicalQrSection />
         </div>
       </div>
     </>
+  );
+}
+
+/** Digital medical QR that opens the secure responder profile page. */
+function MedicalQrSection() {
+  const { user } = useAuth();
+  const profile = useQuery(profileQuery(user?.id));
+  const contacts = useQuery(contactsQuery(user?.id));
+  const link = useQuery({
+    queryKey: ["medical-share-link", user?.id],
+    enabled: Boolean(user?.id),
+    queryFn: async () => ensureMedicalShareLink(user!.id),
+  });
+
+  const url = link.data && link.data.active ? shareUrl(link.data) : null;
+
+  return (
+    <div className="space-y-3">
+      <MedicalIdCard
+        profile={profile.data}
+        contacts={contacts.data ?? []}
+        showQr
+        qrValue={url ?? undefined}
+        qrCaption={
+          url
+            ? "Scanning this opens your secure emergency profile — blood group, allergies, conditions, medications, notes and trusted contacts. No login required."
+            : undefined
+        }
+      />
+      {url && (
+        <div className="glass-panel rounded-2xl p-4">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Secure profile link
+          </p>
+          <p className="mt-2 truncate rounded-xl bg-muted px-3 py-2 font-mono text-xs">{url}</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                await copyText(url);
+                toast.success("Profile link copied");
+              }}
+            >
+              <Copy className="size-4" />
+              Copy link
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                await revokeShareLink(link.data!.id);
+                await logActivity(user?.id, "Profile updated", "Medical QR link revoked");
+                toast.success("Link revoked — generate a new one any time");
+                await link.refetch();
+              }}
+            >
+              <ShieldOff className="size-4" />
+              Revoke
+            </Button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
