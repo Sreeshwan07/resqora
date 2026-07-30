@@ -77,7 +77,11 @@ function CheckinsPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
-  async function update(id: string, patch: Record<string, unknown>, message: string) {
+  async function update(
+    id: string,
+    patch: { status: string; confirmed_at?: string },
+    message: string,
+  ) {
     const { error } = await supabase.from("safety_checkins").update(patch).eq("id", id);
     if (error) {
       toast.error(error.message);
