@@ -1,305 +1,419 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion } from "motion/react";
 import {
-  ArrowRight,
+  AlarmClock,
   Bell,
   Bot,
-  Clock,
-  Compass,
-  Lightbulb,
-  LayoutDashboard,
+  Building2,
+  Clock3,
+  Droplets,
+  Flame,
+  History as HistoryIcon,
   MapPin,
   PhoneCall,
+  QrCode,
+  Radar,
+  Share2,
+  Shield,
   Siren,
+  TriangleAlert,
   Users,
 } from "lucide-react";
-import { PageHeader } from "@/components/system/page-header";
-import { StatCard } from "@/components/system/stat-card";
-import { StatusIndicator } from "@/components/system/status-indicator";
-import { EmptyState } from "@/components/system/empty-state";
-import { StatCardSkeleton, PanelSkeleton } from "@/components/system/loading-skeletons";
-import { MedicalIdCard } from "@/components/aegis/medical-id-card";
-import { SafetyScoreCard } from "@/components/aegis/safety-score-card";
+import { toast } from "sonner";
+import { ConfirmModal } from "@/components/system/confirm-modal";
+import { MedicalIdQr } from "@/components/aegis/medical-id-card";
+import { SosButton } from "@/components/aegis/sos-button";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/hooks/use-auth";
+import { useHydrated } from "@/hooks/use-hydrated";
 import {
   activeEmergencyQuery,
-  computeSafetyScore,
   contactsQuery,
   emergenciesQuery,
+  getCurrentPosition,
   notificationsQuery,
   profileQuery,
 } from "@/lib/api";
-import { formatDuration, statusLabel } from "@/lib/emergency";
-import { nearbyServices } from "@/lib/nearby-services";
-
-const QUICK_ACTIONS = [
-  { to: "/emergency", label: "Trigger SOS", description: "Alert contacts & responders", icon: Siren },
-  { to: "/assistant", label: "AI assistant", description: "Guided triage in a minute", icon: Bot },
-  { to: "/nearby", label: "Nearby help", description: "Hospitals, police, fire", icon: Compass },
-  { to: "/live", label: "Live location", description: "Share your exact position", icon: MapPin },
-] as const;
-
-const SAFETY_TIPS = [
-  "Keep your phone charged above 30% — location sharing needs battery.",
-  "Tell one trusted contact your route before travelling at night.",
-  "Learn the recovery position; it keeps an unconscious airway open.",
-  "Store your blood group and allergies in your medical ID today.",
-];
+import { checkinsQuery } from "@/lib/aegis-data";
+import { coordsOf, copyText, mapsLink, shareText } from "@/lib/alerts";
+import { createEmergency, statusLabel } from "@/lib/emergency";
+import { buildSosMessage, ensureLiveShareLink, ensureMedicalShareLink, shareUrl } from "@/lib/share";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
     meta: [
-      { title: "Dashboard — AEGIS Emergency Intelligence" },
+      { title: "Home — AEGIS emergency console" },
       {
         name: "description",
         content:
-          "Your AEGIS safety dashboard: medical ID, safety score, trusted contacts and recent emergency activity.",
+          "Your AEGIS home screen: live safety status, one-tap SOS, live location, medical QR, nearby responders and check-ins.",
       },
-      { property: "og:title", content: "AEGIS Dashboard" },
-      { property: "og:description", content: "Medical ID, safety score and emergency readiness." },
+      { property: "og:title", content: "AEGIS Home" },
+      { property: "og:description", content: "One-tap emergency actions, always within reach." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
   }),
-  component: DashboardPage,
+  component: HomePage,
 });
 
-function DashboardPage() {
+type StatusTone = "safe" | "pending" | "active" | "enroute" | "resolved";
+
+const STATUS_STYLES: Record<StatusTone, { dot: string; ring: string; text: string; label: string }> = {
+  safe: { dot: "bg-success", ring: "border-success/40 bg-success/5", text: "text-success", label: "Safe" },
+  pending: {
+    dot: "bg-warning",
+    ring: "border-warning/40 bg-warning/5",
+    text: "text-warning",
+    label: "Safety check pending",
+  },
+  active: {
+    dot: "bg-alert",
+    ring: "border-alert/50 bg-alert/5",
+    text: "text-alert",
+    label: "Emergency active",
+  },
+  enroute: {
+    dot: "bg-info",
+    ring: "border-info/40 bg-info/5",
+    text: "text-info",
+    label: "Assistance on the way",
+  },
+  resolved: {
+    dot: "bg-success",
+    ring: "border-success/40 bg-success/5",
+    text: "text-success",
+    label: "Emergency resolved",
+  },
+};
+
+function HomePage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const hydrated = useHydrated();
+
   const profile = useQuery(profileQuery(user?.id));
   const contacts = useQuery(contactsQuery(user?.id));
-  const emergencies = useQuery(emergenciesQuery(user?.id));
   const active = useQuery(activeEmergencyQuery(user?.id));
+  const emergencies = useQuery(emergenciesQuery(user?.id));
   const notifications = useQuery(notificationsQuery(user?.id));
+  const checkins = useQuery(checkinsQuery(user?.id));
 
-  const loading = profile.isLoading || contacts.isLoading;
-  const score = computeSafetyScore(profile.data ?? null, contacts.data ?? []);
+  const [now, setNow] = useState(() => new Date());
+  const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [qrValue, setQrValue] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const current = active.data ?? null;
+  const lastEmergency = (emergencies.data ?? [])[0] ?? null;
+  const pendingCheckin = (checkins.data ?? []).find((item) => item.status === "pending") ?? null;
   const unread = (notifications.data ?? []).filter((item) => !item.read).length;
-  const resolved = (emergencies.data ?? []).filter((item) => item.status === "resolved");
-  const avgResponse =
-    resolved.length > 0
-      ? Math.round(
-          resolved.reduce((sum, item) => sum + (item.duration_seconds ?? 0), 0) / resolved.length,
-        )
-      : null;
+  const disasterAlerts = (notifications.data ?? []).filter(
+    (item) => item.category === "safety" && !item.read,
+  ).length;
+  const primaryContact = (contacts.data ?? [])[0] ?? null;
+  const coords = coordsOf(current);
 
-  const hints: string[] = [];
-  if (!profile.data?.blood_group) hints.push("Add your blood group to your medical ID.");
-  if ((contacts.data?.length ?? 0) < 3) hints.push("Add three trusted emergency contacts.");
-  if (!profile.data?.home_address) hints.push("Add a home address as a location fallback.");
+  const tone: StatusTone = useMemo(() => {
+    if (current) {
+      if (current.status === "active" || current.live_status === "help_arrived") return "enroute";
+      return "active";
+    }
+    if (pendingCheckin) return "pending";
+    if (lastEmergency?.status === "resolved") return "resolved";
+    return "safe";
+  }, [current, pendingCheckin, lastEmergency]);
+
+  const style = STATUS_STYLES[tone];
+  const statusText = current ? statusLabel(current.status) : style.label;
+  const locationText = coords
+    ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`
+    : profile.data?.current_city || profile.data?.home_address || "Location not shared";
+  const updatedAt = current?.location_updated_at ?? current?.updated_at ?? lastEmergency?.updated_at;
+
+  async function triggerSos() {
+    if (!user || busy || current) return;
+    setBusy(true);
+    try {
+      await createEmergency({
+        userId: user.id,
+        type: "sos",
+        contactCount: contacts.data?.length ?? 0,
+      });
+      await queryClient.invalidateQueries();
+      toast.success("SOS sent — your contacts have been alerted");
+      navigate({ to: "/live" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send SOS");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function shareLiveLocation() {
+    if (!user || busy) return;
+    setBusy(true);
+    try {
+      let message: string;
+      if (current) {
+        const link = await ensureLiveShareLink(user.id, current.id);
+        message = buildSosMessage({
+          emergency: current,
+          profile: profile.data,
+          link: shareUrl(link),
+        });
+      } else {
+        const position = await getCurrentPosition();
+        const point = { lat: position.coords.latitude, lng: position.coords.longitude };
+        message = `${profile.data?.full_name || "An AEGIS user"} is sharing a live location.\n${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}\n${mapsLink(point)}`;
+      }
+      const shared = await shareText("AEGIS live location", message);
+      toast.success(shared ? "Location shared" : "Location copied to clipboard");
+    } catch {
+      toast.error("Could not read your location — check GPS permission");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function openMedicalQr() {
+    setQrOpen(true);
+    if (qrValue || !user) return;
+    try {
+      const link = await ensureMedicalShareLink(user.id);
+      setQrValue(shareUrl(link));
+    } catch {
+      toast.error("Could not generate your medical QR");
+    }
+  }
+
+  function callContact() {
+    if (!primaryContact) {
+      toast.error("Add a trusted contact in your profile first");
+      return;
+    }
+    window.location.href = `tel:${primaryContact.phone.replace(/\s/g, "")}`;
+  }
 
   return (
     <>
-      <PageHeader
-        icon={LayoutDashboard}
-        title={`Welcome back${profile.data?.full_name ? `, ${profile.data.full_name.split(" ")[0]}` : ""}`}
-        description="Everything AEGIS knows about keeping you safe, in one place."
-        actions={
-          <Button asChild variant="emergency">
-            <Link to="/emergency">
-              <Siren className="size-4" />
-              Trigger SOS
-            </Link>
-          </Button>
-        }
-      />
-
-      {active.data && (
-        <div className="rounded-2xl border border-alert/40 bg-alert/5 p-5">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="min-w-0">
-              <StatusIndicator status="critical" label={statusLabel(active.data.status)} pulse />
-              <p className="mt-2 text-sm text-foreground">
-                An emergency is currently active. Responders are being kept up to date.
-              </p>
-            </div>
-            <Button asChild variant="emergency">
+      {/* Status card */}
+      <section className={cn("rounded-2xl border p-5", style.ring)} aria-live="polite">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:justify-between">
+          <div className="min-w-0">
+            <span className="flex items-center gap-2">
+              <span className="relative flex size-3 shrink-0">
+                <span className={cn("absolute inline-flex size-3 animate-ping rounded-full opacity-60", style.dot)} />
+                <span className={cn("relative inline-flex size-3 rounded-full", style.dot)} />
+              </span>
+              <span className={cn("truncate font-display text-lg font-bold sm:text-xl", style.text)}>
+                {statusText}
+              </span>
+            </span>
+            <dl className="mt-3 grid gap-x-6 gap-y-1 text-xs sm:grid-cols-3">
+              <div className="flex min-w-0 gap-1.5">
+                <dt className="text-muted-foreground">Time</dt>
+                <dd className="truncate font-medium text-foreground">
+                  {hydrated ? now.toLocaleTimeString() : "—"}
+                </dd>
+              </div>
+              <div className="flex min-w-0 gap-1.5">
+                <dt className="text-muted-foreground">Location</dt>
+                <dd className="truncate font-medium text-foreground">{locationText}</dd>
+              </div>
+              <div className="flex min-w-0 gap-1.5">
+                <dt className="text-muted-foreground">Updated</dt>
+                <dd className="truncate font-medium text-foreground">
+                  {hydrated && updatedAt ? new Date(updatedAt).toLocaleTimeString() : "—"}
+                </dd>
+              </div>
+            </dl>
+          </div>
+          {current && (
+            <Button asChild variant="emergency" size="sm">
               <Link to="/live">
-                Track live
-                <ArrowRight className="size-4" />
+                <Radar className="size-4" />
+                Track
               </Link>
             </Button>
-          </div>
+          )}
         </div>
-      )}
+      </section>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {loading ? (
-          Array.from({ length: 4 }).map((_, index) => <StatCardSkeleton key={index} />)
-        ) : (
-          <>
-            <StatCard
-              icon={Users}
-              label="Trusted contacts"
-              value={`${contacts.data?.length ?? 0}/3`}
-              delta={contacts.data?.length === 3 ? "Complete" : "Incomplete"}
-            />
-            <StatCard
-              icon={Siren}
-              label="Total emergencies"
-              value={String(emergencies.data?.length ?? 0)}
-            />
-            <StatCard
-              icon={Clock}
-              label="Avg. resolution time"
-              value={avgResponse ? formatDuration(avgResponse) : "—"}
-            />
-            <StatCard icon={Bell} label="Unread alerts" value={String(unread)} />
-          </>
-        )}
-      </div>
+      {/* SOS */}
+      <section className="glass-panel rounded-2xl px-4 py-2">
+        <SosButton onTrigger={() => setConfirmOpen(true)} disabled={busy || Boolean(current)} active={Boolean(current)} />
+      </section>
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
-          <SafetyScoreCard score={score} hints={hints} />
+      {/* Quick actions */}
+      <section aria-label="Quick actions">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+          <QuickAction icon={Siren} label="SOS" tone="alert" onClick={() => setConfirmOpen(true)} disabled={busy || Boolean(current)} />
+          <QuickAction icon={Share2} label="Share location" onClick={shareLiveLocation} disabled={busy} />
+          <QuickAction icon={PhoneCall} label="Call contact" onClick={callContact} />
+          <QuickAction icon={Building2} label="Hospital" to="/nearby" search={{ category: "hospital" }} />
+          <QuickAction icon={Shield} label="Police" to="/nearby" search={{ category: "police" }} />
+          <QuickAction icon={QrCode} label="Medical QR" onClick={openMedicalQr} />
+          <QuickAction icon={AlarmClock} label="Check-in" to="/checkins" />
+        </div>
+      </section>
 
-          <div className="glass-panel rounded-2xl p-5">
-            <h2 className="text-sm font-semibold text-foreground">Quick actions</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {QUICK_ACTIONS.map((action) => (
-                <Link
-                  key={action.to}
-                  to={action.to}
-                  className="group flex items-center gap-3 rounded-2xl border border-border bg-card/60 p-4 transition hover:border-primary/40 hover:bg-primary/5"
+      {/* Feature tiles */}
+      <section aria-label="AEGIS features" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        <Tile icon={Radar} label="Live location" to="/live" meta={coords ? "Tracking" : "Idle"} />
+        <Tile icon={Bot} label="AI assistant" to="/assistant" meta="Triage" />
+        <Tile icon={Users} label="Contacts" to="/profile" meta={`${contacts.data?.length ?? 0}/3`} />
+        <Tile icon={Building2} label="Hospitals" to="/nearby" search={{ category: "hospital" }} />
+        <Tile icon={Shield} label="Police" to="/nearby" search={{ category: "police" }} />
+        <Tile icon={Flame} label="Fire stations" to="/nearby" search={{ category: "fire" }} />
+        <Tile icon={Droplets} label="Blood banks" to="/nearby" search={{ category: "blood_bank" }} />
+        <Tile icon={AlarmClock} label="Safety check-in" to="/checkins" meta={pendingCheckin ? "Pending" : "Off"} />
+        <Tile icon={HistoryIcon} label="History" to="/history" meta={String(emergencies.data?.length ?? 0)} />
+        <Tile icon={TriangleAlert} label="Disaster alerts" to="/notifications" meta={disasterAlerts ? String(disasterAlerts) : "Clear"} />
+        <Tile icon={Bell} label="Notifications" to="/notifications" meta={unread ? String(unread) : "0"} />
+        <Tile icon={QrCode} label="Medical ID QR" onClick={openMedicalQr} />
+      </section>
+
+      <ConfirmModal
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        tone="emergency"
+        title="Send SOS now?"
+        description="AEGIS captures your GPS position and alerts your trusted contacts immediately."
+        confirmLabel="Send SOS"
+        onConfirm={() => void triggerSos()}
+      />
+
+      <Dialog open={qrOpen} onOpenChange={setQrOpen}>
+        <DialogContent className="rounded-2xl sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Medical ID QR</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-3">
+            {qrValue ? (
+              <>
+                <MedicalIdQr value={qrValue} />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    await copyText(qrValue);
+                    toast.success("Link copied");
+                  }}
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                    <action.icon className="size-5" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-medium text-foreground">
-                      {action.label}
-                    </span>
-                    <span className="block truncate text-xs text-muted-foreground">
-                      {action.description}
-                    </span>
-                  </span>
-                  <ArrowRight className="ml-auto size-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
-                </Link>
-              ))}
-            </div>
-          </div>
-
-          <div className="glass-panel rounded-2xl p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold text-foreground">Recent activity</h2>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/history">View all</Link>
-              </Button>
-            </div>
-            <div className="mt-4">
-              {emergencies.isLoading ? (
-                <PanelSkeleton rows={2} />
-              ) : (emergencies.data?.length ?? 0) === 0 ? (
-                <EmptyState
-                  icon={Siren}
-                  title="No emergencies yet"
-                  description="That's the best possible dashboard. Your history will appear here if you ever need us."
-                />
-              ) : (
-                <ul className="space-y-3">
-                  {emergencies.data!.slice(0, 4).map((item) => (
-                    <li
-                      key={item.id}
-                      className="flex items-center gap-4 rounded-2xl border border-border bg-card/60 p-4"
-                    >
-                      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-alert/10 text-alert">
-                        <Siren className="size-5" aria-hidden="true" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium capitalize text-foreground">
-                          {item.type} emergency
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(item.started_at).toLocaleString()}
-                        </p>
-                      </div>
-                      <StatusIndicator
-                        status={item.status === "resolved" ? "safe" : "critical"}
-                        label={statusLabel(item.status)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <MedicalIdCard profile={profile.data} contacts={contacts.data ?? []} />
-
-          <div className="glass-panel rounded-2xl p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="text-sm font-semibold text-foreground">Nearby services</h2>
-              <Button asChild variant="ghost" size="sm">
-                <Link to="/nearby">View all</Link>
-              </Button>
-            </div>
-            <ul className="mt-3 space-y-3">
-              {[...nearbyServices]
-                .sort((a, b) => a.distanceKm - b.distanceKm)
-                .slice(0, 3)
-                .map((service) => (
-                  <li key={service.id} className="flex items-center gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-alert/10 text-alert">
-                      <MapPin className="size-4" aria-hidden="true" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">{service.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {service.distanceKm} km · {service.etaMinutes} min away
-                      </p>
-                    </div>
-                  </li>
-                ))}
-            </ul>
-          </div>
-
-          <div className="glass-panel rounded-2xl p-5">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Lightbulb className="size-4 text-warning" aria-hidden="true" />
-              Safety tips
-            </h2>
-            <ul className="mt-3 space-y-2.5">
-              {SAFETY_TIPS.map((tip) => (
-                <li key={tip} className="text-sm text-muted-foreground">
-                  {tip}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="glass-panel rounded-2xl p-5">
-            <h2 className="text-sm font-semibold text-foreground">Emergency contacts</h2>
-            {(contacts.data?.length ?? 0) === 0 ? (
-              <p className="mt-3 text-sm text-muted-foreground">
-                No contacts yet.{" "}
-                <Link to="/profile" className="font-medium text-primary underline-offset-4 hover:underline">
-                  Add three now
-                </Link>
-                .
-              </p>
+                  Copy link
+                </Button>
+              </>
             ) : (
-              <ul className="mt-3 space-y-3">
-                {contacts.data!.map((contact) => (
-                  <li key={contact.id} className="flex items-center gap-3">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-                      <PhoneCall className="size-4" aria-hidden="true" />
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">{contact.name}</p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {contact.relationship} · {contact.phone}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <div className="size-[220px] animate-pulse rounded-xl bg-muted" />
             )}
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </>
+  );
+}
+
+function QuickAction({
+  icon: Icon,
+  label,
+  onClick,
+  to,
+  search,
+  disabled,
+  tone = "default",
+}: {
+  icon: typeof Siren;
+  label: string;
+  onClick?: () => void;
+  to?: string;
+  search?: Record<string, string>;
+  disabled?: boolean;
+  tone?: "default" | "alert";
+}) {
+  const className = cn(
+    "flex min-h-20 flex-col items-center justify-center gap-1.5 rounded-2xl border p-2 text-center text-xs font-semibold transition active:scale-95",
+    tone === "alert"
+      ? "border-alert/40 bg-alert/10 text-alert hover:bg-alert/15"
+      : "border-border bg-card/70 text-foreground hover:border-primary/40 hover:bg-primary/5",
+    disabled && "pointer-events-none opacity-50",
+  );
+
+  const content = (
+    <>
+      <Icon className="size-5" aria-hidden="true" />
+      <span className="line-clamp-2 leading-tight">{label}</span>
+    </>
+  );
+
+  if (to) {
+    return (
+      <Link to={to} search={search} className={className}>
+        {content}
+      </Link>
+    );
+  }
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} className={className}>
+      {content}
+    </button>
+  );
+}
+
+function Tile({
+  icon: Icon,
+  label,
+  to,
+  search,
+  meta,
+  onClick,
+}: {
+  icon: typeof Siren;
+  label: string;
+  to?: string;
+  search?: Record<string, string>;
+  meta?: string;
+  onClick?: () => void;
+}) {
+  const inner = (
+    <>
+      <span className="grid size-9 place-items-center rounded-xl bg-primary/10 text-primary">
+        <Icon className="size-4.5" aria-hidden="true" />
+      </span>
+      <span className="mt-2 block truncate text-sm font-semibold text-foreground">{label}</span>
+      {meta && (
+        <Badge variant="secondary" className="mt-1 rounded-full text-[10px] font-semibold">
+          {meta}
+        </Badge>
+      )}
+    </>
+  );
+  const className =
+    "glass-panel block w-full rounded-2xl p-4 text-left transition hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98]";
+
+  return (
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+      {to ? (
+        <Link to={to} search={search} className={className}>
+          {inner}
+        </Link>
+      ) : (
+        <button type="button" onClick={onClick} className={className}>
+          {inner}
+        </button>
+      )}
+    </motion.div>
   );
 }
