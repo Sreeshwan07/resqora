@@ -1,24 +1,44 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { LandingNav } from "@/components/landing/landing-nav";
+import { HeroSection } from "@/components/landing/hero-section";
+import { FeaturesSection } from "@/components/landing/features-section";
+import { StatsSection } from "@/components/landing/stats-section";
+import { TestimonialsSection } from "@/components/landing/testimonials-section";
+import { CtaSection } from "@/components/landing/cta-section";
+import { SiteFooter } from "@/components/landing/site-footer";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "AEGIS — Emergency Assistance in Seconds" },
+      {
+        name: "description",
+        content:
+          "AEGIS is an AI-powered emergency intelligence platform that helps you reach assistance fast and keeps loved ones informed.",
+      },
+      { property: "og:title", content: "AEGIS — Emergency Assistance in Seconds" },
+      {
+        property: "og:description",
+        content:
+          "AI-powered emergency intelligence: rapid assistance, live context, and calm updates for your trusted circle.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-dvh bg-background">
+      <LandingNav />
+      <main>
+        <HeroSection />
+        <FeaturesSection />
+        <StatsSection />
+        <TestimonialsSection />
+        <CtaSection />
+      </main>
+      <SiteFooter />
     </div>
   );
 }
