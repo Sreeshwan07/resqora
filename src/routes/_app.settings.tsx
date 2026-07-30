@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Settings2, Bell, MapPin, ShieldCheck } from "lucide-react";
 import { PageHeader } from "@/components/system/page-header";
-import { SectionHeading } from "@/components/system/section-heading";
 import { ThemeToggle } from "@/components/system/theme-toggle";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
