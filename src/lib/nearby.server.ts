@@ -67,7 +67,30 @@ async function googleNearby(
   const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!lovableKey || !connectorKey) throw new Error("Google Maps connector not linked");
 
-  const res = await fetch(`${GATEWAY_URL}/places/v1/places:searchNearby`, {
+  // Blood banks have no reliable nearby-search type, so they use a ranked text search.
+  const isText = category === "blood_bank";
+  const endpoint = isText
+    ? `${GATEWAY_URL}/places/v1/places:searchText`
+    : `${GATEWAY_URL}/places/v1/places:searchNearby`;
+  const body = isText
+    ? {
+        textQuery: "blood bank",
+        maxResultCount: Math.max(perCategory, 5),
+        rankPreference: "DISTANCE",
+        locationBias: {
+          circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: 30000 },
+        },
+      }
+    : {
+        includedTypes: GOOGLE_TYPES[category],
+        maxResultCount: Math.max(perCategory, 5),
+        rankPreference: "DISTANCE",
+        locationRestriction: {
+          circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: 30000 },
+        },
+      };
+
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${lovableKey}`,
@@ -76,14 +99,7 @@ async function googleNearby(
       "X-Goog-FieldMask":
         "places.id,places.displayName,places.formattedAddress,places.location,places.nationalPhoneNumber,places.internationalPhoneNumber,places.currentOpeningHours.openNow",
     },
-    body: JSON.stringify({
-      includedTypes: GOOGLE_TYPES[category],
-      maxResultCount: Math.max(perCategory, 5),
-      rankPreference: "DISTANCE",
-      locationRestriction: {
-        circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: 30000 },
-      },
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     const body = await res.text();
@@ -262,6 +278,41 @@ export async function findNearbyServices(
 
 /** Forward geocode a typed address / city into coordinates. */
 export async function geocodePlace(query: string) {
+  const lovableKey = process.env.LOVABLE_API_KEY;
+  const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (lovableKey && connectorKey) {
+    try {
+      const res = await fetch(
+        `${GATEWAY_URL}/maps/api/geocode/json?address=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${lovableKey}`,
+            "X-Connection-Api-Key": connectorKey,
+          },
+        },
+      );
+      if (res.ok) {
+        const data = (await res.json()) as {
+          results?: Array<{
+            formatted_address: string;
+            geometry: { location: { lat: number; lng: number } };
+          }>;
+        };
+        const hit = data.results?.[0];
+        if (hit) {
+          return {
+            lat: hit.geometry.location.lat,
+            lng: hit.geometry.location.lng,
+            label: hit.formatted_address,
+          };
+        }
+        return null;
+      }
+      console.error(`Geocoding failed [${res.status}]: ${await res.text()}`);
+    } catch (error) {
+      console.error("Google geocoding failed, falling back", error);
+    }
+  }
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
   const res = await fetch(url, { headers: { "User-Agent": "AEGIS-emergency-app" } });
   if (!res.ok) throw new Error(`Geocoding failed (${res.status})`);
