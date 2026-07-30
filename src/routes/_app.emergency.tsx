@@ -42,9 +42,8 @@ import {
 } from "@/lib/emergency";
 
 export const Route = createFileRoute("/_app/emergency")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    auto: search.auto === true || search.auto === "true" ? true : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { auto?: boolean } =>
+    search.auto === true || search.auto === "true" ? { auto: true } : {},
   head: () => ({
     meta: [
       { title: "Emergency SOS — AEGIS" },
