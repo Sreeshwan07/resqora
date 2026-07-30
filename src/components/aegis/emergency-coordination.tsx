@@ -1,29 +1,38 @@
-import { motion } from "motion/react";
+import { useState } from "react";
 import { PhoneCall, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ServiceRow, nearestFor } from "@/components/aegis/nearest-services";
-import { AMBULANCE_CONTACT, coordinationCategories, ROLE_LABEL } from "@/lib/coordination";
+import { PlaceCard, CATEGORY_EMOJI, CATEGORY_LABEL } from "@/components/aegis/nearest-services";
+import { AMBULANCE_CONTACT, coordinationCategories } from "@/lib/coordination";
+import { useNearbyServices } from "@/hooks/use-nearby-services";
+import type { PlaceCategory } from "@/lib/nearby.server";
 import type { LivePosition } from "@/hooks/use-live-position";
 
 /**
- * Single coordination panel: picks the services that matter for this emergency
- * type and severity, so the user never has to search during an incident.
+ * During an active SOS this picks the nearest real service for every category
+ * the incident type requires, with alternates one tap away.
  */
 export function EmergencyCoordination({
   type,
   severity,
   position,
   status,
+  nearby,
 }: {
   type: string;
   severity?: string | null;
   position: LivePosition | null;
   status?: string;
+  nearby?: ReturnType<typeof useNearbyServices>;
 }) {
-  const origin = position ? { lat: position.lat, lng: position.lng } : null;
-  const categories = coordinationCategories(type, severity);
-  const services = nearestFor(position, categories);
+  const fallback = useNearbyServices(nearby ? null : position);
+  const state = nearby ?? fallback;
+  const [showMore, setShowMore] = useState(false);
+
+  const categories = coordinationCategories(type, severity).filter(
+    (category): category is PlaceCategory =>
+      ["hospital", "police", "fire", "blood_bank"].includes(category),
+  );
 
   return (
     <section aria-label="Emergency coordination" className="glass-panel rounded-2xl p-4">
@@ -37,23 +46,37 @@ export function EmergencyCoordination({
         </Badge>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
-        Automatically selected for a {type.replace(/_/g, " ")} emergency
+        Nearest responders automatically selected for a {type.replace(/_/g, " ")} emergency
         {severity ? ` · ${severity} severity` : ""}.
       </p>
 
-      <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-        {services.map((service, index) => (
-          <motion.li
-            key={service.id}
-            className="min-w-0"
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25, delay: index * 0.04 }}
-          >
-            <ServiceRow service={service} origin={origin} label={ROLE_LABEL[service.category]} />
-          </motion.li>
-        ))}
-        <li className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/60 p-3">
+      <div className="mt-3 grid gap-3 sm:grid-cols-2">
+        {categories.map((category) => {
+          const places = state.data[category];
+          const primary = places[0];
+          const alternates = showMore ? places.slice(1) : [];
+          return (
+            <div key={category} className="grid gap-2">
+              <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                {CATEGORY_EMOJI[category]} Nearest {CATEGORY_LABEL[category].toLowerCase()}
+              </p>
+              {primary ? (
+                <>
+                  <PlaceCard place={primary} origin={state.origin} />
+                  {alternates.map((place, index) => (
+                    <PlaceCard key={place.id} place={place} origin={state.origin} rank={index + 2} />
+                  ))}
+                </>
+              ) : (
+                <p className="rounded-2xl border border-dashed border-border/60 p-3 text-xs text-muted-foreground">
+                  {state.isLoading ? "Locating…" : "No nearby services found."}
+                </p>
+              )}
+            </div>
+          );
+        })}
+
+        <div className="flex items-center gap-3 rounded-2xl border border-border/60 bg-background/60 p-3">
           <span
             aria-hidden="true"
             className="grid size-9 shrink-0 place-items-center rounded-xl bg-alert/10 text-alert"
@@ -74,8 +97,17 @@ export function EmergencyCoordination({
               <PhoneCall className="size-4" />
             </a>
           </Button>
-        </li>
-      </ul>
+        </div>
+      </div>
+
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mt-3 w-full text-xs"
+        onClick={() => setShowMore((value) => !value)}
+      >
+        {showMore ? "Hide extra options" : "More nearby options"}
+      </Button>
     </section>
   );
 }
