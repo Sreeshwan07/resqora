@@ -1,0 +1,29 @@
+import { useState, type ReactNode } from "react";
+import { motion } from "motion/react";
+import { AppSidebar } from "@/components/layouts/app-sidebar";
+import { AppTopbar } from "@/components/layouts/app-topbar";
+import { MobileNav } from "@/components/layouts/mobile-nav";
+
+export function AppLayout({ children }: { children: ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <div className="flex min-h-dvh w-full bg-background aurora">
+      <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <AppTopbar />
+        <main className="flex-1 px-4 pb-28 pt-6 sm:px-6 lg:pb-10">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="mx-auto w-full max-w-6xl space-y-8"
+          >
+            {children}
+          </motion.div>
+        </main>
+      </div>
+      <MobileNav />
+    </div>
+  );
+}
