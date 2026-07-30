@@ -166,6 +166,7 @@ export type Database = {
       profiles: {
         Row: {
           allergies: string | null
+          avatar_url: string | null
           blood_group: string | null
           crash_detection: boolean
           created_at: string
@@ -191,6 +192,7 @@ export type Database = {
         }
         Insert: {
           allergies?: string | null
+          avatar_url?: string | null
           blood_group?: string | null
           crash_detection?: boolean
           created_at?: string
@@ -216,6 +218,7 @@ export type Database = {
         }
         Update: {
           allergies?: string | null
+          avatar_url?: string | null
           blood_group?: string | null
           crash_detection?: boolean
           created_at?: string

@@ -2,6 +2,7 @@ import { createContext, useEffect, useMemo, useState, type ReactNode } from "rea
 import type { Session, User } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { markSessionActive, shouldForceSignOut } from "@/lib/auth";
 
 type AuthContextValue = {
   session: Session | null;
@@ -19,12 +20,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
+      if (nextSession) markSessionActive();
       if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
         if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (data.session && shouldForceSignOut()) {
+        await supabase.auth.signOut();
+        setSession(null);
+        setLoading(false);
+        return;
+      }
+      if (data.session) markSessionActive();
       setSession(data.session);
       setLoading(false);
     });
