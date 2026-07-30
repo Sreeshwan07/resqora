@@ -208,11 +208,50 @@ function LiveLocationPage() {
             </div>
             <div className="border-t border-border p-5">
               <h2 className="text-sm font-semibold text-foreground">Emergency status</h2>
+              <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+                <Detail
+                  label="Current address"
+                  value={
+                    denied
+                      ? "Location permission needed"
+                      : (emergency.address ?? address ?? "Resolving address…")
+                  }
+                />
+                <Detail label="Emergency duration" value={formatDuration(elapsed)} />
+                <Detail
+                  label="Live status"
+                  value={(
+                    (emergency as typeof emergency & { live_status?: string }).live_status ??
+                    "need_help"
+                  ).replace(/_/g, " ")}
+                />
+                <Detail
+                  label="Last location update"
+                  value={
+                    updatedAt
+                      ? updatedAt.toLocaleTimeString()
+                      : position
+                        ? position.updatedAt.toLocaleTimeString()
+                        : "—"
+                  }
+                />
+              </dl>
               <p className="mt-1 text-xs text-muted-foreground">
                 Update everyone tracking this emergency instantly.
               </p>
               <div className="mt-4">
                 <LiveStatusControls emergency={emergency} />
+              </div>
+            </div>
+            <div className="border-t border-border p-5">
+              <EmergencyCoordination
+                type={emergency.type}
+                severity={emergency.severity}
+                position={position}
+                status={statusLabel(emergency.status)}
+              />
+              <div className="mt-4">
+                <NearestServices position={position} />
               </div>
             </div>
             <div className="border-t border-border p-5">
@@ -233,6 +272,19 @@ function LiveLocationPage() {
               <p className="mt-1 text-xs text-muted-foreground">
                 Every trusted contact received your name, time, address, coordinates and map link.
               </p>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {(contacts.data ?? []).map((contact) => (
+                  <li key={contact.id}>
+                    <Badge
+                      variant="secondary"
+                      className="gap-1 rounded-full text-[11px] font-semibold"
+                    >
+                      <CheckCircle2 className="size-3 text-success" aria-hidden="true" />
+                      {contact.name} notified
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
               <div className="mt-4">
                 <EmergencyAlerts
                   emergency={emergency}
