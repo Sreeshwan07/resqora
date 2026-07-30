@@ -11,6 +11,10 @@ import {
   Bell,
   Radar,
   Gauge,
+  AlarmClock,
+  NotebookPen,
+  Droplets,
+  Activity,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -51,14 +55,42 @@ export const adminNav: NavItem = {
   description: "Platform analytics",
 };
 
+export const checkinsNav: NavItem = {
+  label: "Check-ins",
+  to: "/checkins",
+  icon: AlarmClock,
+  description: "Timed safety confirmations",
+};
+
+export const notesNav: NavItem = {
+  label: "Emergency notes",
+  to: "/notes",
+  icon: NotebookPen,
+  description: "Responder instructions",
+};
+
+export const donorsNav: NavItem = {
+  label: "Blood donors",
+  to: "/donors",
+  icon: Droplets,
+  description: "Directory & availability",
+};
+
+export const activityNav: NavItem = {
+  label: "Activity",
+  to: "/activity",
+  icon: Activity,
+  description: "Audit trail & exports",
+};
+
 export const navSections: NavSection[] = [
   {
     title: "Response",
-    items: [...primaryNav.slice(0, 3), assistantNav, liveLocationNav],
+    items: [...primaryNav.slice(0, 3), assistantNav, liveLocationNav, checkinsNav],
   },
   {
     title: "Records",
-    items: [primaryNav[3], notificationsNav],
+    items: [primaryNav[3], activityNav, notesNav, donorsNav, notificationsNav],
   },
   {
     title: "Account",
