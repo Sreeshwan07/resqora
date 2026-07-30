@@ -6,20 +6,20 @@ import type { LivePosition } from "@/hooks/use-live-position";
 export type LandingStatus = "safe" | "checkin" | "active" | "coordinating" | "resolved";
 
 const STATUS_META: Record<LandingStatus, { label: string; dot: string; ring: string }> = {
-  safe: { label: "🟢 Safe", dot: "bg-success", ring: "border-success/30 bg-success/5" },
+  safe: { label: "Safe", dot: "bg-success", ring: "border-success/30 bg-success/5" },
   checkin: {
-    label: "🟡 Safety check pending",
+    label: "Safety check pending",
     dot: "bg-warning",
     ring: "border-warning/30 bg-warning/5",
   },
-  active: { label: "🟠 Emergency active", dot: "bg-alert", ring: "border-alert/40 bg-alert/5" },
+  active: { label: "Emergency active", dot: "bg-alert", ring: "border-alert/40 bg-alert/5" },
   coordinating: {
-    label: "🔵 Help being coordinated",
+    label: "Help being coordinated",
     dot: "bg-info",
     ring: "border-info/30 bg-info/5",
   },
   resolved: {
-    label: "✅ Emergency resolved",
+    label: "Emergency resolved",
     dot: "bg-success",
     ring: "border-success/30 bg-success/5",
   },
