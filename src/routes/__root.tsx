@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AEGIS — AI-Powered Emergency Intelligence Platform" },
+      { title: "AEGIS — Autonomous Emergency Grid Intelligence Shield" },
       {
         name: "description",
         content:

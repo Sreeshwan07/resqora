@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, HeartPulse, Siren, XCircle } from "lucide-react";
+import { Ambulance, CheckCircle2, HeartPulse, Radio, Siren, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 
 export const LIVE_STATUSES = [
   { value: "need_help", label: "Need immediate help", icon: Siren },
+  { value: "coordinating", label: "Services coordinating", icon: Radio },
+  { value: "assistance_on_the_way", label: "Assistance on the way", icon: Ambulance },
   { value: "help_arrived", label: "Help arrived", icon: HeartPulse },
   { value: "safe", label: "I'm safe", icon: CheckCircle2 },
 ] as const;

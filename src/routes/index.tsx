@@ -9,7 +9,8 @@ import {
   type LandingStatus,
 } from "@/components/landing/emergency-status-card";
 import { EmergencyConsole } from "@/components/landing/emergency-console";
-import { NearestServicesPanel } from "@/components/landing/nearest-services-panel";
+import { NearestServices } from "@/components/aegis/nearest-services";
+import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useAuth } from "@/hooks/use-auth";
 import { activeEmergencyQuery } from "@/lib/api";
@@ -61,7 +62,7 @@ function Index() {
       <LandingNav />
       <main className="aurora">
         <div className="mx-auto w-full max-w-4xl space-y-4 px-4 py-6 sm:px-6 sm:py-10">
-          <h1 className="sr-only">AEGIS — AI-Powered Emergency Intelligence Platform</h1>
+          <h1 className="sr-only">AEGIS — Autonomous Emergency Grid Intelligence Shield</h1>
 
           <EmergencyStatusCard
             status={status}
@@ -73,7 +74,15 @@ function Index() {
 
           <EmergencyConsole position={position} />
 
-          <NearestServicesPanel position={position} />
+          {emergency && emergency.status !== "resolved" && (
+            <EmergencyCoordination
+              type={emergency.type}
+              severity={emergency.severity}
+              position={position}
+            />
+          )}
+
+          <NearestServices position={position} />
 
           <nav aria-label="Quick links" className="grid gap-2 sm:grid-cols-4">
             {[

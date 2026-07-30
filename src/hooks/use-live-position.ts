@@ -54,6 +54,25 @@ export function useLivePosition() {
     return () => navigator.geolocation.clearWatch(id);
   }, []);
 
+  // Force a fresh fix every 10s even when the device reports no movement.
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    const id = window.setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) =>
+          setPosition({
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+            updatedAt: new Date(),
+          }),
+        () => undefined,
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 9000 },
+      );
+    }, 10_000);
+    return () => window.clearInterval(id);
+  }, []);
+
   useEffect(() => {
     if (!position) return;
     let cancelled = false;
