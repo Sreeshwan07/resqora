@@ -12,6 +12,7 @@ import { EmergencyContactsCard } from "@/components/landing/emergency-contacts-c
 import { NearestServices } from "@/components/aegis/nearest-services";
 import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
 import { useLivePosition } from "@/hooks/use-live-position";
+import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { useAuth } from "@/hooks/use-auth";
 import { activeEmergencyQuery } from "@/lib/api";
 
@@ -41,6 +42,8 @@ function Index() {
   const { user } = useAuth();
   const { position, address, denied } = useLivePosition();
   const active = useQuery(activeEmergencyQuery(user?.id));
+  const emergencyId = active.data && active.data.status !== "resolved" ? active.data.id : null;
+  const nearby = useNearbyServices(position, { sessionKey: emergencyId });
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
@@ -74,7 +77,7 @@ function Index() {
 
           <EmergencyConsole />
 
-          <NearestServices position={position} />
+          <NearestServices position={position} nearby={nearby} />
 
           <EmergencyContactsCard
             notified={Boolean(emergency && emergency.status !== "created")}
@@ -85,6 +88,7 @@ function Index() {
               type={emergency.type}
               severity={emergency.severity}
               position={position}
+              nearby={nearby}
             />
           )}
         </div>
