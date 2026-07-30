@@ -69,21 +69,33 @@ export const myDonorQuery = (userId: string | undefined) =>
       ) as BloodDonor | null,
   });
 
+/** Public donor listing — phone numbers are never returned in bulk. */
+export type DonorListing = {
+  id: string;
+  full_name: string;
+  blood_group: string;
+  city: string;
+  available: boolean;
+};
+
 export const donorSearchQuery = (filters: { group: string; city: string }) =>
   queryOptions({
     queryKey: ["blood-donor-search", filters.group, filters.city],
-    queryFn: async () => {
-      let request = supabase
-        .from("blood_donors")
-        .select("*")
-        .eq("available", true)
-        .order("updated_at", { ascending: false })
-        .limit(100);
-      if (filters.group !== "all") request = request.eq("blood_group", filters.group);
-      if (filters.city.trim()) request = request.ilike("city", `%${filters.city.trim()}%`);
-      return unwrap(await request) as BloodDonor[];
-    },
+    queryFn: async () =>
+      unwrap(
+        await supabase.rpc("search_blood_donors", {
+          _group: filters.group,
+          _city: filters.city.trim(),
+        }),
+      ) as DonorListing[],
   });
+
+/** Reveals a single donor's phone on explicit user intent (audited server-side). */
+export async function revealDonorPhone(donorId: string) {
+  const { data, error } = await supabase.rpc("get_donor_phone", { _donor_id: donorId });
+  if (error) throw new Error(error.message);
+  return data as string | null;
+}
 
 export const favoritesQuery = (userId: string | undefined) =>
   queryOptions({
