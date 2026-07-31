@@ -3,7 +3,18 @@ import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { Camera, ImageUp, Loader2, PhoneCall, Siren, Sparkles, Video } from "lucide-react";
+import {
+  AlertTriangle,
+  Camera,
+  CheckCircle2,
+  ImageUp,
+  Loader2,
+  PhoneCall,
+  ShieldCheck,
+  Siren,
+  Sparkles,
+  Video,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,8 +24,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
-import { contactsQuery } from "@/lib/api";
-import { createEmergency } from "@/lib/emergency";
+import { activeEmergencyQuery, contactsQuery, profileQuery } from "@/lib/api";
+import {
+  confirmSafe,
+  createEmergency,
+  type NotificationOutcome,
+} from "@/lib/emergency";
 import { EMERGENCY_LINE } from "@/lib/coordination";
 import { analyzeEmergencyImage, type AccidentAnalysis } from "@/lib/vision.functions";
 import { checkRateLimit } from "@/lib/security";
@@ -25,6 +40,21 @@ const SEVERITY_STYLES: Record<string, string> = {
   medium: "border-warning/40 bg-warning/10 text-warning",
   high: "border-alert/40 bg-alert/10 text-alert",
   critical: "border-alert/60 bg-alert/15 text-alert",
+};
+
+const CHANNEL_LABELS: Record<NotificationOutcome["channel"], string> = {
+  email: "Email alerts",
+  sms: "SMS alerts",
+  whatsapp: "WhatsApp alerts",
+  guardian: "Guardian alert",
+};
+
+const OUTCOME_STYLES: Record<NotificationOutcome["status"], string> = {
+  sent: "text-success",
+  ready: "text-info",
+  unavailable: "text-warning",
+  skipped: "text-muted-foreground",
+  failed: "text-alert",
 };
 
 function readFile(file: File) {
@@ -74,13 +104,22 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const contacts = useQuery(contactsQuery(user?.id));
+  const profile = useQuery(profileQuery(user?.id));
+  const active = useQuery(activeEmergencyQuery(user?.id));
   const analyze = useServerFn(analyzeEmergencyImage);
+
+  const emergency = active.data ?? null;
+  const sosActive = Boolean(
+    emergency && emergency.status !== "resolved" && emergency.status !== "cancelled",
+  );
 
   const cameraRef = useRef<HTMLInputElement>(null);
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [notifying, setNotifying] = useState(false);
+  const [sosBusy, setSosBusy] = useState(false);
+  const [report, setReport] = useState<NotificationOutcome[] | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AccidentAnalysis | null>(null);
 
@@ -120,6 +159,56 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
     }
   }
 
+  /** One tap: create the session, capture GPS, start tracking and notify. */
+  async function triggerSos(input?: { type?: string; severity?: string; notes?: string }) {
+    if (!user) {
+      await navigate({ to: "/auth" });
+      return;
+    }
+    setSosBusy(true);
+    setReport(null);
+    try {
+      const created = await createEmergency({
+        userId: user.id,
+        type: input?.type ?? "sos",
+        severity: input?.severity ?? "high",
+        notes: input?.notes,
+        contactCount: contacts.data?.length ?? 0,
+        contacts: contacts.data ?? [],
+        profile: profile.data ?? null,
+      });
+      setReport(created.notifications);
+      await queryClient.invalidateQueries();
+      const sent = created.notifications.filter((n) => n.status === "sent").length;
+      if (sent > 0) toast.success("SOS active — your contacts have been notified");
+      else toast.warning("SOS active — no automatic channel delivered, see the status below");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not send the SOS");
+    } finally {
+      setSosBusy(false);
+    }
+  }
+
+  /** Cancel SOS: stops tracking, closes the session, tells contacts you're safe. */
+  async function cancelSos() {
+    if (!emergency) return;
+    setSosBusy(true);
+    try {
+      await confirmSafe({
+        emergency,
+        profile: profile.data,
+        contacts: contacts.data ?? [],
+      });
+      setReport(null);
+      await queryClient.invalidateQueries();
+      toast.success("Emergency resolved — your contacts know you're safe");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not cancel the SOS");
+    } finally {
+      setSosBusy(false);
+    }
+  }
+
   async function notifyContacts() {
     if (!user) {
       navigate({ to: "/emergency", search: { auto: true } });
@@ -127,16 +216,18 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
     }
     setNotifying(true);
     try {
-      await createEmergency({
+      const created = await createEmergency({
         userId: user.id,
         type: analysis?.emergencyType ?? "sos",
         severity: analysis?.severity ?? "high",
         notes: analysis?.summary,
         contactCount: contacts.data?.length ?? 0,
+        contacts: contacts.data ?? [],
+        profile: profile.data ?? null,
       });
+      setReport(created.notifications);
       await queryClient.invalidateQueries();
       toast.success("Emergency contacts notified");
-      navigate({ to: "/live" });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not notify contacts");
     } finally {
@@ -163,17 +254,37 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
   return (
     <section aria-label="Emergency actions" className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
-        {mode === "full" && (
-        <Button
-          variant="emergency"
-          size="xl"
-          className="h-18 rounded-2xl text-base font-semibold shadow-lg shadow-alert/25 sm:h-20 sm:text-lg"
-          onClick={() => navigate({ to: "/emergency", search: { auto: true } })}
-        >
-          <Siren className="size-6" aria-hidden="true" />
-          Emergency SOS
-        </Button>
-        )}
+        {mode === "full" &&
+          (sosActive ? (
+            <Button
+              size="xl"
+              disabled={sosBusy}
+              onClick={cancelSos}
+              className="h-18 rounded-2xl bg-linear-to-r from-success to-success/80 text-base font-semibold text-white shadow-lg shadow-success/25 hover:opacity-95 sm:h-20 sm:text-lg"
+            >
+              {sosBusy ? (
+                <Loader2 className="size-6 animate-spin" aria-hidden="true" />
+              ) : (
+                <ShieldCheck className="size-6" aria-hidden="true" />
+              )}
+              Cancel SOS — I'm safe
+            </Button>
+          ) : (
+            <Button
+              variant="emergency"
+              size="xl"
+              disabled={sosBusy}
+              className="h-18 rounded-2xl text-base font-semibold shadow-lg shadow-alert/25 sm:h-20 sm:text-lg"
+              onClick={() => triggerSos()}
+            >
+              {sosBusy ? (
+                <Loader2 className="size-6 animate-spin" aria-hidden="true" />
+              ) : (
+                <Siren className="size-6" aria-hidden="true" />
+              )}
+              Emergency SOS
+            </Button>
+          ))}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -215,6 +326,50 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
         {fileInput(photoRef, { accept: "image/*", "aria-label": "Upload an accident image" })}
         {fileInput(videoRef, { accept: "video/*", "aria-label": "Upload an accident video" })}
       </div>
+
+      {sosBusy && !sosActive && (
+        <div className="space-y-2 rounded-2xl border border-alert/40 bg-alert/5 p-4">
+          <p className="text-sm font-semibold text-foreground">Activating emergency response…</p>
+          <ul className="space-y-1 text-xs text-muted-foreground">
+            <li>• Creating the emergency session</li>
+            <li>• Capturing GPS location and address</li>
+            <li>• Starting live location tracking</li>
+            <li>• Notifying your trusted contacts</li>
+          </ul>
+          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+            <div className="h-full w-1/2 animate-pulse rounded-full bg-alert" />
+          </div>
+        </div>
+      )}
+
+      {report && report.length > 0 && (
+        <div className="rounded-2xl border border-border/60 bg-card/70 p-4">
+          <h2 className="text-sm font-semibold text-foreground">Notification results</h2>
+          <ul className="mt-2 space-y-1.5 text-xs">
+            {report.map((item) => (
+              <li key={item.channel} className="flex items-start gap-2">
+                {item.status === "sent" || item.status === "ready" ? (
+                  <CheckCircle2
+                    className={cn("mt-0.5 size-3.5 shrink-0", OUTCOME_STYLES[item.status])}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <AlertTriangle
+                    className={cn("mt-0.5 size-3.5 shrink-0", OUTCOME_STYLES[item.status])}
+                    aria-hidden="true"
+                  />
+                )}
+                <span className="min-w-0">
+                  <span className="font-medium text-foreground">
+                    {CHANNEL_LABELS[item.channel]}:
+                  </span>{" "}
+                  <span className={OUTCOME_STYLES[item.status]}>{item.detail}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <AnimatePresence>
         {(analysis || busy) && (
