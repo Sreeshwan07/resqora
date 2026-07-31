@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { logEvent, type Emergency } from "@/lib/api";
 import { analyzeEmergencyDescription, type EmergencyAnalysis } from "@/lib/analysis.functions";
+import { checkRateLimit, sanitizeMultiline } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 const SEVERITY_STYLE: Record<string, string> = {
