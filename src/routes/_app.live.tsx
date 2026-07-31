@@ -324,6 +324,23 @@ function LiveLocationPage() {
 
           <div className="space-y-4">
             <div className="glass-panel rounded-2xl p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold text-foreground">Medical ID</h2>
+                <Button size="sm" variant="outline" onClick={() => setShowMedicalId((v) => !v)}>
+                  {showMedicalId ? "Hide" : "Show"}
+                </Button>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                One tap to show blood group, allergies, conditions and medications to responders.
+              </p>
+              {showMedicalId && (
+                <div className="mt-4">
+                  <MedicalIdCard profile={profile.data} contacts={contacts.data ?? []} />
+                </div>
+              )}
+            </div>
+
+            <div className="glass-panel rounded-2xl p-5">
               <h2 className="text-sm font-semibold text-foreground">Alert timeline</h2>
               {events.isLoading ? (
                 <Loader2 className="mt-4 size-4 animate-spin text-muted-foreground" />
