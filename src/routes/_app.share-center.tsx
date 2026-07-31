@@ -26,7 +26,7 @@ import { copyText, coordsOf, mapsLink } from "@/lib/alerts";
 import { deliveriesQuery } from "@/lib/alert-delivery";
 import { buildEmergencyEmail, contactsWithEmail, sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { logActivity } from "@/lib/activity";
-import { activityQueryKeyless, recentSharesQuery } from "@/lib/shares";
+import { recentSharesQuery } from "@/lib/shares";
 import {
   buildSosMessage,
   emailHref,
@@ -319,5 +319,3 @@ function ShareCenterPage() {
     </>
   );
 }
-
-export { activityQueryKeyless };
