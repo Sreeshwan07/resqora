@@ -60,6 +60,22 @@ function SharedLocationPage() {
     },
   });
 
+  // Movement history for the same token-gated session.
+  const track = useQuery({
+    queryKey: ["shared-track", token],
+    refetchInterval: 10000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_shared_track", { _token: token });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as {
+        latitude: number;
+        longitude: number;
+        accuracy: number | null;
+        created_at: string;
+      }[];
+    },
+  });
+
   const info = shared.data;
   const coords =
     info && info.latitude != null && info.longitude != null
