@@ -1,30 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { ChevronDown, ChevronUp, Crosshair, MapPin, Radar, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
+import { ChevronDown, ChevronUp, Crosshair, MapPin, Radar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ConfirmModal } from "@/components/system/confirm-modal";
 import { useAuth } from "@/hooks/use-auth";
 import { useLivePosition } from "@/hooks/use-live-position";
-import { activeEmergencyQuery, contactsQuery, profileQuery } from "@/lib/api";
-import { confirmSafe } from "@/lib/emergency";
-import { notifyEmergency } from "@/lib/emergency-notifications";
-import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
+import { activeEmergencyQuery } from "@/lib/api";
 import { formatDuration } from "@/lib/emergency";
 
 /** Floating live-emergency widget shown on every page while an SOS is active. */
 export function LiveEmergencyWidget() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const active = useQuery(activeEmergencyQuery(user?.id));
-  const profile = useQuery(profileQuery(user?.id));
-  const contacts = useQuery(contactsQuery(user?.id));
   const { position, address } = useLivePosition();
   const [open, setOpen] = useState(true);
-  const [confirm, setConfirm] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [elapsed, setElapsed] = useState(0);
 
   const emergency = active.data ?? null;
@@ -91,58 +81,14 @@ export function LiveEmergencyWidget() {
         )}
 
         <div className="mt-3 flex gap-2">
-          <Button
-            size="sm"
-            className="flex-1 bg-linear-to-r from-success to-success/80 text-white hover:opacity-95"
-            disabled={busy}
-            onClick={() => setConfirm(true)}
-          >
-            <ShieldCheck className="size-4" />
-            Stop SOS
-          </Button>
-          <Button asChild size="sm" variant="outline">
+          <Button asChild size="sm" variant="outline" className="flex-1">
             <Link to="/live">
               <Radar className="size-4" />
-              Live
+              Live tracking
             </Link>
           </Button>
         </div>
       </motion.aside>
-
-      <ConfirmModal
-        open={confirm}
-        onOpenChange={setConfirm}
-        title="Stop the emergency SOS?"
-        description="AEGIS will stop live location sharing, close the emergency session and tell your trusted contacts you are safe."
-        confirmLabel="Stop SOS"
-        onConfirm={async () => {
-          setConfirm(false);
-          setBusy(true);
-          try {
-            await confirmSafe({
-              emergency: emergency,
-              profile: profile.data,
-              contacts: contacts.data ?? [],
-            });
-            if (user) {
-              await sendEmergencyEmailAlerts({
-                userId: user.id,
-                emergency,
-                profile: profile.data,
-                contacts: contacts.data ?? [],
-                kind: "resolved",
-              }).catch(() => null);
-            }
-            notifyEmergency("emergency_closed");
-            await queryClient.invalidateQueries();
-            toast.success("Emergency closed — your contacts know you're safe");
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Could not close the emergency");
-          } finally {
-            setBusy(false);
-          }
-        }}
-      />
     </>
   );
 }

@@ -45,6 +45,16 @@ export const STATUS_FLOW = [
 
 export type EmergencyStatus = (typeof STATUS_FLOW)[number]["key"];
 
+/** Per-channel outcome of the SOS notification workflow, surfaced in the UI. */
+export type NotificationChannel = "email" | "sms" | "whatsapp" | "guardian";
+export type NotificationOutcome = {
+  channel: NotificationChannel;
+  status: "sent" | "ready" | "unavailable" | "skipped" | "failed";
+  detail: string;
+  count: number;
+};
+export type EmergencyWithReport = Emergency & { notifications: NotificationOutcome[] };
+
 /** Statuses used before the current workflow, kept so old history still reads well. */
 const LEGACY_LABELS: Record<string, string> = {
   dispatched: "Responders dispatched",
@@ -71,7 +81,10 @@ export async function createEmergency(options: {
   contactCount: number;
   contacts?: EmergencyContact[];
   profile?: Profile | null;
-}): Promise<Emergency> {
+}): Promise<EmergencyWithReport> {
+  const report: NotificationOutcome[] = [];
+  const errorText = (error: unknown) =>
+    error instanceof Error ? error.message : "Unexpected error";
   const limit = checkRateLimit("sos");
   if (!limit.allowed) throw new Error(limit.message);
   const notes = options.notes ? sanitizeMultiline(options.notes, 2000) : null;
@@ -181,8 +194,10 @@ export async function createEmergency(options: {
     "Severity scoring and response priority calculated from your emergency type.",
   );
 
+  const contacts = options.contacts ?? [];
+
   // Alert every trusted contact and record the delivery outcome per contact.
-  if (options.contacts && options.contacts.length > 0) {
+  if (contacts.length > 0) {
     try {
       const { data: fresh } = await supabase
         .from("emergencies")
@@ -192,9 +207,9 @@ export async function createEmergency(options: {
       const deliveries = await seedDeliveries({
         userId: options.userId,
         emergencyId: data.id,
-        contacts: options.contacts,
+        contacts,
       });
-      await dispatchDeliveries({
+      const configured = await dispatchDeliveries({
         deliveries,
         message: buildEmergencyAlert({
           emergency: (fresh ?? data) as Emergency,
@@ -203,15 +218,30 @@ export async function createEmergency(options: {
           trackingUrl,
         }),
       });
-    } catch {
-      /* the live page lets the user retry every delivery */
+      report.push({
+        channel: "sms",
+        status: configured ? "sent" : "unavailable",
+        detail: configured
+          ? `SMS sent to ${deliveries.length} contact(s).`
+          : "No SMS provider connected — use WhatsApp or SMS hand-off.",
+        count: configured ? deliveries.length : 0,
+      });
+    } catch (error) {
+      report.push({ channel: "sms", status: "failed", detail: errorText(error), count: 0 });
     }
+  } else {
+    report.push({
+      channel: "sms",
+      status: "skipped",
+      detail: "No trusted contacts saved yet.",
+      count: 0,
+    });
   }
 
   await supabase.from("emergencies").update({ status: "contacts_notified" }).eq("id", data.id);
 
   // Guardian Mode: secure dashboard session + Guardian email.
-  const guardian = guardianOf(options.contacts);
+  const guardian = guardianOf(contacts);
   if (guardian) {
     try {
       const { data: current } = await supabase
@@ -235,13 +265,21 @@ export async function createEmergency(options: {
           ? `${guardian.name} received the Guardian dashboard link.`
           : `Guardian session created for ${guardian.name} — share the dashboard link manually.`,
       );
-    } catch {
-      /* the share centre lets the user resend the Guardian alert */
+      report.push({
+        channel: "guardian",
+        status: result.emailed ? "sent" : "unavailable",
+        detail: result.emailed
+          ? `${guardian.name} received the Guardian dashboard link.`
+          : `Guardian link ready for ${guardian.name} — send it from the share centre.`,
+        count: 1,
+      });
+    } catch (error) {
+      report.push({ channel: "guardian", status: "failed", detail: errorText(error), count: 0 });
     }
   }
 
-  // Free email channel: EmailJS delivery to every contact with an address.
-  if (options.contacts && options.contacts.length > 0) {
+  // Email channel: delivery to every contact with an address.
+  if (contacts.length > 0) {
     try {
       const { data: current } = await supabase
         .from("emergencies")
@@ -252,7 +290,7 @@ export async function createEmergency(options: {
         userId: options.userId,
         emergency: (current ?? data) as Emergency,
         profile: options.profile,
-        contacts: options.contacts,
+        contacts,
         address,
         trackingUrl,
       });
@@ -263,6 +301,12 @@ export async function createEmergency(options: {
           "Email skipped",
           "No trusted contact has an email address saved.",
         );
+        report.push({
+          channel: "email",
+          status: "skipped",
+          detail: "No trusted contact has an email address saved.",
+          count: 0,
+        });
       } else if (emailResult.configured) {
         await logEvent(
           data.id,
@@ -270,6 +314,12 @@ export async function createEmergency(options: {
           "Email sent",
           `Emergency email delivered to ${emailResult.sent} contact(s).`,
         );
+        report.push({
+          channel: "email",
+          status: "sent",
+          detail: `Emergency email sent to ${emailResult.sent} contact(s).`,
+          count: emailResult.sent,
+        });
       } else {
         await logEvent(
           data.id,
@@ -277,9 +327,15 @@ export async function createEmergency(options: {
           "Email delivery unavailable",
           "Automatic email is not connected — send it from the share centre.",
         );
+        report.push({
+          channel: "email",
+          status: "unavailable",
+          detail: "Automatic email is not connected yet — send it from the share centre.",
+          count: 0,
+        });
       }
-    } catch {
-      /* the share centre lets the user resend every email */
+    } catch (error) {
+      report.push({ channel: "email", status: "failed", detail: errorText(error), count: 0 });
     }
 
     // WhatsApp: prepare one ready-to-send message per contact with a phone.
@@ -287,7 +343,7 @@ export async function createEmergency(options: {
       const prepared = await prepareWhatsappShares({
         userId: options.userId,
         emergencyId: data.id,
-        contacts: options.contacts,
+        contacts,
       });
       if (prepared.length > 0) {
         await logEvent(
@@ -297,8 +353,17 @@ export async function createEmergency(options: {
           `${prepared.length} WhatsApp alert(s) ready to send from the share centre.`,
         );
       }
-    } catch {
-      /* the share centre can prepare the WhatsApp messages again */
+      report.push({
+        channel: "whatsapp",
+        status: prepared.length > 0 ? "ready" : "skipped",
+        detail:
+          prepared.length > 0
+            ? `${prepared.length} WhatsApp alert(s) ready to send.`
+            : "No trusted contact has a phone number saved.",
+        count: prepared.length,
+      });
+    } catch (error) {
+      report.push({ channel: "whatsapp", status: "failed", detail: errorText(error), count: 0 });
     }
   }
 
@@ -329,7 +394,7 @@ export async function createEmergency(options: {
   notifyEmergency("sos_activated", address ?? undefined);
 
   const { data: fresh } = await supabase.from("emergencies").select("*").eq("id", data.id).single();
-  return (fresh ?? data) as Emergency;
+  return { ...((fresh ?? data) as Emergency), notifications: report };
 }
 
 /**
