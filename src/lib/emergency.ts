@@ -22,6 +22,8 @@ import { prepareWhatsappShares } from "@/lib/whatsapp-alerts";
 import { notifyEmergency } from "@/lib/emergency-notifications";
 import { expireGuardianSessions, guardianOf, notifyGuardian } from "@/lib/guardian";
 import { readBatteryLevel, readSpeed } from "@/lib/device";
+import { logSecurityEvent } from "@/lib/audit";
+import { checkRateLimit, sanitizeMultiline } from "@/lib/security";
 
 export const EMERGENCY_TYPES = [
   { value: "medical", label: "Medical" },
@@ -70,6 +72,10 @@ export async function createEmergency(options: {
   contacts?: EmergencyContact[];
   profile?: Profile | null;
 }): Promise<Emergency> {
+  const limit = checkRateLimit("sos");
+  if (!limit.allowed) throw new Error(limit.message);
+  const notes = options.notes ? sanitizeMultiline(options.notes, 2000) : null;
+
   // Offline: capture everything locally and sync when connectivity returns.
   if (isOffline()) {
     let latitude: number | null = null;
@@ -85,7 +91,7 @@ export async function createEmergency(options: {
       userId: options.userId,
       type: options.type,
       severity: options.severity ?? "high",
-      notes: options.notes ?? null,
+      notes,
       latitude,
       longitude,
       address: null,
@@ -103,7 +109,7 @@ export async function createEmergency(options: {
       type: options.type,
       severity: options.severity ?? "high",
       status: "created",
-      notes: options.notes ?? null,
+      notes,
     })
     .select("*")
     .single();
@@ -317,6 +323,9 @@ export async function createEmergency(options: {
     body: "Your trusted contacts and nearby responders have been notified.",
   });
   await logActivity(options.userId, "SOS activated", `${options.type} emergency triggered`);
+  void logSecurityEvent("SOS activated", `${options.type} emergency triggered`, {
+    emergency_id: data.id,
+  });
   notifyEmergency("sos_activated", address ?? undefined);
 
   const { data: fresh } = await supabase.from("emergencies").select("*").eq("id", data.id).single();
@@ -348,6 +357,9 @@ export async function confirmSafe(input: {
     "Live tracking stopped",
     "The user confirmed they are safe.",
   );
+  void logSecurityEvent("SOS deactivated", "User confirmed they are safe", {
+    emergency_id: emergency.id,
+  });
   try {
     await expireGuardianSessions(emergency.id);
   } catch {
@@ -419,12 +431,21 @@ export async function cancelEmergency(emergency: Emergency) {
     .from("emergencies")
     .update({ status: "cancelled", resolved_at: new Date().toISOString() })
     .eq("id", emergency.id);
+  // Cancelling must kill every live tracking token immediately.
+  await supabase
+    .from("share_links")
+    .update({ active: false })
+    .eq("emergency_id", emergency.id)
+    .eq("kind", "live");
   try {
     await expireGuardianSessions(emergency.id);
   } catch {
     /* the session expires with the emergency anyway */
   }
   await logEvent(emergency.id, emergency.user_id, "Cancelled", "You cancelled this alert.");
+  void logSecurityEvent("SOS deactivated", "Emergency cancelled by the user", {
+    emergency_id: emergency.id,
+  });
 }
 
 export function formatDuration(seconds: number | null) {
