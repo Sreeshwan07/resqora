@@ -608,6 +608,15 @@ export type Database = {
       get_donor_phone: { Args: { _donor_id: string }; Returns: string }
       get_shared_location: { Args: { _token: string }; Returns: Json }
       get_shared_profile: { Args: { _token: string }; Returns: Json }
+      get_shared_track: {
+        Args: { _token: string }
+        Returns: {
+          accuracy: number
+          created_at: string
+          latitude: number
+          longitude: number
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
