@@ -5,8 +5,6 @@ import {
   History,
   UserRound,
   Settings,
-  LifeBuoy,
-  ShieldCheck,
   Bot,
   Bell,
   Radar,
