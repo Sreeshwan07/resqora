@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { contactsQuery } from "@/lib/api";
 import { guardianOf, setGuardian } from "@/lib/guardian";
 import { logActivity } from "@/lib/activity";
+import { logSecurityEvent } from "@/lib/audit";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,6 +30,10 @@ export function GuardianCard({ userId }: { userId: string | undefined }) {
         userId,
         "Guardian updated",
         contactId ? "Guardian assigned" : "Guardian cleared",
+      );
+      void logSecurityEvent(
+        "Guardian changed",
+        contactId ? "Guardian assigned to a trusted contact" : "Guardian cleared",
       );
       toast.success(contactId ? "Guardian updated" : "Guardian removed");
     } catch (error) {
