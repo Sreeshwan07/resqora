@@ -335,9 +335,11 @@ export async function confirmSafe(input: {
   const { emergency, profile, contacts } = input;
   await supabase.from("emergencies").update({ live_status: "safe" }).eq("id", emergency.id);
   await resolveEmergency(emergency);
+  // Keep the tracking link readable for a short grace window so contacts see the
+  // "Emergency resolved" state, then it expires automatically.
   await supabase
     .from("share_links")
-    .update({ active: false })
+    .update({ expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() })
     .eq("emergency_id", emergency.id)
     .eq("kind", "live");
   await logEvent(
