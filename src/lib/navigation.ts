@@ -5,8 +5,6 @@ import {
   History,
   UserRound,
   Settings,
-  LifeBuoy,
-  ShieldCheck,
   Bot,
   Bell,
   Radar,
@@ -16,6 +14,10 @@ import {
   Droplets,
   Activity,
   Info,
+  Camera,
+  Users,
+  IdCard,
+  FileText,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -85,24 +87,71 @@ export const activityNav: NavItem = {
   description: "Audit trail & exports",
 };
 
+export const reportNav: NavItem = {
+  label: "Report accident",
+  to: "/report",
+  icon: Camera,
+  description: "AI photo & video triage",
+};
+
+export const contactsNav: NavItem = {
+  label: "Emergency contacts",
+  to: "/contacts",
+  icon: Users,
+  description: "Who we alert",
+};
+
+export const medicalIdNav: NavItem = {
+  label: "Medical ID",
+  to: "/medical-id",
+  icon: IdCard,
+  description: "Responder medical card",
+};
+
+export const documentsNav: NavItem = {
+  label: "Documents",
+  to: "/documents",
+  icon: FileText,
+  description: "Downloadable PDFs",
+};
+
 export const navSections: NavSection[] = [
   {
-    title: "Response",
-    items: [...primaryNav.slice(0, 3), assistantNav, liveLocationNav, checkinsNav],
+    title: "Emergency",
+    items: [
+      { label: "Home", to: "/dashboard", icon: Home, description: "Fast emergency actions" },
+      { label: "Emergency SOS", to: "/emergency", icon: Siren, description: "Trigger assistance" },
+      reportNav,
+      { label: "Nearby services", to: "/nearby", icon: MapPinned, description: "Responders around you" },
+      liveLocationNav,
+    ],
   },
   {
     title: "Records",
-    items: [primaryNav[3], activityNav, notesNav, donorsNav, notificationsNav],
+    items: [
+      donorsNav,
+      { label: "Emergency history", to: "/history", icon: History, description: "Past incidents" },
+      contactsNav,
+      medicalIdNav,
+      documentsNav,
+    ],
   },
   {
     title: "Account",
-    items: primaryNav.slice(4),
+    items: [
+      notificationsNav,
+      primaryNav[4],
+      { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
+      { label: "About", to: "/about", icon: Info, description: "How AEGIS works" },
+    ],
   },
 ];
 
 export const supportNav: NavItem[] = [
-  { label: "Safety guide", to: "/dashboard", icon: LifeBuoy },
-  { label: "Trust center", to: "/dashboard", icon: ShieldCheck },
+  assistantNav,
+  checkinsNav,
+  notesNav,
+  activityNav,
 ];
 
 export const mobileNav: NavItem[] = [

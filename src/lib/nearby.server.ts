@@ -1,5 +1,5 @@
 /** Real-world emergency service lookup (no placeholder data). */
-export type PlaceCategory = "hospital" | "police" | "fire" | "blood_bank";
+export type PlaceCategory = "hospital" | "ambulance" | "police" | "fire" | "blood_bank";
 
 export type NearbyPlace = {
   id: string;
@@ -42,10 +42,41 @@ const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
 
 const GOOGLE_TYPES: Record<PlaceCategory, string[]> = {
   hospital: ["hospital"],
+  ambulance: [],
   police: ["police"],
   fire: ["fire_station"],
   blood_bank: ["blood_donation_facility"],
 };
+
+/**
+ * Emergency-capable hospital filtering. Clinics, day-care and cosmetic
+ * providers cannot receive emergencies, so they are dropped outright, and
+ * trauma / general / multi-specialty hospitals are ranked first.
+ */
+const HOSPITAL_EXCLUDE =
+  /(clinic|polyclinic|physio|physiotherap|chiroprac|dental|dentist|orthodont|cosmetic|aesthet|derma|skin|hair|slim|weight|wellness|spa|ayurved|homoeopath|homeopath|unani|siddha|acupunc|veterinar|animal|pet|optic|optical|eye care|eyecare|spectacle|lab(oratory)?\b|diagnostic|scan cent|imaging cent|pharmac|medical (store|shop)|fertility|ivf|dialysis cent|counsel|rehab|nursing college|medical college hostel|dispensar)/i;
+
+const HOSPITAL_PRIORITY =
+  /(government|govt|general hospital|district hospital|civil hospital|medical college|institute of medical|trauma|emergency|multi[- ]?spec|multispec|super[- ]?spec|superspec|apollo|aiims|city hospital|memorial hospital)/i;
+
+function isEmergencyHospital(name: string) {
+  if (HOSPITAL_EXCLUDE.test(name)) return false;
+  return /hospital|medical cent|medical college|trauma|infirmary|emergency/i.test(name)
+    ? true
+    : // Unnamed-type facilities coming from an explicit hospital tag stay in.
+      true;
+}
+
+function rankHospitals(places: NearbyPlace[]) {
+  return places
+    .filter((place) => isEmergencyHospital(place.name))
+    .sort((a, b) => {
+      const pa = HOSPITAL_PRIORITY.test(a.name) ? 0 : 1;
+      const pb = HOSPITAL_PRIORITY.test(b.name) ? 0 : 1;
+      if (pa !== pb) return pa - pb;
+      return a.distanceKm - b.distanceKm;
+    });
+}
 
 type GooglePlace = {
   id: string;
@@ -67,14 +98,16 @@ async function googleNearby(
   const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!lovableKey || !connectorKey) throw new Error("Google Maps connector not linked");
 
-  // Blood banks have no reliable nearby-search type, so they use a ranked text search.
-  const isText = category === "blood_bank";
+  // Blood banks and ambulance services have no reliable nearby-search type,
+  // so they use a distance-ranked text search instead.
+  const isText = category === "blood_bank" || category === "ambulance";
+  const textQuery = category === "blood_bank" ? "blood bank" : "ambulance service";
   const endpoint = isText
     ? `${GATEWAY_URL}/places/v1/places:searchText`
     : `${GATEWAY_URL}/places/v1/places:searchNearby`;
   const body = isText
     ? {
-        textQuery: "blood bank",
+        textQuery,
         maxResultCount: Math.max(perCategory, 5),
         rankPreference: "DISTANCE",
         locationBias: {
@@ -107,7 +140,7 @@ async function googleNearby(
     throw new Error(`Google Places request failed [${res.status}]`);
   }
   const data = (await res.json()) as { places?: GooglePlace[] };
-  return (data.places ?? [])
+  const mapped = (data.places ?? [])
     .filter((place) => place.location && place.displayName?.text)
     .map((place) => {
       const lat = place.location!.latitude;
@@ -125,13 +158,17 @@ async function googleNearby(
         distanceKm,
         etaMinutes: etaMinutes(distanceKm),
       } satisfies NearbyPlace;
-    })
-    .sort((a, b) => a.distanceKm - b.distanceKm)
-    .slice(0, perCategory);
+    });
+  const ordered =
+    category === "hospital"
+      ? rankHospitals(mapped)
+      : mapped.sort((a, b) => a.distanceKm - b.distanceKm);
+  return ordered.slice(0, perCategory);
 }
 
 const FILTERS: Record<PlaceCategory, string[]> = {
   hospital: ['["amenity"="hospital"]', '["healthcare"="hospital"]'],
+  ambulance: ['["emergency"="ambulance_station"]'],
   police: ['["amenity"="police"]'],
   fire: ['["amenity"="fire_station"]'],
   blood_bank: ['["healthcare"="blood_donation"]', '["amenity"="blood_bank"]'],
@@ -160,6 +197,7 @@ function buildQuery(lat: number, lng: number, radius: number) {
 
 function categorise(tags: Record<string, string>): PlaceCategory | null {
   if (tags.healthcare === "blood_donation" || tags.amenity === "blood_bank") return "blood_bank";
+  if (tags.emergency === "ambulance_station") return "ambulance";
   if (tags.amenity === "hospital" || tags.healthcare === "hospital") return "hospital";
   if (tags.amenity === "police") return "police";
   if (tags.amenity === "fire_station") return "fire";
@@ -210,6 +248,7 @@ export async function findNearbyServices(
 ): Promise<Record<PlaceCategory, NearbyPlace[]>> {
   const result: Record<PlaceCategory, NearbyPlace[]> = {
     hospital: [],
+    ambulance: [],
     police: [],
     fire: [],
     blood_bank: [],
@@ -251,6 +290,8 @@ export async function findNearbyServices(
     if (lat == null || lng == null) continue;
     const category = categorise(tags);
     if (!category) continue;
+    // Never surface clinics or cosmetic providers as emergency hospitals.
+    if (category === "hospital" && !isEmergencyHospital(name)) continue;
     const key = `${category}:${name.toLowerCase()}`;
     if (seen.has(key)) continue;
     seen.add(key);
@@ -269,8 +310,13 @@ export async function findNearbyServices(
     });
   }
 
-  places.sort((a, b) => a.distanceKm - b.distanceKm);
-  for (const place of places) {
+  const sorted = [
+    ...rankHospitals(places.filter((place) => place.category === "hospital")),
+    ...places
+      .filter((place) => place.category !== "hospital")
+      .sort((a, b) => a.distanceKm - b.distanceKm),
+  ];
+  for (const place of sorted) {
     if (result[place.category].length < perCategory) result[place.category].push(place);
   }
   return result;

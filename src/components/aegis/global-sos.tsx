@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { Siren } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { ShieldCheck, Siren } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { ConfirmModal } from "@/components/system/confirm-modal";
 import { useAuth } from "@/hooks/use-auth";
-import { activeEmergencyQuery } from "@/lib/api";
+import { activeEmergencyQuery, contactsQuery, profileQuery } from "@/lib/api";
+import { confirmSafe } from "@/lib/emergency";
+import { cn } from "@/lib/utils";
 
 /**
  * Persistent one-tap SOS. Reuses the existing emergency workflow via
@@ -15,18 +18,38 @@ import { activeEmergencyQuery } from "@/lib/api";
 export function GlobalSosButton() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const active = useQuery(activeEmergencyQuery(user?.id));
+  const profile = useQuery(profileQuery(user?.id));
+  const contacts = useQuery(contactsQuery(user?.id));
   const [confirm, setConfirm] = useState(false);
+  const [stopping, setStopping] = useState(false);
 
-  const running = Boolean(active.data);
+  const emergency = active.data;
+  const running = Boolean(emergency);
 
-  async function go() {
-    if (running) {
-      await navigate({ to: "/live" });
-      return;
-    }
+  async function startSos() {
     await navigate({ to: "/emergency", search: { auto: true } });
+  }
+
+  /** Stop SOS: ends tracking, closes the session and tells contacts you're safe. */
+  async function stopSos() {
+    if (!emergency) return;
+    setStopping(true);
+    try {
+      await confirmSafe({
+        emergency,
+        profile: profile.data,
+        contacts: contacts.data ?? [],
+      });
+      await queryClient.invalidateQueries();
+      toast.success("SOS stopped — your contacts have been told you're safe");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not stop the SOS");
+    } finally {
+      setStopping(false);
+    }
   }
 
   if (pathname === "/emergency") return null;
@@ -37,19 +60,32 @@ export function GlobalSosButton() {
         <div className="relative pointer-events-auto">
           <span
             aria-hidden="true"
-            className="absolute inset-0 animate-ping rounded-full bg-alert/30"
+            className={cn(
+              "absolute inset-0 animate-ping rounded-full",
+              running ? "bg-success/30" : "bg-alert/30",
+            )}
           />
           <motion.button
             type="button"
             whileTap={{ scale: 0.94 }}
-            onClick={() => (running ? void go() : setConfirm(true))}
-            aria-label={running ? "Open live emergency status" : "Trigger emergency SOS"}
-            className="relative grid size-16 place-items-center rounded-full bg-linear-to-br from-alert to-alert/80 text-alert-foreground shadow-2xl shadow-alert/40 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-alert/40 lg:size-20"
+            disabled={stopping}
+            onClick={() => setConfirm(true)}
+            aria-label={running ? "Stop the active emergency SOS" : "Trigger emergency SOS"}
+            className={cn(
+              "relative grid size-16 place-items-center rounded-full text-white shadow-2xl focus-visible:outline-none focus-visible:ring-4 lg:size-20",
+              running
+                ? "bg-linear-to-br from-success to-success/80 shadow-success/40 focus-visible:ring-success/40"
+                : "bg-linear-to-br from-alert to-alert/80 shadow-alert/40 focus-visible:ring-alert/40",
+            )}
           >
             <span className="flex flex-col items-center leading-none">
-              <Siren className="size-5 lg:size-6" aria-hidden="true" />
+              {running ? (
+                <ShieldCheck className="size-5 lg:size-6" aria-hidden="true" />
+              ) : (
+                <Siren className="size-5 lg:size-6" aria-hidden="true" />
+              )}
               <span className="mt-1 font-display text-xs font-bold tracking-wide">
-                {running ? "LIVE" : "SOS"}
+                {running ? "STOP" : "SOS"}
               </span>
             </span>
           </motion.button>
@@ -59,12 +95,17 @@ export function GlobalSosButton() {
       <ConfirmModal
         open={confirm}
         onOpenChange={setConfirm}
-        title="Send emergency SOS now?"
-        description="AEGIS will capture your GPS location, start live tracking and alert your three trusted contacts immediately."
-        confirmLabel="Send SOS"
+        title={running ? "Stop the active SOS?" : "Send emergency SOS now?"}
+        description={
+          running
+            ? "AEGIS will stop live location sharing, close the emergency session, record the end time and notify your trusted contacts that you are safe."
+            : "AEGIS will capture your GPS location, start live tracking and alert your three trusted contacts immediately."
+        }
+        confirmLabel={running ? "Stop SOS — I'm safe" : "Send SOS"}
         onConfirm={async () => {
           setConfirm(false);
-          await go();
+          if (running) await stopSos();
+          else await startSos();
         }}
       />
     </>

@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import {
   ChevronDown,
   Droplets,
+  Ambulance,
   ExternalLink,
   Flame,
   MapPin,
@@ -25,6 +26,7 @@ import { cn } from "@/lib/utils";
 
 export const CATEGORY_ICON: Record<PlaceCategory, typeof Stethoscope> = {
   hospital: Stethoscope,
+  ambulance: Ambulance,
   police: ShieldCheck,
   fire: Flame,
   blood_bank: Droplets,
@@ -32,6 +34,7 @@ export const CATEGORY_ICON: Record<PlaceCategory, typeof Stethoscope> = {
 
 export const CATEGORY_LABEL: Record<PlaceCategory, string> = {
   hospital: "Hospitals",
+  ambulance: "Ambulance services",
   police: "Police stations",
   fire: "Fire & rescue",
   blood_bank: "Blood banks",
@@ -39,12 +42,19 @@ export const CATEGORY_LABEL: Record<PlaceCategory, string> = {
 
 export const CATEGORY_EMOJI: Record<PlaceCategory, string> = {
   hospital: "🏥",
+  ambulance: "🚑",
   police: "🚓",
   fire: "🚒",
   blood_bank: "🩸",
 };
 
-const DEFAULT_CATEGORIES: PlaceCategory[] = ["hospital", "police", "fire", "blood_bank"];
+const DEFAULT_CATEGORIES: PlaceCategory[] = [
+  "hospital",
+  "ambulance",
+  "police",
+  "fire",
+  "blood_bank",
+];
 
 export function PlaceCard({
   place,
@@ -85,7 +95,7 @@ export function PlaceCard({
               ~{place.etaMinutes} min
             </Badge>
             {place.openNow === true && (
-              <Badge className="rounded-full bg-safe/15 text-[10px] font-semibold text-safe">
+              <Badge className="rounded-full bg-success/15 text-[10px] font-semibold text-success">
                 Open 24/7
               </Badge>
             )}
