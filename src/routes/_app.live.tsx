@@ -8,14 +8,20 @@ import { StatusIndicator } from "@/components/system/status-indicator";
 import { EmptyState } from "@/components/system/empty-state";
 import { PanelSkeleton } from "@/components/system/loading-skeletons";
 import { MapPreview } from "@/components/aegis/map-preview";
-import { EmergencyAlerts } from "@/components/aegis/emergency-alerts";
+import { ContactAlertStatus } from "@/components/aegis/contact-alert-status";
+import { EmergencyAnalysisPanel } from "@/components/aegis/emergency-analysis";
+import { EmergencyChecklist } from "@/components/aegis/emergency-checklist";
+import { ImSafeButton } from "@/components/aegis/im-safe-button";
+import { MedicalIdCard } from "@/components/aegis/medical-id-card";
 import { ShareSos } from "@/components/aegis/share-sos";
 import { LiveStatusControls } from "@/components/aegis/live-status-controls";
 import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
 import { NearestServices } from "@/components/aegis/nearest-services";
 import { useLivePosition } from "@/hooks/use-live-position";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { ensureLiveShareLink, shareUrl } from "@/lib/share";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,11 +65,21 @@ function LiveLocationPage() {
   const [refreshing, setRefreshing] = useState(false);
   const { position, address, denied } = useLivePosition();
   const [elapsed, setElapsed] = useState(0);
+  const { offline, pending } = useOfflineSync();
+  const [showMedicalId, setShowMedicalId] = useState(false);
 
   const emergency = active.data;
   const coords = coordsOf(emergency);
   const emergencyId = emergency?.id;
   const startedAt = emergency?.started_at;
+
+  const shareLink = useQuery({
+    queryKey: ["live-share-link", emergencyId],
+    enabled: Boolean(user?.id && emergencyId),
+    queryFn: async () => ensureLiveShareLink(user!.id, emergencyId!),
+  });
+  const trackingUrl =
+    shareLink.data && shareLink.data.active ? shareUrl(shareLink.data) : null;
 
   useEffect(() => {
     if (!startedAt) {
@@ -121,11 +137,12 @@ function LiveLocationPage() {
   // Keep responders on a fresh fix while an emergency is running.
   useEffect(() => {
     if (!emergencyId) return;
+    if (offline) return;
     const id = window.setInterval(() => {
       void refreshLocation({ silent: true, log: false });
     }, 10000);
     return () => window.clearInterval(id);
-  }, [emergencyId, refreshLocation]);
+  }, [emergencyId, refreshLocation, offline]);
 
   async function copyCoords() {
     if (!coords) return;
