@@ -89,41 +89,6 @@ export function LiveEmergencyWidget() {
           </Button>
         </div>
       </motion.aside>
-
-      <ConfirmModal
-        open={confirm}
-        onOpenChange={setConfirm}
-        title="Stop the emergency SOS?"
-        description="AEGIS will stop live location sharing, close the emergency session and tell your trusted contacts you are safe."
-        confirmLabel="Stop SOS"
-        onConfirm={async () => {
-          setConfirm(false);
-          setBusy(true);
-          try {
-            await confirmSafe({
-              emergency: emergency,
-              profile: profile.data,
-              contacts: contacts.data ?? [],
-            });
-            if (user) {
-              await sendEmergencyEmailAlerts({
-                userId: user.id,
-                emergency,
-                profile: profile.data,
-                contacts: contacts.data ?? [],
-                kind: "resolved",
-              }).catch(() => null);
-            }
-            notifyEmergency("emergency_closed");
-            await queryClient.invalidateQueries();
-            toast.success("Emergency closed — your contacts know you're safe");
-          } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Could not close the emergency");
-          } finally {
-            setBusy(false);
-          }
-        }}
-      />
     </>
   );
 }
