@@ -48,10 +48,8 @@ export function buildEmergencyEmail(input: {
     trackingUrl ? `▶ OPEN LIVE TRACKING: ${trackingUrl}` : "",
     "",
     "Please call them now or contact local emergency services.",
-  ]
-    .filter((line) => line !== "" || true)
-    .join("\n");
-  return { subject, message, trackingUrl: trackingUrl ?? null };
+  ].join("\n");
+  return { subject, message };
 }
 
 export function buildResolvedEmail(input: {
