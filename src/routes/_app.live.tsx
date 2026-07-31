@@ -8,14 +8,19 @@ import { StatusIndicator } from "@/components/system/status-indicator";
 import { EmptyState } from "@/components/system/empty-state";
 import { PanelSkeleton } from "@/components/system/loading-skeletons";
 import { MapPreview } from "@/components/aegis/map-preview";
-import { EmergencyAlerts } from "@/components/aegis/emergency-alerts";
+import { ContactAlertStatus } from "@/components/aegis/contact-alert-status";
+import { EmergencyAnalysisPanel } from "@/components/aegis/emergency-analysis";
+import { EmergencyChecklist } from "@/components/aegis/emergency-checklist";
+import { ImSafeButton } from "@/components/aegis/im-safe-button";
+import { MedicalIdCard } from "@/components/aegis/medical-id-card";
 import { ShareSos } from "@/components/aegis/share-sos";
 import { LiveStatusControls } from "@/components/aegis/live-status-controls";
 import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
 import { NearestServices } from "@/components/aegis/nearest-services";
 import { useLivePosition } from "@/hooks/use-live-position";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2 } from "lucide-react";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { ensureLiveShareLink, shareUrl } from "@/lib/share";
+import { WifiOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,11 +64,21 @@ function LiveLocationPage() {
   const [refreshing, setRefreshing] = useState(false);
   const { position, address, denied } = useLivePosition();
   const [elapsed, setElapsed] = useState(0);
+  const { offline, pending } = useOfflineSync();
+  const [showMedicalId, setShowMedicalId] = useState(false);
 
   const emergency = active.data;
   const coords = coordsOf(emergency);
   const emergencyId = emergency?.id;
   const startedAt = emergency?.started_at;
+
+  const shareLink = useQuery({
+    queryKey: ["live-share-link", emergencyId],
+    enabled: Boolean(user?.id && emergencyId),
+    queryFn: async () => ensureLiveShareLink(user!.id, emergencyId!),
+  });
+  const trackingUrl =
+    shareLink.data && shareLink.data.active ? shareUrl(shareLink.data) : null;
 
   useEffect(() => {
     if (!startedAt) {
@@ -121,11 +136,12 @@ function LiveLocationPage() {
   // Keep responders on a fresh fix while an emergency is running.
   useEffect(() => {
     if (!emergencyId) return;
+    if (offline) return;
     const id = window.setInterval(() => {
       void refreshLocation({ silent: true, log: false });
     }, 10000);
     return () => window.clearInterval(id);
-  }, [emergencyId, refreshLocation]);
+  }, [emergencyId, refreshLocation, offline]);
 
   async function copyCoords() {
     if (!coords) return;
@@ -164,7 +180,21 @@ function LiveLocationPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="glass-panel overflow-hidden rounded-3xl">
+            {offline && (
+              <div className="flex items-center gap-2 border-b border-border bg-warning/10 px-5 py-3 text-xs font-medium text-warning">
+                <WifiOff className="size-4" aria-hidden="true" />
+                Offline — {pending} update{pending === 1 ? "" : "s"} saved on this device and will
+                sync automatically.
+              </div>
+            )}
             <MapPreview coords={coords} />
+            <div className="border-b border-border p-5">
+              <ImSafeButton
+                emergency={emergency}
+                profile={profile.data}
+                contacts={contacts.data ?? []}
+              />
+            </div>
             <div className="grid gap-4 border-t border-border p-5 sm:grid-cols-2">
               <Detail label="Latitude" value={coords ? coords.lat.toFixed(6) : "Unavailable"} />
               <Detail label="Longitude" value={coords ? coords.lng.toFixed(6) : "Unavailable"} />
@@ -244,6 +274,12 @@ function LiveLocationPage() {
               </div>
             </div>
             <div className="border-t border-border p-5">
+              <EmergencyAnalysisPanel emergency={emergency} />
+            </div>
+            <div className="border-t border-border p-5">
+              <EmergencyChecklist type={emergency.type} />
+            </div>
+            <div className="border-t border-border p-5">
               <EmergencyCoordination
                 type={emergency.type}
                 severity={emergency.severity}
@@ -270,32 +306,39 @@ function LiveLocationPage() {
             <div className="border-t border-border p-5">
               <h2 className="text-sm font-semibold text-foreground">Contact alerts</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                Every trusted contact received your name, time, address, coordinates and map link.
+                Every trusted contact receives your name, address, live tracking link, time and
+                emergency ID. Delivery status is tracked per contact.
               </p>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {(contacts.data ?? []).map((contact) => (
-                  <li key={contact.id}>
-                    <Badge
-                      variant="secondary"
-                      className="gap-1 rounded-full text-[11px] font-semibold"
-                    >
-                      <CheckCircle2 className="size-3 text-success" aria-hidden="true" />
-                      {contact.name} notified
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
               <div className="mt-4">
-                <EmergencyAlerts
+                <ContactAlertStatus
                   emergency={emergency}
                   profile={profile.data}
                   contacts={contacts.data ?? []}
+                  trackingUrl={trackingUrl}
+                  address={emergency.address ?? address}
                 />
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
+            <div className="glass-panel rounded-2xl p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-sm font-semibold text-foreground">Medical ID</h2>
+                <Button size="sm" variant="outline" onClick={() => setShowMedicalId((v) => !v)}>
+                  {showMedicalId ? "Hide" : "Show"}
+                </Button>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                One tap to show blood group, allergies, conditions and medications to responders.
+              </p>
+              {showMedicalId && (
+                <div className="mt-4">
+                  <MedicalIdCard profile={profile.data} contacts={contacts.data ?? []} />
+                </div>
+              )}
+            </div>
+
             <div className="glass-panel rounded-2xl p-5">
               <h2 className="text-sm font-semibold text-foreground">Alert timeline</h2>
               {events.isLoading ? (
