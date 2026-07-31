@@ -19,6 +19,15 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Logo } from "@/components/brand/logo";
+import { logSecurityEvent } from "@/lib/audit";
+import {
+  checkRateLimit,
+  clearRateLimit,
+  emailSchema,
+  firstIssue,
+  passwordSchema,
+  personNameSchema,
+} from "@/lib/security";
 
 const searchSchema = z.object({
   redirect: z.string().optional(),
@@ -96,15 +105,25 @@ function AuthPage() {
 
   async function handleSignIn(event: React.FormEvent) {
     event.preventDefault();
-    if (!email.trim() || !password) {
-      toast.error("Enter your email and password to continue");
+    const parsedEmail = emailSchema.safeParse(email);
+    if (!parsedEmail.success || !password) {
+      toast.error(parsedEmail.success ? "Enter your password to continue" : firstIssue(parsedEmail.error));
+      return;
+    }
+    const limit = checkRateLimit("signin");
+    if (!limit.allowed) {
+      toast.error(limit.message);
       return;
     }
     setBusy(true);
     setRememberMe(remember);
-    const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: parsedEmail.data,
+      password,
+    });
     setBusy(false);
     if (error) {
+      void logSecurityEvent("Sign-in failed", `Failed password sign-in for ${parsedEmail.data}`);
       toast.error(
         error.message.toLowerCase().includes("invalid")
           ? "Those credentials don't match an AEGIS account."
@@ -112,28 +131,42 @@ function AuthPage() {
       );
       return;
     }
+    clearRateLimit("signin");
+    void logSecurityEvent("Sign-in succeeded", "Password sign-in");
     toast.success("Welcome back to AEGIS");
     navigate({ to: await resolveDestination(data.user!.id, preferred), replace: true });
   }
 
   async function handleSignUp(event: React.FormEvent) {
     event.preventDefault();
-    if (fullName.trim().length < 2) {
-      toast.error("Please enter your full name");
+    const parsedName = personNameSchema.safeParse(fullName);
+    const parsedEmail = emailSchema.safeParse(email);
+    const parsedPassword = passwordSchema.safeParse(password);
+    if (!parsedName.success) {
+      toast.error(firstIssue(parsedName.error));
       return;
     }
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    if (!parsedEmail.success) {
+      toast.error(firstIssue(parsedEmail.error));
+      return;
+    }
+    if (!parsedPassword.success) {
+      toast.error(firstIssue(parsedPassword.error));
+      return;
+    }
+    const limit = checkRateLimit("signup");
+    if (!limit.allowed) {
+      toast.error(limit.message);
       return;
     }
     setBusy(true);
     setRememberMe(remember);
     const { data, error } = await supabase.auth.signUp({
-      email: email.trim(),
+      email: parsedEmail.data,
       password,
       options: {
         emailRedirectTo: window.location.origin + "/auth",
-        data: { full_name: fullName.trim() },
+        data: { full_name: parsedName.data },
       },
     });
     setBusy(false);
@@ -145,6 +178,7 @@ function AuthPage() {
       );
       return;
     }
+    void logSecurityEvent("Sign-up requested", `Account requested for ${parsedEmail.data}`);
     if (!data.session) {
       setSent("confirm");
       toast.success("Check your email to confirm your account");
@@ -156,8 +190,18 @@ function AuthPage() {
 
   async function handleReset(event: React.FormEvent) {
     event.preventDefault();
+    const parsedEmail = emailSchema.safeParse(email);
+    if (!parsedEmail.success) {
+      toast.error(firstIssue(parsedEmail.error));
+      return;
+    }
+    const limit = checkRateLimit("password-reset");
+    if (!limit.allowed) {
+      toast.error(limit.message);
+      return;
+    }
     setBusy(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+    const { error } = await supabase.auth.resetPasswordForEmail(parsedEmail.data, {
       redirectTo: window.location.origin + "/reset-password",
     });
     setBusy(false);
@@ -165,6 +209,7 @@ function AuthPage() {
       toast.error(error.message);
       return;
     }
+    void logSecurityEvent("Password reset requested", `Reset requested for ${parsedEmail.data}`);
     setSent("reset");
     toast.success("Reset link sent");
   }
