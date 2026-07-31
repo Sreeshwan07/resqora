@@ -256,21 +256,6 @@ function EmergencyPage() {
                 </Button>
               </div>
 
-              <div className="border-t border-border pt-4">
-                <h2 className="text-sm font-semibold text-foreground">
-                  Emergency notification centre
-                </h2>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Messages delivered to your trusted contacts across SMS, WhatsApp and email.
-                </p>
-                <div className="mt-4">
-                  <EmergencyAlerts
-                    emergency={current}
-                    profile={profile.data}
-                    contacts={contacts.data ?? []}
-                  />
-                </div>
-              </div>
             </div>
           ) : (
             <div className="mt-6 grid gap-4">

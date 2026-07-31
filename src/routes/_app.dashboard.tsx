@@ -252,11 +252,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* SOS */}
-      <section className="glass-panel rounded-2xl px-4 py-2">
-        <SosButton onTrigger={() => setConfirmOpen(true)} disabled={busy || Boolean(current)} active={Boolean(current)} />
-      </section>
-
       {/* Quick actions */}
       <section aria-label="Quick actions">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
