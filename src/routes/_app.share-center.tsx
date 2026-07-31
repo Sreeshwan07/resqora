@@ -24,6 +24,7 @@ import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { activeEmergencyQuery, contactsQuery, profileQuery } from "@/lib/api";
 import { copyText, coordsOf, mapsLink } from "@/lib/alerts";
 import { deliveriesQuery } from "@/lib/alert-delivery";
+import { GuardianSessionPanel } from "@/components/aegis/guardian-session-panel";
 import { buildEmergencyEmail, contactsWithEmail, sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { logActivity } from "@/lib/activity";
 import { recentSharesQuery } from "@/lib/shares";
