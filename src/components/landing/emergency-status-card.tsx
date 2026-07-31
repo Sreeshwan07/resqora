@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { Clock, MapPin, Satellite } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LivePosition } from "@/hooks/use-live-position";
+import { useHydrated } from "@/hooks/use-hydrated";
 
 export type LandingStatus = "safe" | "checkin" | "active" | "coordinating" | "resolved";
 
@@ -39,6 +40,8 @@ export function EmergencyStatusCard({
   denied: boolean;
 }) {
   const meta = STATUS_META[status];
+  // Locale time only renders after hydration so SSR markup can't mismatch.
+  const hydrated = useHydrated();
   return (
     <motion.section
       initial={{ opacity: 0, y: 12 }}
@@ -54,7 +57,7 @@ export function EmergencyStatusCard({
         </span>
         <span className="inline-flex items-center gap-1.5 font-mono text-sm text-muted-foreground">
           <Clock className="size-3.5" aria-hidden="true" />
-          {now.toLocaleTimeString()}
+          {hydrated ? now.toLocaleTimeString() : "--:--:--"}
         </span>
       </div>
 
@@ -89,7 +92,7 @@ export function EmergencyStatusCard({
             Last updated
           </dt>
           <dd className="mt-0.5 text-sm font-medium text-foreground">
-            {position ? position.updatedAt.toLocaleTimeString() : "—"}
+            {hydrated && position ? position.updatedAt.toLocaleTimeString() : "—"}
           </dd>
         </div>
       </dl>

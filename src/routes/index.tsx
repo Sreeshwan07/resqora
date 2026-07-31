@@ -10,7 +10,7 @@ import {
 import { EmergencyConsole } from "@/components/landing/emergency-console";
 import { EmergencyContactsCard } from "@/components/landing/emergency-contacts-card";
 import { NearestServices } from "@/components/aegis/nearest-services";
-import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
+import { RecentActivityCard } from "@/components/aegis/recent-activity-card";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { useAuth } from "@/hooks/use-auth";
@@ -83,14 +83,7 @@ function Index() {
             notified={Boolean(emergency && emergency.status !== "created")}
           />
 
-          {emergency && emergency.status !== "resolved" && (
-            <EmergencyCoordination
-              type={emergency.type}
-              severity={emergency.severity}
-              position={position}
-              nearby={nearby}
-            />
-          )}
+          <RecentActivityCard />
         </div>
       </main>
       <SiteFooter />
