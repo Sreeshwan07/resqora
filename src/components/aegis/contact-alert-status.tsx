@@ -180,7 +180,7 @@ export function ContactAlertStatus({
 function DeliveryBadge({ status, error }: { status: string; error: string | null }) {
   if (status === "delivered") {
     return (
-      <Badge className="gap-1 rounded-full bg-safe/15 text-[10px] font-semibold text-safe">
+      <Badge className="gap-1 rounded-full bg-success/15 text-[10px] font-semibold text-success">
         <Check className="size-3" aria-hidden="true" />
         Delivered
       </Badge>

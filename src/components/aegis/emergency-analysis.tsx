@@ -11,7 +11,7 @@ import { analyzeEmergencyDescription, type EmergencyAnalysis } from "@/lib/analy
 import { cn } from "@/lib/utils";
 
 const SEVERITY_STYLE: Record<string, string> = {
-  low: "bg-safe/15 text-safe",
+  low: "bg-success/15 text-success",
   medium: "bg-warning/15 text-warning",
   high: "bg-alert/15 text-alert",
   critical: "bg-alert text-alert-foreground",

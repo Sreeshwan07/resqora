@@ -26,7 +26,7 @@ export function ImSafeButton({
       <Button
         size="xl"
         variant="hero"
-        className="w-full bg-linear-to-r from-safe to-safe/80 text-white shadow-lg shadow-safe/30 hover:opacity-95"
+        className="w-full bg-linear-to-r from-success to-success/80 text-white shadow-lg shadow-success/30 hover:opacity-95"
         disabled={busy}
         onClick={() => setOpen(true)}
       >
