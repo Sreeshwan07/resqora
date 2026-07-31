@@ -26,7 +26,7 @@ export const Route = createFileRoute("/_app/nearby")({
   component: NearbyPage,
 });
 
-const ALL: PlaceCategory[] = ["hospital", "police", "fire", "blood_bank"];
+const ALL: PlaceCategory[] = ["hospital", "ambulance", "police", "fire", "blood_bank"];
 
 function NearbyPage() {
   const search = Route.useSearch();
