@@ -33,6 +33,7 @@ import { Route as AppNotificationsRouteImport } from './routes/_app.notification
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppReportRouteImport } from './routes/_app.report'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
+import { Route as AppShareCenterRouteImport } from './routes/_app.share-center'
 import { Route as MTokenRouteImport } from './routes/m.$token'
 import { Route as STokenRouteImport } from './routes/s.$token'
 
@@ -155,6 +156,11 @@ const AppSettingsRoute = AppSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppRoute,
 } as any)
+const AppShareCenterRoute = AppShareCenterRouteImport.update({
+  id: '/share-center',
+  path: '/share-center',
+  getParentRoute: () => AppRoute,
+} as any)
 const MTokenRoute = MTokenRouteImport.update({
   id: '/m/$token',
   path: '/m/$token',
@@ -190,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
   '/settings': typeof AppSettingsRoute
+  '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
 }
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
   '/settings': typeof AppSettingsRoute
+  '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
 }
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRoute
   '/_app/report': typeof AppReportRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
 }
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/report'
     | '/settings'
+    | '/share-center'
     | '/m/$token'
     | '/s/$token'
   fileRoutesByTo: FileRoutesByTo
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/report'
     | '/settings'
+    | '/share-center'
     | '/m/$token'
     | '/s/$token'
   id:
@@ -330,6 +341,7 @@ export interface FileRouteTypes {
     | '/_app/profile'
     | '/_app/report'
     | '/_app/settings'
+    | '/_app/share-center'
     | '/m/$token'
     | '/s/$token'
   fileRoutesById: FileRoutesById
@@ -515,6 +527,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/share-center': {
+      id: '/_app/share-center'
+      path: '/share-center'
+      fullPath: '/share-center'
+      preLoaderRoute: typeof AppShareCenterRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/m/$token': {
       id: '/m/$token'
       path: '/m/$token'
@@ -551,6 +570,7 @@ interface AppRouteChildren {
   AppProfileRoute: typeof AppProfileRoute
   AppReportRoute: typeof AppReportRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  AppShareCenterRoute: typeof AppShareCenterRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -572,6 +592,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppProfileRoute: AppProfileRoute,
   AppReportRoute: AppReportRoute,
   AppSettingsRoute: AppSettingsRoute,
+  AppShareCenterRoute: AppShareCenterRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)

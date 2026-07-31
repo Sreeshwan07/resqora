@@ -43,7 +43,13 @@ export const Route = createFileRoute("/_app/profile")({
   component: ProfilePage,
 });
 
-type ContactDraft = { id?: string; name: string; relationship: string; phone: string };
+type ContactDraft = {
+  id?: string;
+  name: string;
+  relationship: string;
+  phone: string;
+  email: string;
+};
 
 function ProfilePage() {
   const { user } = useAuth();
@@ -88,8 +94,9 @@ function ProfilePage() {
       name: c.name,
       relationship: c.relationship,
       phone: c.phone,
+      email: c.email ?? "",
     }));
-    while (base.length < 3) base.push({ name: "", relationship: "", phone: "" });
+    while (base.length < 3) base.push({ name: "", relationship: "", phone: "", email: "" });
     setDrafts(base.slice(0, 3));
   }, [contacts.data]);
 
@@ -140,6 +147,7 @@ function ProfilePage() {
         name: contact.name.trim(),
         relationship: contact.relationship.trim(),
         phone: contact.phone.trim(),
+        email: contact.email.trim() || null,
         position: index,
       })),
     );
@@ -242,7 +250,7 @@ function ProfilePage() {
                     <PhoneCall className="size-3.5" aria-hidden="true" />
                     Contact {index + 1}
                   </p>
-                  <div className="grid gap-4 sm:grid-cols-3">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     <Field
                       label="Name"
                       value={contact.name}
@@ -265,6 +273,14 @@ function ProfilePage() {
                       value={contact.phone}
                       onChange={(v) =>
                         setDrafts((prev) => prev.map((c, i) => (i === index ? { ...c, phone: v } : c)))
+                      }
+                    />
+                    <Field
+                      label="Email (for emergency emails)"
+                      type="email"
+                      value={contact.email}
+                      onChange={(v) =>
+                        setDrafts((prev) => prev.map((c, i) => (i === index ? { ...c, email: v } : c)))
                       }
                     />
                   </div>

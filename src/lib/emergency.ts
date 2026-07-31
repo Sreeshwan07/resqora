@@ -17,6 +17,8 @@ import {
   seedDeliveries,
 } from "@/lib/alert-delivery";
 import { isOffline, queueEmergency } from "@/lib/offline";
+import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
+import { notifyEmergency } from "@/lib/emergency-notifications";
 
 export const EMERGENCY_TYPES = [
   { value: "medical", label: "Medical" },
@@ -196,6 +198,28 @@ export async function createEmergency(options: {
   }
 
   await supabase.from("emergencies").update({ status: "contacts_notified" }).eq("id", data.id);
+
+  // Free email channel: EmailJS delivery to every contact with an address.
+  if (options.contacts && options.contacts.length > 0) {
+    try {
+      const { data: current } = await supabase
+        .from("emergencies")
+        .select("*")
+        .eq("id", data.id)
+        .single();
+      await sendEmergencyEmailAlerts({
+        userId: options.userId,
+        emergency: (current ?? data) as Emergency,
+        profile: options.profile,
+        contacts: options.contacts,
+        address,
+        trackingUrl,
+      });
+    } catch {
+      /* the share centre lets the user resend every email */
+    }
+  }
+
   await logEvent(
     data.id,
     options.userId,
@@ -217,6 +241,7 @@ export async function createEmergency(options: {
     body: "Your trusted contacts and nearby responders have been notified.",
   });
   await logActivity(options.userId, "SOS activated", `${options.type} emergency triggered`);
+  notifyEmergency("sos_activated", address ?? undefined);
 
   const { data: fresh } = await supabase.from("emergencies").select("*").eq("id", data.id).single();
   return (fresh ?? data) as Emergency;
@@ -245,6 +270,7 @@ export async function confirmSafe(input: {
     "Live tracking stopped",
     "The user confirmed they are safe.",
   );
+  notifyEmergency("emergency_closed");
 
   if (contacts.length > 0) {
     try {
@@ -260,6 +286,17 @@ export async function confirmSafe(input: {
       });
     } catch {
       /* resolution notices can be resent from the history page */
+    }
+    try {
+      await sendEmergencyEmailAlerts({
+        userId: emergency.user_id,
+        emergency,
+        profile,
+        contacts,
+        kind: "resolved",
+      });
+    } catch {
+      /* resolution emails can be resent from the share centre */
     }
   }
 }

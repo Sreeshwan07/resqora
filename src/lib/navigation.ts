@@ -18,6 +18,7 @@ import {
   Users,
   IdCard,
   FileText,
+  Share2,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -115,6 +116,13 @@ export const documentsNav: NavItem = {
   description: "Downloadable PDFs",
 };
 
+export const shareCenterNav: NavItem = {
+  label: "Share centre",
+  to: "/share-center",
+  icon: Share2,
+  description: "Email, WhatsApp, links & QR",
+};
+
 export const navSections: NavSection[] = [
   {
     title: "Emergency",
@@ -124,6 +132,7 @@ export const navSections: NavSection[] = [
       reportNav,
       { label: "Nearby services", to: "/nearby", icon: MapPinned, description: "Responders around you" },
       liveLocationNav,
+      shareCenterNav,
     ],
   },
   {

@@ -60,6 +60,22 @@ function SharedLocationPage() {
     },
   });
 
+  // Movement history for the same token-gated session.
+  const track = useQuery({
+    queryKey: ["shared-track", token],
+    refetchInterval: 10000,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_shared_track", { _token: token });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as {
+        latitude: number;
+        longitude: number;
+        accuracy: number | null;
+        created_at: string;
+      }[];
+    },
+  });
+
   const info = shared.data;
   const coords =
     info && info.latitude != null && info.longitude != null
@@ -112,6 +128,29 @@ function SharedLocationPage() {
               )}
             </div>
             <div className="flex flex-wrap gap-2 border-t border-border p-5">
+              {(track.data ?? []).length > 0 && (
+                <div className="w-full">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    Movement history
+                  </p>
+                  <ul className="mt-2 max-h-44 space-y-1 overflow-auto">
+                    {(track.data ?? []).map((ping) => (
+                      <li
+                        key={ping.created_at}
+                        className="flex items-center justify-between gap-3 rounded-xl bg-muted/60 px-3 py-1.5 text-xs"
+                      >
+                        <span className="font-mono text-foreground">
+                          {ping.latitude.toFixed(5)}, {ping.longitude.toFixed(5)}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {new Date(ping.created_at).toLocaleTimeString()}
+                          {ping.accuracy ? ` · ±${Math.round(ping.accuracy)}m` : ""}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <Button asChild variant="hero" disabled={!coords}>
                 {coords ? (
                   <a href={mapsLink(coords)} target="_blank" rel="noreferrer">
