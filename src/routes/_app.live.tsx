@@ -17,6 +17,7 @@ import { ShareSos } from "@/components/aegis/share-sos";
 import { LiveStatusControls } from "@/components/aegis/live-status-controls";
 import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
 import { useLivePosition } from "@/hooks/use-live-position";
+import { readBatteryLevel, readSpeed } from "@/lib/device";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { ensureLiveShareLink, shareUrl } from "@/lib/share";
 import { WifiOff } from "lucide-react";
@@ -111,6 +112,8 @@ function LiveLocationPage() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
+          speed: readSpeed(position.coords),
+          battery_level: await readBatteryLevel(),
         });
         if (options.log !== false) {
           await logEvent(

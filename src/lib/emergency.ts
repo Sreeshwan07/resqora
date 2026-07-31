@@ -19,6 +19,8 @@ import {
 import { isOffline, queueEmergency } from "@/lib/offline";
 import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { notifyEmergency } from "@/lib/emergency-notifications";
+import { expireGuardianSessions, guardianOf, notifyGuardian } from "@/lib/guardian";
+import { readBatteryLevel, readSpeed } from "@/lib/device";
 
 export const EMERGENCY_TYPES = [
   { value: "medical", label: "Medical" },
@@ -129,6 +131,8 @@ export async function createEmergency(options: {
       latitude,
       longitude,
       accuracy: position.coords.accuracy,
+      speed: readSpeed(position.coords),
+      battery_level: await readBatteryLevel(),
     });
     await logEvent(
       data.id,
@@ -198,6 +202,36 @@ export async function createEmergency(options: {
   }
 
   await supabase.from("emergencies").update({ status: "contacts_notified" }).eq("id", data.id);
+
+  // Guardian Mode: secure dashboard session + Guardian email.
+  const guardian = guardianOf(options.contacts);
+  if (guardian) {
+    try {
+      const { data: current } = await supabase
+        .from("emergencies")
+        .select("*")
+        .eq("id", data.id)
+        .single();
+      const result = await notifyGuardian({
+        userId: options.userId,
+        emergency: (current ?? data) as Emergency,
+        profile: options.profile,
+        guardian,
+        address,
+        trackingUrl,
+      });
+      await logEvent(
+        data.id,
+        options.userId,
+        "Guardian notified",
+        result.emailed
+          ? `${guardian.name} received the Guardian dashboard link.`
+          : `Guardian session created for ${guardian.name} — share the dashboard link manually.`,
+      );
+    } catch {
+      /* the share centre lets the user resend the Guardian alert */
+    }
+  }
 
   // Free email channel: EmailJS delivery to every contact with an address.
   if (options.contacts && options.contacts.length > 0) {
@@ -270,6 +304,11 @@ export async function confirmSafe(input: {
     "Live tracking stopped",
     "The user confirmed they are safe.",
   );
+  try {
+    await expireGuardianSessions(emergency.id);
+  } catch {
+    /* the session expires with the emergency anyway */
+  }
   notifyEmergency("emergency_closed");
 
   if (contacts.length > 0) {
@@ -336,6 +375,11 @@ export async function cancelEmergency(emergency: Emergency) {
     .from("emergencies")
     .update({ status: "cancelled", resolved_at: new Date().toISOString() })
     .eq("id", emergency.id);
+  try {
+    await expireGuardianSessions(emergency.id);
+  } catch {
+    /* the session expires with the emergency anyway */
+  }
   await logEvent(emergency.id, emergency.user_id, "Cancelled", "You cancelled this alert.");
 }
 

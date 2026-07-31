@@ -207,6 +207,7 @@ export type Database = {
           created_at: string
           email: string | null
           id: string
+          is_guardian: boolean
           name: string
           phone: string
           position: number
@@ -218,6 +219,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_guardian?: boolean
           name: string
           phone: string
           position?: number
@@ -229,6 +231,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           id?: string
+          is_guardian?: boolean
           name?: string
           phone?: string
           position?: number
@@ -342,32 +345,98 @@ export type Database = {
         }
         Relationships: []
       }
+      guardian_sessions: {
+        Row: {
+          active: boolean
+          created_at: string
+          emergency_id: string
+          expires_at: string | null
+          guardian_contact_id: string | null
+          guardian_email: string | null
+          guardian_name: string
+          guardian_phone: string | null
+          id: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          emergency_id: string
+          expires_at?: string | null
+          guardian_contact_id?: string | null
+          guardian_email?: string | null
+          guardian_name: string
+          guardian_phone?: string | null
+          id?: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          emergency_id?: string
+          expires_at?: string | null
+          guardian_contact_id?: string | null
+          guardian_email?: string | null
+          guardian_name?: string
+          guardian_phone?: string | null
+          id?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardian_sessions_emergency_id_fkey"
+            columns: ["emergency_id"]
+            isOneToOne: false
+            referencedRelation: "emergencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guardian_sessions_guardian_contact_id_fkey"
+            columns: ["guardian_contact_id"]
+            isOneToOne: false
+            referencedRelation: "emergency_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       location_pings: {
         Row: {
           accuracy: number | null
+          battery_level: number | null
           created_at: string
           emergency_id: string
           id: string
           latitude: number
           longitude: number
+          speed: number | null
           user_id: string
         }
         Insert: {
           accuracy?: number | null
+          battery_level?: number | null
           created_at?: string
           emergency_id: string
           id?: string
           latitude: number
           longitude: number
+          speed?: number | null
           user_id: string
         }
         Update: {
           accuracy?: number | null
+          battery_level?: number | null
           created_at?: string
           emergency_id?: string
           id?: string
           latitude?: number
           longitude?: number
+          speed?: number | null
           user_id?: string
         }
         Relationships: [
@@ -606,6 +675,10 @@ export type Database = {
     }
     Functions: {
       get_donor_phone: { Args: { _donor_id: string }; Returns: string }
+      get_guardian_view: {
+        Args: { _emergency_id: string; _token: string }
+        Returns: Json
+      }
       get_shared_location: { Args: { _token: string }; Returns: Json }
       get_shared_profile: { Args: { _token: string }; Returns: Json }
       get_shared_track: {
