@@ -3,7 +3,7 @@ import { PhoneCall, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PlaceCard, CATEGORY_EMOJI, CATEGORY_LABEL } from "@/components/aegis/nearest-services";
-import { AMBULANCE_CONTACT, coordinationCategories } from "@/lib/coordination";
+import { EMERGENCY_LINE, coordinationCategories } from "@/lib/coordination";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import type { PlaceCategory } from "@/lib/nearby.server";
 import type { LivePosition } from "@/hooks/use-live-position";
@@ -29,10 +29,7 @@ export function EmergencyCoordination({
   const state = nearby ?? fallback;
   const [showMore, setShowMore] = useState(false);
 
-  const categories = coordinationCategories(type, severity).filter(
-    (category): category is PlaceCategory =>
-      ["hospital", "police", "fire", "blood_bank"].includes(category),
-  );
+  const categories: PlaceCategory[] = coordinationCategories(type, severity);
 
   return (
     <section aria-label="Emergency coordination" className="glass-panel rounded-2xl p-4">
@@ -63,7 +60,7 @@ export function EmergencyCoordination({
               {primary ? (
                 <>
                   <PlaceCard place={primary} origin={state.origin} />
-                  {alternates.map((place, index) => (
+                  {alternates.map((place: NearbyPlace, index: number) => (
                     <PlaceCard key={place.id} place={place} origin={state.origin} rank={index + 2} />
                   ))}
                 </>
@@ -85,15 +82,13 @@ export function EmergencyCoordination({
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-              Ambulance / emergency line
+              Public emergency line
             </p>
-            <p className="truncate text-sm font-semibold text-foreground">
-              {AMBULANCE_CONTACT.name}
-            </p>
-            <p className="text-xs text-muted-foreground">{AMBULANCE_CONTACT.phone}</p>
+            <p className="truncate text-sm font-semibold text-foreground">{EMERGENCY_LINE.name}</p>
+            <p className="text-xs text-muted-foreground">{EMERGENCY_LINE.phone}</p>
           </div>
-          <Button asChild size="icon" variant="emergency" aria-label="Call ambulance">
-            <a href={`tel:${AMBULANCE_CONTACT.phone.replace(/\s/g, "")}`}>
+          <Button asChild size="icon" variant="emergency" aria-label="Call the public emergency line">
+            <a href={`tel:${EMERGENCY_LINE.phone}`}>
               <PhoneCall className="size-4" />
             </a>
           </Button>

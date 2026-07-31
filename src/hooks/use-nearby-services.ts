@@ -7,7 +7,13 @@ import type { LivePosition } from "@/hooks/use-live-position";
 
 export type NearbyResult = Record<PlaceCategory, NearbyPlace[]>;
 
-const EMPTY: NearbyResult = { hospital: [], police: [], fire: [], blood_bank: [] };
+const EMPTY: NearbyResult = {
+  hospital: [],
+  ambulance: [],
+  police: [],
+  fire: [],
+  blood_bank: [],
+};
 /** Only re-query when the user moves more than this. */
 const MOVE_THRESHOLD_KM = 0.1;
 
