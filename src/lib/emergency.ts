@@ -287,6 +287,17 @@ export async function confirmSafe(input: {
     } catch {
       /* resolution notices can be resent from the history page */
     }
+    try {
+      await sendEmergencyEmailAlerts({
+        userId: emergency.user_id,
+        emergency,
+        profile,
+        contacts,
+        kind: "resolved",
+      });
+    } catch {
+      /* resolution emails can be resent from the share centre */
+    }
   }
 }
 
