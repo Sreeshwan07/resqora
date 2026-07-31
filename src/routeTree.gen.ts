@@ -19,6 +19,7 @@ import { Route as AppActivityRouteImport } from './routes/_app.activity'
 import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
 import { Route as AppCheckinsRouteImport } from './routes/_app.checkins'
+import { Route as AppContactsRouteImport } from './routes/_app.contacts'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppDonorsRouteImport } from './routes/_app.donors'
 import { Route as AppEmergencyRouteImport } from './routes/_app.emergency'
@@ -28,6 +29,7 @@ import { Route as AppNearbyRouteImport } from './routes/_app.nearby'
 import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppReportRouteImport } from './routes/_app.report'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as MTokenRouteImport } from './routes/m.$token'
 import { Route as STokenRouteImport } from './routes/s.$token'
@@ -81,6 +83,11 @@ const AppCheckinsRoute = AppCheckinsRouteImport.update({
   path: '/checkins',
   getParentRoute: () => AppRoute,
 } as any)
+const AppContactsRoute = AppContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -126,6 +133,11 @@ const AppProfileRoute = AppProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReportRoute = AppReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -152,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AppAdminRoute
   '/assistant': typeof AppAssistantRoute
   '/checkins': typeof AppCheckinsRoute
+  '/contacts': typeof AppContactsRoute
   '/dashboard': typeof AppDashboardRoute
   '/donors': typeof AppDonorsRoute
   '/emergency': typeof AppEmergencyRoute
@@ -161,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/notes': typeof AppNotesRoute
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
+  '/report': typeof AppReportRoute
   '/settings': typeof AppSettingsRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
@@ -175,6 +189,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AppAdminRoute
   '/assistant': typeof AppAssistantRoute
   '/checkins': typeof AppCheckinsRoute
+  '/contacts': typeof AppContactsRoute
   '/dashboard': typeof AppDashboardRoute
   '/donors': typeof AppDonorsRoute
   '/emergency': typeof AppEmergencyRoute
@@ -184,6 +199,7 @@ export interface FileRoutesByTo {
   '/notes': typeof AppNotesRoute
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
+  '/report': typeof AppReportRoute
   '/settings': typeof AppSettingsRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
@@ -200,6 +216,7 @@ export interface FileRoutesById {
   '/_app/admin': typeof AppAdminRoute
   '/_app/assistant': typeof AppAssistantRoute
   '/_app/checkins': typeof AppCheckinsRoute
+  '/_app/contacts': typeof AppContactsRoute
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/donors': typeof AppDonorsRoute
   '/_app/emergency': typeof AppEmergencyRoute
@@ -209,6 +226,7 @@ export interface FileRoutesById {
   '/_app/notes': typeof AppNotesRoute
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
+  '/_app/report': typeof AppReportRoute
   '/_app/settings': typeof AppSettingsRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
@@ -225,6 +243,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/checkins'
+    | '/contacts'
     | '/dashboard'
     | '/donors'
     | '/emergency'
@@ -234,6 +253,7 @@ export interface FileRouteTypes {
     | '/notes'
     | '/notifications'
     | '/profile'
+    | '/report'
     | '/settings'
     | '/m/$token'
     | '/s/$token'
@@ -248,6 +268,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/assistant'
     | '/checkins'
+    | '/contacts'
     | '/dashboard'
     | '/donors'
     | '/emergency'
@@ -257,6 +278,7 @@ export interface FileRouteTypes {
     | '/notes'
     | '/notifications'
     | '/profile'
+    | '/report'
     | '/settings'
     | '/m/$token'
     | '/s/$token'
@@ -272,6 +294,7 @@ export interface FileRouteTypes {
     | '/_app/admin'
     | '/_app/assistant'
     | '/_app/checkins'
+    | '/_app/contacts'
     | '/_app/dashboard'
     | '/_app/donors'
     | '/_app/emergency'
@@ -281,6 +304,7 @@ export interface FileRouteTypes {
     | '/_app/notes'
     | '/_app/notifications'
     | '/_app/profile'
+    | '/_app/report'
     | '/_app/settings'
     | '/m/$token'
     | '/s/$token'
@@ -369,6 +393,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCheckinsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/contacts': {
+      id: '/_app/contacts'
+      path: '/contacts'
+      fullPath: '/contacts'
+      preLoaderRoute: typeof AppContactsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
@@ -432,6 +463,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/report': {
+      id: '/_app/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof AppReportRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -461,6 +499,7 @@ interface AppRouteChildren {
   AppAdminRoute: typeof AppAdminRoute
   AppAssistantRoute: typeof AppAssistantRoute
   AppCheckinsRoute: typeof AppCheckinsRoute
+  AppContactsRoute: typeof AppContactsRoute
   AppDashboardRoute: typeof AppDashboardRoute
   AppDonorsRoute: typeof AppDonorsRoute
   AppEmergencyRoute: typeof AppEmergencyRoute
@@ -470,6 +509,7 @@ interface AppRouteChildren {
   AppNotesRoute: typeof AppNotesRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
+  AppReportRoute: typeof AppReportRoute
   AppSettingsRoute: typeof AppSettingsRoute
 }
 
@@ -478,6 +518,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAdminRoute: AppAdminRoute,
   AppAssistantRoute: AppAssistantRoute,
   AppCheckinsRoute: AppCheckinsRoute,
+  AppContactsRoute: AppContactsRoute,
   AppDashboardRoute: AppDashboardRoute,
   AppDonorsRoute: AppDonorsRoute,
   AppEmergencyRoute: AppEmergencyRoute,
@@ -487,6 +528,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotesRoute: AppNotesRoute,
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
+  AppReportRoute: AppReportRoute,
   AppSettingsRoute: AppSettingsRoute,
 }
 
