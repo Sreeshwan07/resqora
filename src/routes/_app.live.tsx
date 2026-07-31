@@ -287,26 +287,16 @@ function LiveLocationPage() {
             <div className="border-t border-border p-5">
               <h2 className="text-sm font-semibold text-foreground">Contact alerts</h2>
               <p className="mt-1 text-xs text-muted-foreground">
-                Every trusted contact received your name, time, address, coordinates and map link.
+                Every trusted contact receives your name, address, live tracking link, time and
+                emergency ID. Delivery status is tracked per contact.
               </p>
-              <ul className="mt-3 flex flex-wrap gap-2">
-                {(contacts.data ?? []).map((contact) => (
-                  <li key={contact.id}>
-                    <Badge
-                      variant="secondary"
-                      className="gap-1 rounded-full text-[11px] font-semibold"
-                    >
-                      <CheckCircle2 className="size-3 text-success" aria-hidden="true" />
-                      {contact.name} notified
-                    </Badge>
-                  </li>
-                ))}
-              </ul>
               <div className="mt-4">
-                <EmergencyAlerts
+                <ContactAlertStatus
                   emergency={emergency}
                   profile={profile.data}
                   contacts={contacts.data ?? []}
+                  trackingUrl={trackingUrl}
+                  address={emergency.address ?? address}
                 />
               </div>
             </div>
