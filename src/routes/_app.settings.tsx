@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery, type Profile } from "@/lib/api";
+import { logSecurityEvent } from "@/lib/audit";
 import { pushPermission, requestPushPermission, showPush } from "@/lib/push";
 import { cn } from "@/lib/utils";
 import type { Theme } from "@/types";
