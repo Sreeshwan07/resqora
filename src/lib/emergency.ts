@@ -18,6 +18,7 @@ import {
 } from "@/lib/alert-delivery";
 import { isOffline, queueEmergency } from "@/lib/offline";
 import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
+import { prepareWhatsappShares } from "@/lib/whatsapp-alerts";
 import { notifyEmergency } from "@/lib/emergency-notifications";
 import { expireGuardianSessions, guardianOf, notifyGuardian } from "@/lib/guardian";
 import { readBatteryLevel, readSpeed } from "@/lib/device";
@@ -241,7 +242,7 @@ export async function createEmergency(options: {
         .select("*")
         .eq("id", data.id)
         .single();
-      await sendEmergencyEmailAlerts({
+      const emailResult = await sendEmergencyEmailAlerts({
         userId: options.userId,
         emergency: (current ?? data) as Emergency,
         profile: options.profile,
@@ -249,8 +250,49 @@ export async function createEmergency(options: {
         address,
         trackingUrl,
       });
+      if (emailResult.skipped) {
+        await logEvent(
+          data.id,
+          options.userId,
+          "Email skipped",
+          "No trusted contact has an email address saved.",
+        );
+      } else if (emailResult.configured) {
+        await logEvent(
+          data.id,
+          options.userId,
+          "Email sent",
+          `Emergency email delivered to ${emailResult.sent} contact(s).`,
+        );
+      } else {
+        await logEvent(
+          data.id,
+          options.userId,
+          "Email delivery unavailable",
+          "Automatic email is not connected — send it from the share centre.",
+        );
+      }
     } catch {
       /* the share centre lets the user resend every email */
+    }
+
+    // WhatsApp: prepare one ready-to-send message per contact with a phone.
+    try {
+      const prepared = await prepareWhatsappShares({
+        userId: options.userId,
+        emergencyId: data.id,
+        contacts: options.contacts,
+      });
+      if (prepared.length > 0) {
+        await logEvent(
+          data.id,
+          options.userId,
+          "WhatsApp prepared",
+          `${prepared.length} WhatsApp alert(s) ready to send from the share centre.`,
+        );
+      }
+    } catch {
+      /* the share centre can prepare the WhatsApp messages again */
     }
   }
 
