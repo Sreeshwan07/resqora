@@ -5,6 +5,7 @@ import { Copy, Loader2, PhoneCall, Save, ShieldOff, UserRound } from "lucide-rea
 import { toast } from "sonner";
 import { PageHeader } from "@/components/system/page-header";
 import { MedicalIdCard } from "@/components/aegis/medical-id-card";
+import { GuardianCard } from "@/components/aegis/guardian-card";
 import { SafetyScoreCard } from "@/components/aegis/safety-score-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -296,6 +297,7 @@ function ProfilePage() {
 
         <div className="space-y-4">
           <SafetyScoreCard score={score} hints={[]} />
+          <GuardianCard userId={user?.id} />
           <MedicalQrSection />
         </div>
       </div>
