@@ -1,6 +1,22 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getCurrentPosition, logEvent, notify, type Emergency } from "@/lib/api";
+import {
+  getCurrentPosition,
+  logEvent,
+  notify,
+  type Emergency,
+  type EmergencyContact,
+  type Profile,
+} from "@/lib/api";
 import { logActivity } from "@/lib/activity";
+import { reverseGeocode } from "@/lib/geocode";
+import { ensureLiveShareLink, shareUrl } from "@/lib/share";
+import {
+  buildEmergencyAlert,
+  buildResolvedAlert,
+  dispatchDeliveries,
+  seedDeliveries,
+} from "@/lib/alert-delivery";
+import { isOffline, queueEmergency } from "@/lib/offline";
 
 export const EMERGENCY_TYPES = [
   { value: "medical", label: "Medical" },
@@ -46,7 +62,35 @@ export async function createEmergency(options: {
   severity?: string;
   notes?: string;
   contactCount: number;
+  contacts?: EmergencyContact[];
+  profile?: Profile | null;
 }): Promise<Emergency> {
+  // Offline: capture everything locally and sync when connectivity returns.
+  if (isOffline()) {
+    let latitude: number | null = null;
+    let longitude: number | null = null;
+    try {
+      const position = await getCurrentPosition();
+      latitude = position.coords.latitude;
+      longitude = position.coords.longitude;
+    } catch {
+      /* keep the queued alert even without a GPS fix */
+    }
+    queueEmergency({
+      userId: options.userId,
+      type: options.type,
+      severity: options.severity ?? "high",
+      notes: options.notes ?? null,
+      latitude,
+      longitude,
+      address: null,
+      startedAt: new Date().toISOString(),
+    });
+    throw new Error(
+      "You are offline — the SOS was saved on this device and will sync automatically.",
+    );
+  }
+
   const { data, error } = await supabase
     .from("emergencies")
     .insert({
@@ -62,18 +106,35 @@ export async function createEmergency(options: {
 
   await logEvent(data.id, options.userId, "SOS triggered", "Alert created on your device.");
 
+  let address: string | null = null;
   try {
     const position = await getCurrentPosition();
     const { latitude, longitude } = position.coords;
+    address = await reverseGeocode(latitude, longitude);
     await supabase
       .from("emergencies")
-      .update({ status: "locating", latitude, longitude })
+      .update({
+        status: "locating",
+        latitude,
+        longitude,
+        address,
+        location_updated_at: new Date().toISOString(),
+      })
       .eq("id", data.id);
+    await supabase.from("location_pings").insert({
+      emergency_id: data.id,
+      user_id: options.userId,
+      latitude,
+      longitude,
+      accuracy: position.coords.accuracy,
+    });
     await logEvent(
       data.id,
       options.userId,
       "Location captured",
-      `${latitude.toFixed(5)}, ${longitude.toFixed(5)} (±${Math.round(position.coords.accuracy)}m)`,
+      address
+        ? `${address} — ${latitude.toFixed(5)}, ${longitude.toFixed(5)} (±${Math.round(position.coords.accuracy)}m)`
+        : `${latitude.toFixed(5)}, ${longitude.toFixed(5)} (±${Math.round(position.coords.accuracy)}m)`,
     );
   } catch {
     await logEvent(
@@ -84,6 +145,21 @@ export async function createEmergency(options: {
     );
   }
 
+  // Secure live tracking link for the trusted contacts.
+  let trackingUrl: string | null = null;
+  try {
+    const link = await ensureLiveShareLink(options.userId, data.id);
+    trackingUrl = shareUrl(link);
+    await logEvent(
+      data.id,
+      options.userId,
+      "Live tracking started",
+      "Secure tracking link created — location refreshes every 10 seconds.",
+    );
+  } catch {
+    /* tracking link can be regenerated from the live page */
+  }
+
   await supabase.from("emergencies").update({ status: "ai_analysis" }).eq("id", data.id);
   await logEvent(
     data.id,
@@ -91,6 +167,33 @@ export async function createEmergency(options: {
     "AI analysis started",
     "Severity scoring and response priority calculated from your emergency type.",
   );
+
+  // Alert every trusted contact and record the delivery outcome per contact.
+  if (options.contacts && options.contacts.length > 0) {
+    try {
+      const { data: fresh } = await supabase
+        .from("emergencies")
+        .select("*")
+        .eq("id", data.id)
+        .single();
+      const deliveries = await seedDeliveries({
+        userId: options.userId,
+        emergencyId: data.id,
+        contacts: options.contacts,
+      });
+      await dispatchDeliveries({
+        deliveries,
+        message: buildEmergencyAlert({
+          emergency: (fresh ?? data) as Emergency,
+          profile: options.profile,
+          address,
+          trackingUrl,
+        }),
+      });
+    } catch {
+      /* the live page lets the user retry every delivery */
+    }
+  }
 
   await supabase.from("emergencies").update({ status: "contacts_notified" }).eq("id", data.id);
   await logEvent(
@@ -117,6 +220,48 @@ export async function createEmergency(options: {
 
   const { data: fresh } = await supabase.from("emergencies").select("*").eq("id", data.id).single();
   return (fresh ?? data) as Emergency;
+}
+
+/**
+ * "I'm safe": stops live sharing, closes the session and queues a resolution
+ * notice for every trusted contact.
+ */
+export async function confirmSafe(input: {
+  emergency: Emergency;
+  profile: Profile | null | undefined;
+  contacts: EmergencyContact[];
+}) {
+  const { emergency, profile, contacts } = input;
+  await supabase.from("emergencies").update({ live_status: "safe" }).eq("id", emergency.id);
+  await resolveEmergency(emergency);
+  await supabase
+    .from("share_links")
+    .update({ active: false })
+    .eq("emergency_id", emergency.id)
+    .eq("kind", "live");
+  await logEvent(
+    emergency.id,
+    emergency.user_id,
+    "Live tracking stopped",
+    "The user confirmed they are safe.",
+  );
+
+  if (contacts.length > 0) {
+    try {
+      const deliveries = await seedDeliveries({
+        userId: emergency.user_id,
+        emergencyId: emergency.id,
+        contacts,
+        kind: "resolved",
+      });
+      await dispatchDeliveries({
+        deliveries,
+        message: buildResolvedAlert({ emergency, profile }),
+      });
+    } catch {
+      /* resolution notices can be resent from the history page */
+    }
+  }
 }
 
 export async function advanceEmergency(emergency: Emergency) {
