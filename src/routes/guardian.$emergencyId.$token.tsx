@@ -297,8 +297,8 @@ function GuardianDashboard() {
               )}
               {data.track.length > 1 && (
                 <ol className="max-h-40 space-y-1 overflow-y-auto p-4 text-xs text-muted-foreground">
-                  {data.track.slice(0, 12).map((point) => (
-                    <li key={point.created_at} className="flex justify-between gap-3">
+                  {data.track.slice(0, 12).map((point, index) => (
+                    <li key={`${point.created_at}-${index}`} className="flex justify-between gap-3">
                       <span className="font-mono">
                         {point.latitude.toFixed(5)}, {point.longitude.toFixed(5)}
                       </span>
