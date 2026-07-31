@@ -24,7 +24,6 @@ import {
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/system/confirm-modal";
 import { MedicalIdQr } from "@/components/aegis/medical-id-card";
-import { SosButton } from "@/components/aegis/sos-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -250,11 +249,6 @@ function HomePage() {
             </Button>
           )}
         </div>
-      </section>
-
-      {/* SOS */}
-      <section className="glass-panel rounded-2xl px-4 py-2">
-        <SosButton onTrigger={() => setConfirmOpen(true)} disabled={busy || Boolean(current)} active={Boolean(current)} />
       </section>
 
       {/* Quick actions */}
