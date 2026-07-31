@@ -98,7 +98,8 @@ function SharedLocationPage() {
 
   const shared = useQuery({
     queryKey: ["shared-location", token],
-    refetchInterval: 10000,
+    refetchInterval: (query) =>
+      (query.state.data as SharedLocation | null)?.resolved_at ? false : 10000,
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_shared_location", { _token: token });
       if (error) throw new Error(error.message);
@@ -109,7 +110,7 @@ function SharedLocationPage() {
   // Movement history for the same token-gated session.
   const track = useQuery({
     queryKey: ["shared-track", token],
-    refetchInterval: 10000,
+    refetchInterval: () => (shared.data?.resolved_at ? false : 10000),
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_shared_track", { _token: token });
       if (error) throw new Error(error.message);
