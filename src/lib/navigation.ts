@@ -125,6 +125,7 @@ export const navSections: NavSection[] = [
       reportNav,
       { label: "Nearby services", to: "/nearby", icon: MapPinned, description: "Responders around you" },
       liveLocationNav,
+      shareCenterNav,
     ],
   },
   {
