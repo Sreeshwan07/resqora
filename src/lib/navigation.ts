@@ -117,6 +117,7 @@ export const documentsNav: NavItem = {
 };
 
 export const navSections: NavSection[] = [
+  // (share centre is declared above navSections)
   {
     title: "Emergency",
     items: [
