@@ -275,6 +275,12 @@ function LiveLocationPage() {
               </div>
             </div>
             <div className="border-t border-border p-5">
+              <EmergencyAnalysisPanel emergency={emergency} />
+            </div>
+            <div className="border-t border-border p-5">
+              <EmergencyChecklist type={emergency.type} />
+            </div>
+            <div className="border-t border-border p-5">
               <EmergencyCoordination
                 type={emergency.type}
                 severity={emergency.severity}
