@@ -64,6 +64,7 @@ function SettingsPage() {
   }
 
   async function signOut() {
+    void logSecurityEvent("Signed out", "User signed out of AEGIS");
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
