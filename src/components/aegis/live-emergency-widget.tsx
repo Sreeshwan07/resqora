@@ -91,19 +91,10 @@ export function LiveEmergencyWidget() {
         )}
 
         <div className="mt-3 flex gap-2">
-          <Button
-            size="sm"
-            className="flex-1 bg-linear-to-r from-success to-success/80 text-white hover:opacity-95"
-            disabled={busy}
-            onClick={() => setConfirm(true)}
-          >
-            <ShieldCheck className="size-4" />
-            Stop SOS
-          </Button>
-          <Button asChild size="sm" variant="outline">
+          <Button asChild size="sm" variant="outline" className="flex-1">
             <Link to="/live">
               <Radar className="size-4" />
-              Live
+              Live tracking
             </Link>
           </Button>
         </div>

@@ -85,7 +85,7 @@ export function GlobalSosButton() {
                 <Siren className="size-5 lg:size-6" aria-hidden="true" />
               )}
               <span className="mt-1 font-display text-xs font-bold tracking-wide">
-                {running ? "STOP" : "SOS"}
+                {running ? "CANCEL" : "SOS"}
               </span>
             </span>
           </motion.button>
