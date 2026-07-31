@@ -1,30 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { ChevronDown, ChevronUp, Crosshair, MapPin, Radar, ShieldCheck } from "lucide-react";
-import { toast } from "sonner";
+import { ChevronDown, ChevronUp, Crosshair, MapPin, Radar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ConfirmModal } from "@/components/system/confirm-modal";
 import { useAuth } from "@/hooks/use-auth";
 import { useLivePosition } from "@/hooks/use-live-position";
-import { activeEmergencyQuery, contactsQuery, profileQuery } from "@/lib/api";
-import { confirmSafe } from "@/lib/emergency";
-import { notifyEmergency } from "@/lib/emergency-notifications";
-import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
+import { activeEmergencyQuery } from "@/lib/api";
 import { formatDuration } from "@/lib/emergency";
 
 /** Floating live-emergency widget shown on every page while an SOS is active. */
 export function LiveEmergencyWidget() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const active = useQuery(activeEmergencyQuery(user?.id));
-  const profile = useQuery(profileQuery(user?.id));
-  const contacts = useQuery(contactsQuery(user?.id));
   const { position, address } = useLivePosition();
   const [open, setOpen] = useState(true);
-  const [confirm, setConfirm] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [elapsed, setElapsed] = useState(0);
 
   const emergency = active.data ?? null;
