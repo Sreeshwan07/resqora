@@ -14,6 +14,7 @@ import { RecentActivityCard } from "@/components/aegis/recent-activity-card";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { useAuth } from "@/hooks/use-auth";
+import { useSosTheme } from "@/hooks/use-sos-theme";
 import { activeEmergencyQuery } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
@@ -40,6 +41,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { user } = useAuth();
+  useSosTheme();
   const { position, address, denied } = useLivePosition();
   const active = useQuery(activeEmergencyQuery(user?.id));
   const emergencyId = active.data && active.data.status !== "resolved" ? active.data.id : null;
