@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { motion } from "motion/react";
+import { useRouterState } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/layouts/app-sidebar";
 import { AppTopbar } from "@/components/layouts/app-topbar";
 import { MobileNav } from "@/components/layouts/mobile-nav";
@@ -10,6 +11,9 @@ import { useLivePosition } from "@/hooks/use-live-position";
 export function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const { position, address, denied } = useLivePosition();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // /live renders its own detailed live-location panel — avoid showing it twice.
+  const showLocationCard = !pathname.startsWith("/live");
 
   return (
     <div className="flex min-h-dvh w-full bg-background aurora">
@@ -23,7 +27,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="mx-auto w-full max-w-6xl space-y-8"
           >
-            <LiveLocationCard position={position} address={address} denied={denied} />
+            {showLocationCard && (
+              <LiveLocationCard position={position} address={address} denied={denied} />
+            )}
             {children}
           </motion.div>
         </main>

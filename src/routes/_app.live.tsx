@@ -16,7 +16,6 @@ import { MedicalIdCard } from "@/components/aegis/medical-id-card";
 import { ShareSos } from "@/components/aegis/share-sos";
 import { LiveStatusControls } from "@/components/aegis/live-status-controls";
 import { EmergencyCoordination } from "@/components/aegis/emergency-coordination";
-import { NearestServices } from "@/components/aegis/nearest-services";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { ensureLiveShareLink, shareUrl } from "@/lib/share";
@@ -286,9 +285,6 @@ function LiveLocationPage() {
                 position={position}
                 status={statusLabel(emergency.status)}
               />
-              <div className="mt-4">
-                <NearestServices position={position} />
-              </div>
             </div>
             <div className="border-t border-border p-5">
               <h2 className="text-sm font-semibold text-foreground">Share SOS</h2>
