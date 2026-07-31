@@ -80,6 +80,9 @@ export type Database = {
       emergencies: {
         Row: {
           address: string | null
+          ai_first_aid: string[] | null
+          ai_recommendation: string | null
+          ai_summary: string | null
           created_at: string
           duration_seconds: number | null
           id: string
@@ -98,6 +101,9 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          ai_first_aid?: string[] | null
+          ai_recommendation?: string | null
+          ai_summary?: string | null
           created_at?: string
           duration_seconds?: number | null
           id?: string
@@ -116,6 +122,9 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          ai_first_aid?: string[] | null
+          ai_recommendation?: string | null
+          ai_summary?: string | null
           created_at?: string
           duration_seconds?: number | null
           id?: string
@@ -133,6 +142,62 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      emergency_alert_deliveries: {
+        Row: {
+          channel: string
+          contact_id: string | null
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          emergency_id: string
+          error: string | null
+          id: string
+          kind: string
+          sent_at: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          channel?: string
+          contact_id?: string | null
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          emergency_id: string
+          error?: string | null
+          id?: string
+          kind?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          channel?: string
+          contact_id?: string | null
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          emergency_id?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          sent_at?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_alert_deliveries_emergency_id_fkey"
+            columns: ["emergency_id"]
+            isOneToOne: false
+            referencedRelation: "emergencies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       emergency_contacts: {
         Row: {
