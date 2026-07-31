@@ -150,6 +150,8 @@ function HomePage() {
         userId: user.id,
         type: "sos",
         contactCount: contacts.data?.length ?? 0,
+        contacts: contacts.data ?? [],
+        profile: profile.data ?? null,
       });
       await queryClient.invalidateQueries();
       toast.success("SOS sent — your contacts have been alerted");

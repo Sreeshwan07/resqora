@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { contactsQuery, notify } from "@/lib/api";
+import { contactsQuery, notify, profileQuery } from "@/lib/api";
 import { createEmergency } from "@/lib/emergency";
 import { logActivity } from "@/lib/activity";
 import { showPush } from "@/lib/push";
@@ -47,12 +47,17 @@ export function useCheckinWatcher() {
           escalating.current.add(checkin.id);
           try {
             const contacts = await queryClient.fetchQuery(contactsQuery(user!.id));
+            const profile = await queryClient
+              .fetchQuery(profileQuery(user!.id))
+              .catch(() => null);
             const emergency = await createEmergency({
               userId: user!.id,
               type: "sos",
               severity: "high",
               notes: `Missed safety check-in: ${checkin.label}${checkin.note ? ` — ${checkin.note}` : ""}`,
               contactCount: contacts.length,
+              contacts,
+              profile,
             });
             await supabase
               .from("safety_checkins")
