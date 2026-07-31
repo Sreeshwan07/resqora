@@ -111,6 +111,8 @@ function LiveLocationPage() {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           accuracy: position.coords.accuracy,
+          speed: readSpeed(position.coords),
+          battery_level: await readBatteryLevel(),
         });
         if (options.log !== false) {
           await logEvent(
