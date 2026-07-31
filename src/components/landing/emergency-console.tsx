@@ -17,6 +17,7 @@ import { contactsQuery } from "@/lib/api";
 import { createEmergency } from "@/lib/emergency";
 import { EMERGENCY_LINE } from "@/lib/coordination";
 import { analyzeEmergencyImage, type AccidentAnalysis } from "@/lib/vision.functions";
+import { checkRateLimit } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 const SEVERITY_STYLES: Record<string, string> = {
