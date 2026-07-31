@@ -610,6 +610,36 @@ export type Database = {
           },
         ]
       }
+      security_events: {
+        Row: {
+          created_at: string
+          detail: string | null
+          event: string
+          id: string
+          metadata: Json
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          event: string
+          id?: string
+          metadata?: Json
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          event?: string
+          id?: string
+          metadata?: Json
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       share_links: {
         Row: {
           active: boolean
@@ -702,6 +732,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      log_guardian_access: {
+        Args: { _emergency_id: string; _token: string }
+        Returns: undefined
+      }
+      log_security_event: {
+        Args: {
+          _detail?: string
+          _event: string
+          _metadata?: Json
+          _user_agent?: string
+        }
+        Returns: undefined
+      }
       search_blood_donors: {
         Args: { _city?: string; _group?: string }
         Returns: {
@@ -714,7 +757,7 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "guardian"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -842,7 +885,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "guardian"],
     },
   },
 } as const
