@@ -53,6 +53,8 @@ export function GlobalSosButton() {
   }
 
   if (pathname === "/emergency") return null;
+  // While an emergency runs, the floating live widget owns the Stop SOS control.
+  if (running) return null;
 
   return (
     <>
