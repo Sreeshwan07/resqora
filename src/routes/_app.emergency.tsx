@@ -117,6 +117,8 @@ function EmergencyPage() {
         type: emergencyType,
         notes: notes.trim() || undefined,
         contactCount: contacts.data?.length ?? 0,
+        contacts: contacts.data ?? [],
+        profile: profile.data ?? null,
       });
       await refresh();
       toast.success("SOS sent — your contacts have been alerted");
