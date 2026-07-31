@@ -18,6 +18,7 @@ import {
   Users,
   IdCard,
   FileText,
+  Share2,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
