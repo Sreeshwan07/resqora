@@ -181,7 +181,21 @@ function LiveLocationPage() {
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
           <div className="glass-panel overflow-hidden rounded-3xl">
+            {offline && (
+              <div className="flex items-center gap-2 border-b border-border bg-warning/10 px-5 py-3 text-xs font-medium text-warning">
+                <WifiOff className="size-4" aria-hidden="true" />
+                Offline — {pending} update{pending === 1 ? "" : "s"} saved on this device and will
+                sync automatically.
+              </div>
+            )}
             <MapPreview coords={coords} />
+            <div className="border-b border-border p-5">
+              <ImSafeButton
+                emergency={emergency}
+                profile={profile.data}
+                contacts={contacts.data ?? []}
+              />
+            </div>
             <div className="grid gap-4 border-t border-border p-5 sm:grid-cols-2">
               <Detail label="Latitude" value={coords ? coords.lat.toFixed(6) : "Unavailable"} />
               <Detail label="Longitude" value={coords ? coords.lng.toFixed(6) : "Unavailable"} />
