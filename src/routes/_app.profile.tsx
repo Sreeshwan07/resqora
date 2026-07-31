@@ -24,6 +24,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { computeSafetyScore, contactsQuery, profileQuery } from "@/lib/api";
 import { copyText } from "@/lib/alerts";
 import { ensureMedicalShareLink, revokeShareLink, shareUrl } from "@/lib/share";
+import { logSecurityEvent } from "@/lib/audit";
+import {
+  contactSchema,
+  firstIssue,
+  sanitizeMultiline,
+  sanitizePhone,
+  sanitizeText,
+} from "@/lib/security";
 import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/_app/profile")({
@@ -112,16 +120,16 @@ function ProfilePage() {
     const { error } = await supabase
       .from("profiles")
       .update({
-        full_name: form.full_name.trim() || null,
-        phone: form.phone.trim() || null,
+        full_name: sanitizeText(form.full_name, 120) || null,
+        phone: sanitizePhone(form.phone) || null,
         date_of_birth: form.date_of_birth || null,
-        gender: form.gender || null,
-        current_city: form.current_city.trim() || null,
-        home_address: form.home_address.trim() || null,
-        blood_group: form.blood_group || null,
-        allergies: form.allergies.trim() || null,
-        medical_conditions: form.medical_conditions.trim() || null,
-        medications: form.medications.trim() || null,
+        gender: sanitizeText(form.gender, 40) || null,
+        current_city: sanitizeText(form.current_city, 120) || null,
+        home_address: sanitizeText(form.home_address, 300) || null,
+        blood_group: sanitizeText(form.blood_group, 8) || null,
+        allergies: sanitizeMultiline(form.allergies, 1000) || null,
+        medical_conditions: sanitizeMultiline(form.medical_conditions, 1000) || null,
+        medications: sanitizeMultiline(form.medications, 1000) || null,
         safety_score: score,
       })
       .eq("id", user.id);
@@ -131,24 +139,34 @@ function ProfilePage() {
       return;
     }
     await queryClient.invalidateQueries();
+    void logSecurityEvent("Profile updated", "Personal and medical details saved");
     toast.success("Profile updated");
   }
 
   async function saveContacts() {
     if (!user) return;
-    if (drafts.some((c) => !c.name.trim() || !c.relationship.trim() || c.phone.trim().length < 7)) {
-      toast.error("All three contacts need a name, relationship and phone number");
-      return;
+    const cleaned: { name: string; relationship: string; phone: string; email: string }[] = [];
+    for (const draft of drafts) {
+      const parsed = contactSchema.safeParse(draft);
+      if (!parsed.success) {
+        toast.error(firstIssue(parsed.error));
+        return;
+      }
+      if (!parsed.data.relationship) {
+        toast.error("Each contact needs a relationship");
+        return;
+      }
+      cleaned.push(parsed.data);
     }
     setSaving(true);
     await supabase.from("emergency_contacts").delete().eq("user_id", user.id);
     const { error } = await supabase.from("emergency_contacts").insert(
-      drafts.map((contact, index) => ({
+      cleaned.map((contact, index) => ({
         user_id: user.id,
-        name: contact.name.trim(),
-        relationship: contact.relationship.trim(),
-        phone: contact.phone.trim(),
-        email: contact.email.trim() || null,
+        name: contact.name,
+        relationship: contact.relationship,
+        phone: contact.phone,
+        email: contact.email || null,
         position: index,
       })),
     );
@@ -158,6 +176,7 @@ function ProfilePage() {
       return;
     }
     await queryClient.invalidateQueries();
+    void logSecurityEvent("Emergency contacts changed", "Trusted contact list saved");
     toast.success("Emergency contacts updated");
   }
 

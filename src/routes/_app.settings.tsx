@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery, type Profile } from "@/lib/api";
+import { logSecurityEvent } from "@/lib/audit";
 import { pushPermission, requestPushPermission, showPush } from "@/lib/push";
 import { cn } from "@/lib/utils";
 import type { Theme } from "@/types";
@@ -64,6 +65,7 @@ function SettingsPage() {
   }
 
   async function signOut() {
+    void logSecurityEvent("Signed out", "User signed out of AEGIS");
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();

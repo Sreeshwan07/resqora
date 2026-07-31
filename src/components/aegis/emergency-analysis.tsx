@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { logEvent, type Emergency } from "@/lib/api";
 import { analyzeEmergencyDescription, type EmergencyAnalysis } from "@/lib/analysis.functions";
+import { checkRateLimit, sanitizeMultiline } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 const SEVERITY_STYLE: Record<string, string> = {
@@ -97,9 +98,14 @@ export function EmergencyAnalysisPanel({ emergency }: { emergency: Emergency }) 
   }
 
   async function analyze() {
-    const description = text.trim();
+    const description = sanitizeMultiline(text, 2000);
     if (description.length < 3) {
       toast.error("Describe what happened first");
+      return;
+    }
+    const limit = checkRateLimit("report");
+    if (!limit.allowed) {
+      toast.error(limit.message);
       return;
     }
     recognitionRef.current?.stop();

@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { copyText, coordsOf, mapsLink } from "@/lib/alerts";
 import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
 import { logActivity } from "@/lib/activity";
+import { logSecurityEvent } from "@/lib/audit";
 import {
   buildSosMessage,
   emailHref,
@@ -59,6 +60,7 @@ export function ShareSos({
     try {
       await revokeShareLink(active.id);
       await logActivity(user?.id, "Location sharing stopped", `Emergency ${emergency.id.slice(0, 8)}`);
+      void logSecurityEvent("Share link revoked", `Emergency ${emergency.id.slice(0, 8)}`);
       toast.success("Sharing link disabled");
       await link.refetch();
     } finally {
@@ -71,6 +73,7 @@ export function ShareSos({
     setBusy(true);
     try {
       await rotateShareLink(active);
+      void logSecurityEvent("Share link rotated", `Emergency ${emergency.id.slice(0, 8)}`);
       toast.success("A new link was generated — the old one no longer works");
       await link.refetch();
     } finally {

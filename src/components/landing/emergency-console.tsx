@@ -17,6 +17,7 @@ import { contactsQuery } from "@/lib/api";
 import { createEmergency } from "@/lib/emergency";
 import { EMERGENCY_LINE } from "@/lib/coordination";
 import { analyzeEmergencyImage, type AccidentAnalysis } from "@/lib/vision.functions";
+import { checkRateLimit } from "@/lib/security";
 import { cn } from "@/lib/utils";
 
 const SEVERITY_STYLES: Record<string, string> = {
@@ -86,6 +87,21 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
   const urgent = analysis?.severity === "high" || analysis?.severity === "critical";
 
   async function handleFile(file: File) {
+    // Capture media only, with a hard size ceiling before anything is read.
+    const isMedia = file.type.startsWith("image/") || file.type.startsWith("video/");
+    if (!isMedia) {
+      toast.error("Please choose a photo or video of the scene.");
+      return;
+    }
+    if (file.size === 0 || file.size > 25 * 1024 * 1024) {
+      toast.error("That file is empty or larger than 25 MB.");
+      return;
+    }
+    const limit = checkRateLimit("report");
+    if (!limit.allowed) {
+      toast.error(limit.message);
+      return;
+    }
     setBusy(true);
     setAnalysis(null);
     try {

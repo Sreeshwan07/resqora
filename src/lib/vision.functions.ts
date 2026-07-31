@@ -1,8 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 const Input = z.object({
-  imageDataUrl: z.string().min(32).max(8_000_000),
+  // Only base64 image data URLs — never an arbitrary URL the server would fetch.
+  imageDataUrl: z
+    .string()
+    .min(32)
+    .max(8_000_000)
+    .regex(
+      /^data:image\/(jpeg|jpg|png|webp|heic);base64,[A-Za-z0-9+/=\s]+$/,
+      "Unsupported image format",
+    ),
 });
 
 export type AccidentAnalysis = {
@@ -21,6 +30,8 @@ If the photo shows no emergency, use severity "low", a low confidence, and say s
 export const analyzeEmergencyImage = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<AccidentAnalysis> => {
+    const { enforceLimit } = await import("@/lib/rate-limit.server");
+    enforceLimit(getRequest(), "vision", 8, 60_000);
     const key = process.env.LOVABLE_API_KEY;
     if (!key) throw new Error("AI is not configured");
 

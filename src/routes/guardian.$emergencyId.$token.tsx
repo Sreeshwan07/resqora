@@ -120,6 +120,12 @@ function GuardianDashboard() {
   });
 
   useEffect(() => {
+    // Records the Guardian visit on the account owner's audit trail — the
+    // database only writes the entry when the Guardian token is still valid.
+    void supabase.rpc("log_guardian_access", { _emergency_id: emergencyId, _token: token });
+  }, [emergencyId, token]);
+
+  useEffect(() => {
     const tick = window.setInterval(() => setNow(Date.now()), 1000);
     const sync = () => setOnline(navigator.onLine);
     sync();

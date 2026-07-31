@@ -5,7 +5,11 @@ import type { Emergency, Profile } from "@/lib/api";
 
 export type ShareLink = Database["public"]["Tables"]["share_links"]["Row"];
 
-export function randomToken(bytes = 16) {
+/**
+ * Cryptographically secure share token. 24 bytes = 48 hex characters, and the
+ * database rejects anything shorter than 32 characters.
+ */
+export function randomToken(bytes = 24) {
   const array = new Uint8Array(bytes);
   crypto.getRandomValues(array);
   return Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
