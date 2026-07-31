@@ -116,8 +116,14 @@ export const documentsNav: NavItem = {
   description: "Downloadable PDFs",
 };
 
+export const shareCenterNav: NavItem = {
+  label: "Share centre",
+  to: "/share-center",
+  icon: Share2,
+  description: "Email, WhatsApp, links & QR",
+};
+
 export const navSections: NavSection[] = [
-  // (share centre is declared above navSections)
   {
     title: "Emergency",
     items: [
