@@ -192,6 +192,23 @@ function EmergencyPage() {
             active={Boolean(current)}
           />
 
+          {busy && !current && (
+            <div className="mt-4 space-y-2 rounded-2xl border border-alert/40 bg-alert/5 p-4">
+              <p className="text-sm font-semibold text-foreground">
+                Preparing your emergency notifications…
+              </p>
+              <ul className="space-y-1 text-xs text-muted-foreground">
+                <li>• Capturing GPS location and address</li>
+                <li>• Creating the secure live tracking link</li>
+                <li>• Sending emergency emails to your contacts</li>
+                <li>• Preparing WhatsApp alerts for each contact</li>
+              </ul>
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                <div className="h-full w-1/2 animate-pulse rounded-full bg-alert" />
+              </div>
+            </div>
+          )}
+
           {current ? (
             <div className="mt-4 space-y-4">
               <motion.div

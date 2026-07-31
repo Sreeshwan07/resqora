@@ -503,6 +503,7 @@ export type Database = {
           onboarding_completed: boolean
           phone: string | null
           safety_score: number
+          share_medical_in_alerts: boolean
           theme: string
           updated_at: string
         }
@@ -529,6 +530,7 @@ export type Database = {
           onboarding_completed?: boolean
           phone?: string | null
           safety_score?: number
+          share_medical_in_alerts?: boolean
           theme?: string
           updated_at?: string
         }
@@ -555,6 +557,7 @@ export type Database = {
           onboarding_completed?: boolean
           phone?: string | null
           safety_score?: number
+          share_medical_in_alerts?: boolean
           theme?: string
           updated_at?: string
         }
@@ -685,9 +688,11 @@ export type Database = {
         Args: { _token: string }
         Returns: {
           accuracy: number
+          battery_level: number
           created_at: string
           latitude: number
           longitude: number
+          speed: number
         }[]
       }
       has_role: {

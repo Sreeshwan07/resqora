@@ -17,12 +17,24 @@ export function buildEmergencyEmail(input: {
   const address =
     input.address || emergency.address || profile?.home_address || "Address unavailable";
   const subject = `🚨 AEGIS Emergency Alert — ${name}`;
+  const shareMedical = profile?.share_medical_in_alerts !== false;
+  const medical = shareMedical
+    ? [
+        profile?.blood_group ? `Blood group: ${profile.blood_group}` : null,
+        profile?.allergies ? `Allergies: ${profile.allergies}` : null,
+        profile?.medical_conditions ? `Conditions: ${profile.medical_conditions}` : null,
+        profile?.medications ? `Medications: ${profile.medications}` : null,
+      ].filter(Boolean)
+    : [];
   const message = [
     "🚨 AEGIS Emergency Alert",
     "",
     `${name} has triggered an Emergency SOS and may need immediate assistance.`,
     "",
     `User Name: ${name}`,
+    `Emergency Type: ${emergency.type.replace(/_/g, " ")}`,
+    `Current Status: ${(input.status ?? emergency.status).replace(/_/g, " ")}`,
+    `Their Phone Number: ${profile?.phone || "Not provided"}`,
     `Emergency Started: ${new Date(emergency.started_at).toLocaleString()}`,
     `Current Address: ${address}`,
     `Latitude: ${coords ? coords.lat.toFixed(6) : "Awaiting GPS"}`,
@@ -31,7 +43,9 @@ export function buildEmergencyEmail(input: {
     `Live Tracking Link: ${trackingUrl || "Not available"}`,
     `Emergency Time: ${new Date().toLocaleString()}`,
     `Emergency ID: ${emergency.id.slice(0, 8).toUpperCase()}`,
-    `Current Status: ${(input.status ?? emergency.status).replace(/_/g, " ")}`,
+    ...(medical.length > 0 ? ["", "Medical information:", ...medical] : []),
+    "",
+    trackingUrl ? `▶ OPEN LIVE TRACKING: ${trackingUrl}` : "",
     "",
     "Please call them now or contact local emergency services.",
   ].join("\n");

@@ -25,6 +25,8 @@ import { activeEmergencyQuery, contactsQuery, profileQuery } from "@/lib/api";
 import { copyText, coordsOf, mapsLink } from "@/lib/alerts";
 import { deliveriesQuery } from "@/lib/alert-delivery";
 import { GuardianSessionPanel } from "@/components/aegis/guardian-session-panel";
+import { WhatsappShareStatus } from "@/components/aegis/whatsapp-share-status";
+import { supabase } from "@/integrations/supabase/client";
 import { buildEmergencyEmail, contactsWithEmail, sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { logActivity } from "@/lib/activity";
 import { recentSharesQuery } from "@/lib/shares";
@@ -101,6 +103,25 @@ function ShareCenterPage() {
       })
     : null;
   const emailDeliveries = (deliveries.data ?? []).filter((d) => d.channel === "email");
+  const shareMedical = profile.data?.share_medical_in_alerts !== false;
+
+  async function toggleMedicalSharing() {
+    if (!user) return;
+    const { error } = await supabase
+      .from("profiles")
+      .update({ share_medical_in_alerts: !shareMedical })
+      .eq("id", user.id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    await profile.refetch();
+    toast.success(
+      shareMedical
+        ? "Medical details will no longer be included in emergency emails"
+        : "Medical details will be included in emergency emails",
+    );
+  }
 
   async function copy(value: string, label: string) {
     await copyText(value);
@@ -240,8 +261,28 @@ function ShareCenterPage() {
                   </a>
                 </Button>
               )}
+              <Button variant="ghost" onClick={toggleMedicalSharing}>
+                {shareMedical ? "Stop sharing medical info" : "Include medical info"}
+              </Button>
             </div>
+            {emailPreview && (
+              <details className="mt-3 rounded-xl border border-border p-3">
+                <summary className="cursor-pointer text-xs font-medium text-primary">
+                  Preview the emergency email
+                </summary>
+                <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap text-xs text-foreground">
+                  {emailPreview.message}
+                </pre>
+              </details>
+            )}
           </div>
+
+          <WhatsappShareStatus
+            emergency={emergency}
+            profile={profile.data}
+            contacts={contactList}
+            trackingUrl={trackingUrl}
+          />
 
           <div className="grid gap-2 sm:grid-cols-3">
             <Button asChild variant="hero">
