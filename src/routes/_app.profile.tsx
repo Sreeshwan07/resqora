@@ -24,6 +24,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { computeSafetyScore, contactsQuery, profileQuery } from "@/lib/api";
 import { copyText } from "@/lib/alerts";
 import { ensureMedicalShareLink, revokeShareLink, shareUrl } from "@/lib/share";
+import { logSecurityEvent } from "@/lib/audit";
+import {
+  contactSchema,
+  firstIssue,
+  sanitizeMultiline,
+  sanitizePhone,
+  sanitizeText,
+} from "@/lib/security";
 import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/_app/profile")({
