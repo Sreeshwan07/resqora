@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/brand/logo";
+import { logSecurityEvent } from "@/lib/audit";
+import { firstIssue, passwordSchema } from "@/lib/security";
 
 export const Route = createFileRoute("/reset-password")({
   ssr: false,
@@ -31,8 +33,9 @@ function ResetPasswordPage() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    if (password.length < 8) {
-      toast.error("Password must be at least 8 characters");
+    const parsed = passwordSchema.safeParse(password);
+    if (!parsed.success) {
+      toast.error(firstIssue(parsed.error));
       return;
     }
     if (password !== confirm) {
@@ -46,6 +49,7 @@ function ResetPasswordPage() {
       toast.error(error.message);
       return;
     }
+    void logSecurityEvent("Password changed", "Password updated from a reset link");
     toast.success("Password updated");
     navigate({ to: "/dashboard", replace: true });
   }
