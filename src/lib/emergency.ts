@@ -375,6 +375,11 @@ export async function cancelEmergency(emergency: Emergency) {
     .from("emergencies")
     .update({ status: "cancelled", resolved_at: new Date().toISOString() })
     .eq("id", emergency.id);
+  try {
+    await expireGuardianSessions(emergency.id);
+  } catch {
+    /* the session expires with the emergency anyway */
+  }
   await logEvent(emergency.id, emergency.user_id, "Cancelled", "You cancelled this alert.");
 }
 
