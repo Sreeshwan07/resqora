@@ -9,7 +9,6 @@ import { StatusIndicator } from "@/components/system/status-indicator";
 import { ConfirmModal } from "@/components/system/confirm-modal";
 import { SosButton } from "@/components/aegis/sos-button";
 import { CrashDetectionPanel } from "@/components/aegis/crash-detection";
-import { EmergencyAlerts } from "@/components/aegis/emergency-alerts";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";

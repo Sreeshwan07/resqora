@@ -24,7 +24,6 @@ import {
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/system/confirm-modal";
 import { MedicalIdQr } from "@/components/aegis/medical-id-card";
-import { SosButton } from "@/components/aegis/sos-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
