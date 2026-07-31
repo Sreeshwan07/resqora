@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Droplets, Flame, Navigation, PhoneCall, ShieldCheck, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,10 +12,6 @@ const CATEGORIES: { key: PlaceCategory; label: string; emoji: string; icon: type
   { key: "fire", label: "Fire & rescue", emoji: "🚒", icon: Flame },
   { key: "blood_bank", label: "Blood banks", emoji: "🩸", icon: Droplets },
 ];
-
-function etaMinutes(distanceKm: number) {
-  return Math.max(2, Math.round((distanceKm / 32) * 60));
-}
 
 /**
  * Top 3 real nearby responders per category, anchored to the user's live GPS
@@ -33,12 +30,16 @@ export function GuardianServices({
     lat != null && lng != null ? { lat, lng, accuracy: 0, updatedAt: new Date() } : null;
   const nearby = useNearbyServices(position);
 
-  const nearest: Partial<Record<PlaceCategory, NearbyPlace>> = {};
-  for (const category of CATEGORIES) {
-    const first = nearby.data[category.key]?.[0];
-    if (first) nearest[category.key] = first;
-  }
-  onNearest?.(nearest);
+  useEffect(() => {
+    if (!onNearest) return;
+    const nearest: Partial<Record<PlaceCategory, NearbyPlace>> = {};
+    for (const category of CATEGORIES) {
+      const first = nearby.data[category.key]?.[0];
+      if (first) nearest[category.key] = first;
+    }
+    onNearest(nearest);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nearby.data]);
 
   if (!position) {
     return (
@@ -76,7 +77,10 @@ export function GuardianServices({
                   >
                     <p className="text-sm font-semibold">{place.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {place.distanceKm.toFixed(1)} km · ~{etaMinutes(place.distanceKm)} min
+                      {place.address || "Address unavailable"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {place.distanceKm.toFixed(1)} km · ~{place.etaMinutes} min
                       {place.phone ? ` · ${place.phone}` : ""}
                     </p>
                     <div className="mt-2 flex flex-wrap gap-2">
@@ -90,7 +94,7 @@ export function GuardianServices({
                       )}
                       <Button asChild size="sm" variant="outline">
                         <a
-                          href={mapsDirectionsLink(`${place.lat},${place.lng}`, { lat, lng })}
+                          href={mapsDirectionsLink(`${place.lat},${place.lng}`, position)}
                           target="_blank"
                           rel="noreferrer"
                         >
