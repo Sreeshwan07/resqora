@@ -10,6 +10,7 @@ import { LiveEmergencyWidget } from "@/components/aegis/live-emergency-widget";
 import { LiveLocationCard } from "@/components/aegis/live-location-card";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useAuth } from "@/hooks/use-auth";
+import { useSosTheme } from "@/hooks/use-sos-theme";
 import { contactsQuery, profileQuery } from "@/lib/api";
 import { saveOfflineSnapshot } from "@/lib/offline-cache";
 import { ensureNotificationPermission } from "@/lib/emergency-notifications";
@@ -17,6 +18,7 @@ import { ensureNotificationPermission } from "@/lib/emergency-notifications";
 export function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const { position, address, denied } = useLivePosition();
+  useSosTheme();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
   const profile = useQuery(profileQuery(user?.id));
