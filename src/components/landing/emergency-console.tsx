@@ -15,7 +15,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { contactsQuery } from "@/lib/api";
 import { createEmergency } from "@/lib/emergency";
-import { AMBULANCE_CONTACT } from "@/lib/coordination";
+import { EMERGENCY_LINE } from "@/lib/coordination";
 import { analyzeEmergencyImage, type AccidentAnalysis } from "@/lib/vision.functions";
 import { cn } from "@/lib/utils";
 
@@ -68,7 +68,7 @@ function grabVideoFrame(file: File) {
   });
 }
 
-export function EmergencyConsole() {
+export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -147,6 +147,7 @@ export function EmergencyConsole() {
   return (
     <section aria-label="Emergency actions" className="space-y-3">
       <div className="grid gap-3 sm:grid-cols-2">
+        {mode === "full" && (
         <Button
           variant="emergency"
           size="xl"
@@ -156,6 +157,7 @@ export function EmergencyConsole() {
           <Siren className="size-6" aria-hidden="true" />
           Emergency SOS
         </Button>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -257,7 +259,7 @@ export function EmergencyConsole() {
                       Notify contacts
                     </Button>
                     <Button asChild variant="outline">
-                      <a href={`tel:${AMBULANCE_CONTACT.phone.replace(/\s/g, "")}`}>
+                      <a href={`tel:${EMERGENCY_LINE.phone}`}>
                         <PhoneCall className="size-4" aria-hidden="true" />
                         Call emergency services
                       </a>

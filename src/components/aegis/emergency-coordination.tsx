@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { PlaceCard, CATEGORY_EMOJI, CATEGORY_LABEL } from "@/components/aegis/nearest-services";
 import { EMERGENCY_LINE, coordinationCategories } from "@/lib/coordination";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
-import type { PlaceCategory } from "@/lib/nearby.server";
+import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 import type { LivePosition } from "@/hooks/use-live-position";
 
 /**
