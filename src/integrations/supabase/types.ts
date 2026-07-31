@@ -146,6 +146,7 @@ export type Database = {
       emergency_alert_deliveries: {
         Row: {
           channel: string
+          contact_email: string | null
           contact_id: string | null
           contact_name: string
           contact_phone: string | null
@@ -161,6 +162,7 @@ export type Database = {
         }
         Insert: {
           channel?: string
+          contact_email?: string | null
           contact_id?: string | null
           contact_name: string
           contact_phone?: string | null
@@ -176,6 +178,7 @@ export type Database = {
         }
         Update: {
           channel?: string
+          contact_email?: string | null
           contact_id?: string | null
           contact_name?: string
           contact_phone?: string | null
@@ -202,6 +205,7 @@ export type Database = {
       emergency_contacts: {
         Row: {
           created_at: string
+          email: string | null
           id: string
           name: string
           phone: string
@@ -212,6 +216,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id?: string
           name: string
           phone: string
@@ -222,6 +227,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: string
           name?: string
           phone?: string
