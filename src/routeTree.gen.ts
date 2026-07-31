@@ -21,10 +21,12 @@ import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
 import { Route as AppCheckinsRouteImport } from './routes/_app.checkins'
 import { Route as AppContactsRouteImport } from './routes/_app.contacts'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppDocumentsRouteImport } from './routes/_app.documents'
 import { Route as AppDonorsRouteImport } from './routes/_app.donors'
 import { Route as AppEmergencyRouteImport } from './routes/_app.emergency'
 import { Route as AppHistoryRouteImport } from './routes/_app.history'
 import { Route as AppLiveRouteImport } from './routes/_app.live'
+import { Route as AppMedicalIdRouteImport } from './routes/_app.medical-id'
 import { Route as AppNearbyRouteImport } from './routes/_app.nearby'
 import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
@@ -93,6 +95,11 @@ const AppDashboardRoute = AppDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AppRoute,
 } as any)
+const AppDocumentsRoute = AppDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDonorsRoute = AppDonorsRouteImport.update({
   id: '/donors',
   path: '/donors',
@@ -111,6 +118,11 @@ const AppHistoryRoute = AppHistoryRouteImport.update({
 const AppLiveRoute = AppLiveRouteImport.update({
   id: '/live',
   path: '/live',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMedicalIdRoute = AppMedicalIdRouteImport.update({
+  id: '/medical-id',
+  path: '/medical-id',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNearbyRoute = AppNearbyRouteImport.update({
@@ -166,10 +178,12 @@ export interface FileRoutesByFullPath {
   '/checkins': typeof AppCheckinsRoute
   '/contacts': typeof AppContactsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/documents': typeof AppDocumentsRoute
   '/donors': typeof AppDonorsRoute
   '/emergency': typeof AppEmergencyRoute
   '/history': typeof AppHistoryRoute
   '/live': typeof AppLiveRoute
+  '/medical-id': typeof AppMedicalIdRoute
   '/nearby': typeof AppNearbyRoute
   '/notes': typeof AppNotesRoute
   '/notifications': typeof AppNotificationsRoute
@@ -191,10 +205,12 @@ export interface FileRoutesByTo {
   '/checkins': typeof AppCheckinsRoute
   '/contacts': typeof AppContactsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/documents': typeof AppDocumentsRoute
   '/donors': typeof AppDonorsRoute
   '/emergency': typeof AppEmergencyRoute
   '/history': typeof AppHistoryRoute
   '/live': typeof AppLiveRoute
+  '/medical-id': typeof AppMedicalIdRoute
   '/nearby': typeof AppNearbyRoute
   '/notes': typeof AppNotesRoute
   '/notifications': typeof AppNotificationsRoute
@@ -218,10 +234,12 @@ export interface FileRoutesById {
   '/_app/checkins': typeof AppCheckinsRoute
   '/_app/contacts': typeof AppContactsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/documents': typeof AppDocumentsRoute
   '/_app/donors': typeof AppDonorsRoute
   '/_app/emergency': typeof AppEmergencyRoute
   '/_app/history': typeof AppHistoryRoute
   '/_app/live': typeof AppLiveRoute
+  '/_app/medical-id': typeof AppMedicalIdRoute
   '/_app/nearby': typeof AppNearbyRoute
   '/_app/notes': typeof AppNotesRoute
   '/_app/notifications': typeof AppNotificationsRoute
@@ -245,10 +263,12 @@ export interface FileRouteTypes {
     | '/checkins'
     | '/contacts'
     | '/dashboard'
+    | '/documents'
     | '/donors'
     | '/emergency'
     | '/history'
     | '/live'
+    | '/medical-id'
     | '/nearby'
     | '/notes'
     | '/notifications'
@@ -270,10 +290,12 @@ export interface FileRouteTypes {
     | '/checkins'
     | '/contacts'
     | '/dashboard'
+    | '/documents'
     | '/donors'
     | '/emergency'
     | '/history'
     | '/live'
+    | '/medical-id'
     | '/nearby'
     | '/notes'
     | '/notifications'
@@ -296,10 +318,12 @@ export interface FileRouteTypes {
     | '/_app/checkins'
     | '/_app/contacts'
     | '/_app/dashboard'
+    | '/_app/documents'
     | '/_app/donors'
     | '/_app/emergency'
     | '/_app/history'
     | '/_app/live'
+    | '/_app/medical-id'
     | '/_app/nearby'
     | '/_app/notes'
     | '/_app/notifications'
@@ -407,6 +431,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDashboardRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/documents': {
+      id: '/_app/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof AppDocumentsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/donors': {
       id: '/_app/donors'
       path: '/donors'
@@ -433,6 +464,13 @@ declare module '@tanstack/react-router' {
       path: '/live'
       fullPath: '/live'
       preLoaderRoute: typeof AppLiveRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/medical-id': {
+      id: '/_app/medical-id'
+      path: '/medical-id'
+      fullPath: '/medical-id'
+      preLoaderRoute: typeof AppMedicalIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/nearby': {
@@ -501,10 +539,12 @@ interface AppRouteChildren {
   AppCheckinsRoute: typeof AppCheckinsRoute
   AppContactsRoute: typeof AppContactsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDocumentsRoute: typeof AppDocumentsRoute
   AppDonorsRoute: typeof AppDonorsRoute
   AppEmergencyRoute: typeof AppEmergencyRoute
   AppHistoryRoute: typeof AppHistoryRoute
   AppLiveRoute: typeof AppLiveRoute
+  AppMedicalIdRoute: typeof AppMedicalIdRoute
   AppNearbyRoute: typeof AppNearbyRoute
   AppNotesRoute: typeof AppNotesRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
@@ -520,10 +560,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppCheckinsRoute: AppCheckinsRoute,
   AppContactsRoute: AppContactsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDocumentsRoute: AppDocumentsRoute,
   AppDonorsRoute: AppDonorsRoute,
   AppEmergencyRoute: AppEmergencyRoute,
   AppHistoryRoute: AppHistoryRoute,
   AppLiveRoute: AppLiveRoute,
+  AppMedicalIdRoute: AppMedicalIdRoute,
   AppNearbyRoute: AppNearbyRoute,
   AppNotesRoute: AppNotesRoute,
   AppNotificationsRoute: AppNotificationsRoute,
