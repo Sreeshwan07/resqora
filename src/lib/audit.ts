@@ -30,9 +30,9 @@ export async function logSecurityEvent(
   try {
     await supabase.rpc("log_security_event", {
       _event: event,
-      _detail: detail ? detail.slice(0, 500) : null,
+      _detail: detail ? detail.slice(0, 500) : undefined,
       _metadata: (metadata ?? {}) as never,
-      _user_agent: typeof navigator === "undefined" ? null : navigator.userAgent.slice(0, 300),
+      _user_agent: typeof navigator === "undefined" ? undefined : navigator.userAgent.slice(0, 300),
     });
   } catch {
     /* audit logging must never break a user action */
