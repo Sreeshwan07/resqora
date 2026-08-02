@@ -60,22 +60,21 @@ export function buildWhatsappAlert(input: {
  */
 export function normalizeWhatsappPhone(
   phone: string | null | undefined,
-  fallbackDialCode?: string | null,
+  ownerPhone?: string | null,
 ): { number: string | null; problem?: string } {
   const raw = (phone ?? "").trim();
   if (!raw) return { number: null, problem: "No phone number saved for this contact." };
   let digits = raw.replace(/[^\d]/g, "");
   const international = raw.startsWith("+") || digits.startsWith("00");
   if (digits.startsWith("00")) digits = digits.slice(2);
+
   if (!international) {
-    // Strip a national trunk prefix ("0" in most countries) before prefixing.
     const local = digits.replace(/^0+/, "");
-    const code = (fallbackDialCode ?? "").replace(/[^\d]/g, "");
+    const code = ownerDialCode(ownerPhone);
     if (local.length > 11) {
       digits = local;
     } else if (code) {
-      digits = `${code.slice(0, Math.max(0, code.length - local.length))}${local}` || `${code}${local}`;
-      digits = code.startsWith(local.slice(0, 2)) ? `${code}` : `${dialPrefix(code, local)}${local}`;
+      digits = `${code}${local}`;
     } else {
       return {
         number: null,
@@ -89,14 +88,16 @@ export function normalizeWhatsappPhone(
   return { number: digits };
 }
 
-/** Best-effort dial code taken from the account owner's own number. */
-function dialPrefix(ownerDigits: string, localDigits: string) {
-  const guessLength = Math.max(1, ownerDigits.length - localDigits.length);
-  return ownerDigits.slice(0, Math.min(4, guessLength));
-}
-
-export function ownerDialCode(profile: Profile | null | undefined) {
-  return (profile?.phone ?? "").trim().startsWith("+") ? (profile?.phone ?? "") : null;
+/**
+ * Derives the account owner's country dial code from their own saved number so
+ * local contact numbers can be upgraded to international format.
+ */
+export function ownerDialCode(ownerPhone: string | null | undefined) {
+  const raw = (ownerPhone ?? "").trim();
+  if (!raw.startsWith("+") && !raw.startsWith("00")) return null;
+  const digits = raw.replace(/[^\d]/g, "").replace(/^00/, "");
+  // National numbers are ~10 digits, so anything before that is the dial code.
+  return digits.length > 10 ? digits.slice(0, digits.length - 10) : null;
 }
 
 export function contactsWithPhone(contacts: EmergencyContact[]) {
