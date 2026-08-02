@@ -65,9 +65,14 @@ function ShareCenterPage() {
 
   useEffect(() => {
     if (!user || !emergency) return;
-    void ensureLiveShareLink(user.id, emergency.id)
-      .then((link) => setTrackingUrl(shareUrl(link)))
-      .catch(() => setTrackingUrl(null));
+    // The shared live-tracking link is always the secure Guardian dashboard.
+    void ensureTrackingUrl({ userId: user.id, emergencyId: emergency.id })
+      .then((tracking) => setTrackingUrl(tracking.url))
+      .catch(() =>
+        ensureLiveShareLink(user.id, emergency.id)
+          .then((link) => setTrackingUrl(shareUrl(link)))
+          .catch(() => setTrackingUrl(null)),
+      );
   }, [user?.id, emergency?.id, user, emergency]);
 
   useEffect(() => {
