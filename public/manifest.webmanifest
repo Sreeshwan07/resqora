@@ -1,7 +1,7 @@
 {
-  "name": "RESQORA — AI-Powered Emergency Intelligence",
+  "name": "RESQORA",
   "short_name": "RESQORA",
-  "description": "One-tap SOS, live location sharing, medical ID and AI triage — built for the seconds that matter most.",
+  "description": "Every Second Matters. Every Life Connected. One-tap SOS, live location sharing, medical ID and AI triage.",
   "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
