@@ -245,7 +245,7 @@ function LiveLocationPage() {
                   label="Current address"
                   value={
                     denied
-                      ? "Location permission needed"
+                      ? "Add your address to continue"
                       : (emergency.address ?? address ?? "Resolving address…")
                   }
                 />
