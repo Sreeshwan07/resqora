@@ -1,6 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import { coordsOf, mapsLink } from "@/lib/alerts";
-import { escapeHtml } from "@/lib/security";
+/** Escapes user-supplied values before embedding them in the HTML email. */
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
 import type { AlertDelivery } from "@/lib/alert-delivery";
 import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
 import {
