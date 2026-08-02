@@ -214,10 +214,10 @@ export function NearestServices({
         <div className="flex items-center gap-2">
           <p className="text-[11px] text-muted-foreground">
             {state.updatedAt
-              ? `Updated ${state.updatedAt.toLocaleTimeString()}`
+              ? `Location updated · ${state.updatedAt.toLocaleTimeString()}`
               : state.origin
-                ? "Searching…"
-                : "Awaiting location"}
+                ? "Finding nearby emergency services…"
+                : "Getting your location…"}
           </p>
           <Button
             size="icon"
