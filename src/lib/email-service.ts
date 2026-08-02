@@ -26,6 +26,12 @@ export type EmergencyTemplateParams = {
   tracking_link: string;
   emergency_id: string;
   reply_to: string;
+  /** Human status line, e.g. "🔴 Emergency active". */
+  status?: string;
+  /** Support / reply-to contact shown in the email footer. */
+  support_contact?: string;
+  /** Ready-made HTML body with the big “🔴 View Live Location” button. */
+  message_html?: string;
 };
 
 export function emailConfigParts() {
