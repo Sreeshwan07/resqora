@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { CHECKIN_PRESETS, checkinsQuery } from "@/lib/aegis-data";
+import { CHECKIN_PRESETS, checkinsQuery } from "@/lib/resqora-data";
 import { logActivity } from "@/lib/activity";
 import { pushPermission, requestPushPermission, showPush } from "@/lib/push";
 import { useCheckinWatcher } from "@/hooks/use-checkin-watcher";

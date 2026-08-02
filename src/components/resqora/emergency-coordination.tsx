@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PhoneCall, Radio } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { PlaceCard, CATEGORY_EMOJI, CATEGORY_LABEL } from "@/components/aegis/nearest-services";
+import { PlaceCard, CATEGORY_EMOJI, CATEGORY_LABEL } from "@/components/resqora/nearest-services";
 import { EMERGENCY_LINE, coordinationCategories } from "@/lib/coordination";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";

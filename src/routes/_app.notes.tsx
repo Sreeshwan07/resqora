@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { NOTE_CATEGORIES, notesQuery } from "@/lib/aegis-data";
+import { NOTE_CATEGORIES, notesQuery } from "@/lib/resqora-data";
 import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/_app/notes")({

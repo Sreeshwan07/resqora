@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/brand/logo";
-import { MapPreview } from "@/components/aegis/map-preview";
+import { MapPreview } from "@/components/resqora/map-preview";
 import { GuardianServices } from "@/components/guardian/guardian-services";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
