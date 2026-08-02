@@ -60,6 +60,15 @@ export function WhatsappShareStatus({
     toast.success("Emergency message copied — paste it into WhatsApp");
   }
 
+  async function copyTracking() {
+    if (!trackingUrl) {
+      toast.error("Live tracking link is not ready yet");
+      return;
+    }
+    await copyText(trackingUrl);
+    toast.success("Live tracking link copied");
+  }
+
   async function share(id: string, name: string, phone: string | null) {
     setBusy(id);
     try {
@@ -69,15 +78,15 @@ export function WhatsappShareStatus({
         toast.error(problem ?? "This number cannot be used for WhatsApp");
         return;
       }
-      const opened = window.open(href, "_blank", "noreferrer");
+      const opened = window.open(href, "_blank", "noopener,noreferrer");
       if (!opened) {
         await logWhatsappAttempt({
           deliveryId: id,
           ok: false,
-          error: "WhatsApp is not installed.",
+          error: "Unable to open WhatsApp.",
         });
         await copyText(message);
-        toast.error("WhatsApp is not installed. The emergency message was copied instead.");
+        toast.error("Unable to open WhatsApp. The emergency message was copied instead.");
         return;
       }
       await logWhatsappAttempt({ deliveryId: id, ok: true });
@@ -173,6 +182,10 @@ export function WhatsappShareStatus({
             <Button size="sm" variant="outline" onClick={copyMessage}>
               <Copy className="size-4" />
               Copy emergency message
+            </Button>
+            <Button size="sm" variant="outline" onClick={copyTracking}>
+              <Copy className="size-4" />
+              Copy live tracking link
             </Button>
           </div>
           <details className="mt-3 rounded-xl border border-border p-3">

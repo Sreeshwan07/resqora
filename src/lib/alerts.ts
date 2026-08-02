@@ -17,6 +17,36 @@ export function mapsDirectionsLink(destination: string, origin?: Coords | null) 
   return `https://www.google.com/maps/dir/?${params.toString()}`;
 }
 
+/** True when a place has usable, non-placeholder coordinates. */
+export function hasCoords(place: { lat?: number | null; lng?: number | null } | null | undefined) {
+  if (!place) return false;
+  const { lat, lng } = place;
+  if (typeof lat !== "number" || typeof lng !== "number") return false;
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  if (lat === 0 && lng === 0) return false;
+  return Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+}
+
+/**
+ * Turn-by-turn navigation to a destination place. The device's live position is
+ * always the starting point, so this never navigates *to* the user.
+ */
+export function mapsNavigateLink(place: { lat: number; lng: number; name?: string | null }) {
+  const params = new URLSearchParams({
+    api: "1",
+    destination: `${place.lat},${place.lng}`,
+    travelmode: "driving",
+    dir_action: "navigate",
+  });
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
+}
+
+/** Opens the selected place on Google Maps (never a blank map). */
+export function mapsPlaceLink(place: { lat: number; lng: number; name?: string | null }) {
+  const params = new URLSearchParams({ api: "1", query: `${place.lat},${place.lng}` });
+  return `https://www.google.com/maps/search/?${params.toString()}`;
+}
+
 export function mapsEmbedUrl(coords: Coords, zoom = 16) {
   return `https://maps.google.com/maps?q=${coords.lat},${coords.lng}&z=${zoom}&output=embed`;
 }

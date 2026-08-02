@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapsDirectionsLink } from "@/lib/alerts";
+import { mapsNavigateLink, mapsPlaceLink } from "@/lib/alerts";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 import { useNearbyServices, type NearbyOrigin } from "@/hooks/use-nearby-services";
 import type { LivePosition } from "@/hooks/use-live-position";
@@ -75,7 +75,6 @@ export function PlaceCard({
 }) {
   const verified = place.phone ? place.phone.replace(/[^+\d]/g, "") : null;
   const tel = verified ?? NATIONAL_NUMBER[place.category];
-  const destination = `${place.lat},${place.lng}`;
   return (
     <div className="rounded-2xl border border-border/60 bg-background/60 p-3">
       <p className="text-sm font-semibold leading-snug text-foreground">
@@ -106,12 +105,18 @@ export function PlaceCard({
           </a>
         </Button>
         <Button asChild size="lg" variant="outline" className="h-11 flex-1 text-sm">
+          <a href={mapsNavigateLink(place)} target="_blank" rel="noreferrer">
+            <Navigation className="size-4" /> Navigate
+          </a>
+        </Button>
+        <Button asChild size="icon" variant="outline" className="size-11 shrink-0">
           <a
-            href={mapsDirectionsLink(destination, origin ? { lat: origin.lat, lng: origin.lng } : null)}
+            href={mapsPlaceLink(place)}
             target="_blank"
             rel="noreferrer"
+            aria-label={`Open ${place.name} on Google Maps`}
           >
-            <Navigation className="size-4" /> Navigate
+            <MapPin className="size-4" />
           </a>
         </Button>
       </div>
@@ -157,7 +162,9 @@ function CategoryCard({
             aria-expanded={expanded}
           >
             {expanded ? "Show less" : "View more"}
-            <ChevronDown className={cn("size-3.5 transition-transform", expanded && "rotate-180")} />
+            <ChevronDown
+              className={cn("size-3.5 transition-transform", expanded && "rotate-180")}
+            />
           </Button>
         )}
       </div>
@@ -177,11 +184,7 @@ function CategoryCard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: index * 0.04 }}
             >
-              <PlaceCard
-                place={place}
-                origin={origin}
-                rank={ordered.indexOf(place) + 1}
-              />
+              <PlaceCard place={place} origin={origin} rank={ordered.indexOf(place) + 1} />
             </motion.div>
           ))
         )}
@@ -266,9 +269,7 @@ export function NearestServices({
           </Button>
         </form>
       )}
-      {state.manualError && (
-        <p className="mt-2 text-xs text-alert">{state.manualError}</p>
-      )}
+      {state.manualError && <p className="mt-2 text-xs text-alert">{state.manualError}</p>}
       {state.error && (
         <p className="mt-2 text-xs text-alert">
           Live service lookup failed. Tap refresh to try again.

@@ -18,11 +18,16 @@ import { deliveriesQuery } from "@/lib/alert-delivery";
 import { GuardianSessionPanel } from "@/components/resqora/guardian-session-panel";
 import { WhatsappShareStatus } from "@/components/resqora/whatsapp-share-status";
 import { supabase } from "@/integrations/supabase/client";
-import { buildEmergencyEmail, contactsWithEmail, sendEmergencyEmailAlerts } from "@/lib/email-alerts";
+import {
+  buildEmergencyEmail,
+  contactsWithEmail,
+  sendEmergencyEmailAlerts,
+} from "@/lib/email-alerts";
 import { logActivity } from "@/lib/activity";
 import { recentSharesQuery } from "@/lib/shares";
 import { buildWhatsappAlert } from "@/lib/whatsapp-alerts";
 import { emailHref, ensureLiveShareLink, ensureMedicalShareLink, shareUrl } from "@/lib/share";
+import { ensureTrackingUrl } from "@/lib/guardian";
 
 export const Route = createFileRoute("/_app/share-center")({
   head: () => ({
@@ -61,13 +66,22 @@ function ShareCenterPage() {
   const emergency = active.data ?? null;
   const contactList = contacts.data ?? [];
   const emailable = contactsWithEmail(contactList);
-  const coords = emergency ? coordsOf(emergency) : position ? { lat: position.lat, lng: position.lng } : null;
+  const coords = emergency
+    ? coordsOf(emergency)
+    : position
+      ? { lat: position.lat, lng: position.lng }
+      : null;
 
   useEffect(() => {
     if (!user || !emergency) return;
-    void ensureLiveShareLink(user.id, emergency.id)
-      .then((link) => setTrackingUrl(shareUrl(link)))
-      .catch(() => setTrackingUrl(null));
+    // The shared live-tracking link is always the secure Guardian dashboard.
+    void ensureTrackingUrl({ userId: user.id, emergencyId: emergency.id })
+      .then((tracking) => setTrackingUrl(tracking.url))
+      .catch(() =>
+        ensureLiveShareLink(user.id, emergency.id)
+          .then((link) => setTrackingUrl(shareUrl(link)))
+          .catch(() => setTrackingUrl(null)),
+      );
   }, [user?.id, emergency?.id, user, emergency]);
 
   useEffect(() => {
@@ -116,7 +130,11 @@ function ShareCenterPage() {
   async function nativeShare() {
     if (!message) return;
     const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
-    const payload = { title: "RESQORA emergency alert", text: message, url: trackingUrl ?? undefined };
+    const payload = {
+      title: "RESQORA emergency alert",
+      text: message,
+      url: trackingUrl ?? undefined,
+    };
     if (nav.share) {
       try {
         await nav.share(payload);

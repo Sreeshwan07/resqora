@@ -108,7 +108,17 @@ function GuardianDashboard() {
 
   const view = useQuery({
     queryKey: ["guardian-view", emergencyId, token],
-    refetchInterval: 10_000,
+    // Live location refreshes every 10 seconds while the SOS is active, and
+    // stops automatically the moment it is resolved or cancelled.
+    refetchInterval: (query) => {
+      const current = query.state.data as GuardianView | null | undefined;
+      if (!current) return 10_000;
+      const ended =
+        current.status === "resolved" ||
+        current.status === "cancelled" ||
+        current.live_status === "safe";
+      return ended ? false : 10_000;
+    },
     queryFn: async () => {
       const { data, error } = await supabase.rpc("get_guardian_view", {
         _emergency_id: emergencyId,
@@ -139,12 +149,14 @@ function GuardianDashboard() {
   }, []);
 
   const data = view.data ?? null;
-  const coords = data?.latitude != null && data.longitude != null
-    ? { lat: data.latitude, lng: data.longitude }
-    : null;
+  const coords =
+    data?.latitude != null && data.longitude != null
+      ? { lat: data.latitude, lng: data.longitude }
+      : null;
 
   const telemetry = useMemo(() => {
-    if (!data || data.track.length === 0) return { speedKmh: null as number | null, battery: null as number | null };
+    if (!data || data.track.length === 0)
+      return { speedKmh: null as number | null, battery: null as number | null };
     const [latest, previous] = data.track;
     let speedKmh: number | null =
       latest.speed != null ? Math.max(0, Math.round(latest.speed * 3.6)) : null;
@@ -154,7 +166,8 @@ function GuardianDashboard() {
         { lat: previous.latitude, lng: previous.longitude },
       );
       const hours =
-        (new Date(latest.created_at).getTime() - new Date(previous.created_at).getTime()) / 3_600_000;
+        (new Date(latest.created_at).getTime() - new Date(previous.created_at).getTime()) /
+        3_600_000;
       if (hours > 0) speedKmh = Math.round(km / hours);
     }
     return { speedKmh, battery: latest.battery_level };
@@ -185,6 +198,8 @@ function GuardianDashboard() {
   }
 
   const status = statusView(data);
+  const ended =
+    data.status === "resolved" || data.status === "cancelled" || data.live_status === "safe";
   const elapsed = data.resolved_at
     ? (data.duration_seconds ?? 0)
     : Math.max(0, Math.round((now - new Date(data.started_at).getTime()) / 1000));
@@ -225,6 +240,11 @@ function GuardianDashboard() {
         </header>
 
         <section className="glass-panel rounded-2xl p-5">
+          {ended && (
+            <p className="mb-4 rounded-xl bg-emerald-500/15 px-4 py-3 text-sm font-semibold text-emerald-700">
+              ✅ Emergency Resolved — live location updates have stopped.
+            </p>
+          )}
           <div className="flex flex-wrap items-center gap-4">
             {data.avatar_url ? (
               <img
@@ -254,7 +274,11 @@ function GuardianDashboard() {
           </div>
 
           <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <Metric icon={Clock} label="Started" value={new Date(data.started_at).toLocaleTimeString()} />
+            <Metric
+              icon={Clock}
+              label="Started"
+              value={new Date(data.started_at).toLocaleTimeString()}
+            />
             <Metric icon={Activity} label="Duration" value={formatDuration(elapsed)} />
             <Metric
               icon={MapPin}
@@ -270,11 +294,7 @@ function GuardianDashboard() {
               icon={telemetry.battery != null ? BatteryMedium : online ? Wifi : WifiOff}
               label={telemetry.battery != null ? "Battery" : "Connection"}
               value={
-                telemetry.battery != null
-                  ? `${telemetry.battery}%`
-                  : online
-                    ? "Online"
-                    : "Offline"
+                telemetry.battery != null ? `${telemetry.battery}%` : online ? "Online" : "Offline"
               }
             />
           </dl>
@@ -286,8 +306,17 @@ function GuardianDashboard() {
               <div className="flex items-center justify-between p-4 pb-3">
                 <h2 className="font-display text-lg font-bold">Live location</h2>
                 <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <span className="pulse-ring size-2 rounded-full bg-primary" aria-hidden="true" />
-                  Refreshing every 10s
+                  {ended ? (
+                    "Live updates stopped"
+                  ) : (
+                    <>
+                      <span
+                        className="pulse-ring size-2 rounded-full bg-primary"
+                        aria-hidden="true"
+                      />
+                      Refreshing every 10s
+                    </>
+                  )}
                 </span>
               </div>
               {coords ? (
@@ -382,11 +411,7 @@ function GuardianDashboard() {
               <p className="mb-3 text-xs text-muted-foreground">
                 Live results around {data.full_name.split(" ")[0]}’s current position.
               </p>
-              <GuardianServices
-                lat={data.latitude}
-                lng={data.longitude}
-                onNearest={setNearest}
-              />
+              <GuardianServices lat={data.latitude} lng={data.longitude} onNearest={setNearest} />
             </section>
 
             <section className="glass-panel rounded-2xl p-4">

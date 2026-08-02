@@ -2,16 +2,17 @@ import { useEffect } from "react";
 import { Droplets, Flame, Navigation, PhoneCall, ShieldCheck, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapsDirectionsLink } from "@/lib/alerts";
+import { mapsNavigateLink, mapsPlaceLink } from "@/lib/alerts";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 
-const CATEGORIES: { key: PlaceCategory; label: string; emoji: string; icon: typeof Stethoscope }[] = [
-  { key: "hospital", label: "Hospitals", emoji: "🏥", icon: Stethoscope },
-  { key: "police", label: "Police stations", emoji: "🚓", icon: ShieldCheck },
-  { key: "fire", label: "Fire & rescue", emoji: "🚒", icon: Flame },
-  { key: "blood_bank", label: "Blood banks", emoji: "🩸", icon: Droplets },
-];
+const CATEGORIES: { key: PlaceCategory; label: string; emoji: string; icon: typeof Stethoscope }[] =
+  [
+    { key: "hospital", label: "Hospitals", emoji: "🏥", icon: Stethoscope },
+    { key: "police", label: "Police stations", emoji: "🚓", icon: ShieldCheck },
+    { key: "fire", label: "Fire & rescue", emoji: "🚒", icon: Flame },
+    { key: "blood_bank", label: "Blood banks", emoji: "🩸", icon: Droplets },
+  ];
 
 /**
  * Top 3 real nearby responders per category, anchored to the user's live GPS
@@ -95,13 +96,14 @@ export function GuardianServices({
                         </Button>
                       )}
                       <Button asChild size="sm" variant="outline">
-                        <a
-                          href={mapsDirectionsLink(`${place.lat},${place.lng}`, position)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                        <a href={mapsNavigateLink(place)} target="_blank" rel="noreferrer">
                           <Navigation className="size-4" />
                           Navigate
+                        </a>
+                      </Button>
+                      <Button asChild size="sm" variant="outline">
+                        <a href={mapsPlaceLink(place)} target="_blank" rel="noreferrer">
+                          Map
                         </a>
                       </Button>
                     </div>
