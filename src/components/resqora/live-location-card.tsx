@@ -26,7 +26,7 @@ export function LiveLocationCard({
       ? resolvingAddress
         ? "Resolving address…"
         : `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`
-      : status === "denied"
+      : status === "denied" || (!status && denied)
         ? "Add your address to continue"
         : status === "unavailable"
           ? "GPS unavailable — enter your address"
