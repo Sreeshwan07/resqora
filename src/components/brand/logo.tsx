@@ -19,7 +19,7 @@ export function Logo({
             RESQORA
           </span>
           <span className="block text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Emergency Intelligence
+            Emergency Response
           </span>
         </span>
       )}
