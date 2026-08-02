@@ -23,6 +23,7 @@ import { logActivity } from "@/lib/activity";
 import { recentSharesQuery } from "@/lib/shares";
 import { buildWhatsappAlert } from "@/lib/whatsapp-alerts";
 import { emailHref, ensureLiveShareLink, ensureMedicalShareLink, shareUrl } from "@/lib/share";
+import { ensureTrackingUrl } from "@/lib/guardian";
 
 export const Route = createFileRoute("/_app/share-center")({
   head: () => ({
