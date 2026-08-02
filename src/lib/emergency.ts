@@ -20,7 +20,12 @@ import { isOffline, queueEmergency } from "@/lib/offline";
 import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { prepareWhatsappShares } from "@/lib/whatsapp-alerts";
 import { notifyEmergency } from "@/lib/emergency-notifications";
-import { expireGuardianSessions, guardianOf, notifyGuardian } from "@/lib/guardian";
+import {
+  ensureTrackingUrl,
+  expireGuardianSessions,
+  guardianOf,
+  notifyGuardian,
+} from "@/lib/guardian";
 import { readBatteryLevel, readSpeed } from "@/lib/device";
 import { logSecurityEvent } from "@/lib/audit";
 import { checkRateLimit, sanitizeMultiline } from "@/lib/security";
@@ -174,13 +179,22 @@ export async function createEmergency(options: {
   // Secure live tracking link for the trusted contacts.
   let trackingUrl: string | null = null;
   try {
-    const link = await ensureLiveShareLink(options.userId, data.id);
-    trackingUrl = shareUrl(link);
+    // Every SOS gets a secure Guardian session; its dashboard URL is the single
+    // live-tracking link used by email, WhatsApp and the share centre.
+    const guardianContact = guardianOf(options.contacts ?? []);
+    const tracking = await ensureTrackingUrl({
+      userId: options.userId,
+      emergencyId: data.id,
+      guardian: guardianContact,
+    });
+    trackingUrl = tracking.url;
+    // The legacy /s/{token} page stays available as a fallback view.
+    await ensureLiveShareLink(options.userId, data.id).catch(() => undefined);
     await logEvent(
       data.id,
       options.userId,
       "Live tracking started",
-      "Secure tracking link created — location refreshes every 10 seconds.",
+      "Secure Guardian dashboard link created — location refreshes every 10 seconds.",
     );
   } catch {
     /* tracking link can be regenerated from the live page */
