@@ -159,9 +159,16 @@ function ShareCenterPage() {
       if (result.skipped) {
         toast.error("Add an email address to your trusted contacts first");
       } else if (!result.configured) {
-        toast.error("Automatic email isn't connected yet — use the mail app button below");
+        toast.error("Email service is not configured.");
+      } else if (result.failed > 0) {
+        toast.error(
+          `✗ Email sending failed for ${result.failed} contact(s): ${result.results
+            .filter((r) => !r.ok)
+            .map((r) => `${r.name} — ${r.error}`)
+            .join("; ")}`,
+        );
       } else {
-        toast.success(`Emergency email sent to ${result.sent} contact(s)`);
+        toast.success(`✓ Email sent successfully to ${result.sent} contact(s)`);
         await logActivity(user.id, "Emergency emails sent", `${result.sent} contact(s)`);
       }
       await deliveries.refetch();
