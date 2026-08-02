@@ -67,7 +67,7 @@ function Index() {
       <LandingNav />
       <main className="aurora">
         <div className="mx-auto w-full max-w-4xl space-y-3 px-4 py-4 sm:space-y-4 sm:px-6 sm:py-8">
-          <h1 className="sr-only">RESQORA — Autonomous Emergency Grid Intelligence Shield</h1>
+          <h1 className="sr-only">RESQORA — Every Second Matters. Every Life Connected.</h1>
 
           <EmergencyStatusCard
             status={status}
