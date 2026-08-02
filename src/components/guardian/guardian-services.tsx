@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Droplets, Flame, Navigation, PhoneCall, ShieldCheck, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapsDirectionsLink } from "@/lib/alerts";
+import { mapsNavigateLink, mapsPlaceLink } from "@/lib/alerts";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 
@@ -95,13 +95,14 @@ export function GuardianServices({
                         </Button>
                       )}
                       <Button asChild size="sm" variant="outline">
-                        <a
-                          href={mapsDirectionsLink(`${place.lat},${place.lng}`, position)}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
+                        <a href={mapsNavigateLink(place)} target="_blank" rel="noreferrer">
                           <Navigation className="size-4" />
                           Navigate
+                        </a>
+                      </Button>
+                      <Button asChild size="sm" variant="outline">
+                        <a href={mapsPlaceLink(place)} target="_blank" rel="noreferrer">
+                          Map
                         </a>
                       </Button>
                     </div>
