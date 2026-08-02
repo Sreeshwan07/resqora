@@ -180,7 +180,7 @@ function CategoryCard({
               <PlaceCard
                 place={place}
                 origin={origin}
-                serviceLabel={`${CATEGORY_EMOJI[category]} ${CATEGORY_LABEL[category]}`}
+                serviceLabel={CATEGORY_LABEL[category]}
               />
             </motion.div>
           ))
