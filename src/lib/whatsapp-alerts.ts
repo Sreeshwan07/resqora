@@ -4,13 +4,11 @@ import type { AlertDelivery } from "@/lib/alert-delivery";
 import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
 import { whatsappHref } from "@/lib/share";
 
-const LIVE_LABELS: Record<string, string> = {
-  need_help: "Needs immediate help",
-  help_arrived: "Help has arrived",
-  safe: "Marked safe",
-};
-
-/** Exact WhatsApp body defined by the RESQORA contact notification protocol. */
+/**
+ * Exact WhatsApp body defined by the RESQORA emergency sharing protocol.
+ * Every value is real: live GPS coordinates, resolved address, the secure
+ * tracking URL and the emergency session id.
+ */
 export function buildWhatsappAlert(input: {
   emergency: Emergency;
   profile: Profile | null | undefined;
@@ -22,29 +20,83 @@ export function buildWhatsappAlert(input: {
   const name = profile?.full_name || "An RESQORA user";
   const address =
     input.address || emergency.address || profile?.home_address || "Address unavailable";
+  const statusLine =
+    emergency.live_status === "safe"
+      ? "🟢 Marked safe"
+      : emergency.live_status === "help_arrived"
+        ? "🟠 Help has arrived"
+        : "🔴 Emergency Active";
   return [
     "🚨 RESQORA Emergency Alert",
     "",
-    `${name} has triggered an Emergency SOS.`,
+    `${name} has activated the RESQORA Emergency SOS.`,
     "",
-    "Emergency Status:",
-    LIVE_LABELS[emergency.live_status] ?? "Emergency active",
+    "🕒 Time:",
+    new Date(emergency.started_at).toLocaleString(),
     "",
-    "Current Address:",
+    "📍 Current Address:",
     address,
     "",
-    "Google Maps:",
+    "🗺 Google Maps:",
     coords ? mapsLink(coords) : "Awaiting GPS fix",
     "",
-    "Live Tracking:",
+    "📡 Live Tracking:",
     trackingUrl || "Tracking link unavailable",
     "",
-    "Emergency ID:",
+    "🆔 Emergency ID:",
     emergency.id.slice(0, 8).toUpperCase(),
     "",
-    "Time:",
-    new Date(emergency.started_at).toLocaleString(),
+    "Status:",
+    statusLine,
+    "",
+    "Please contact the user immediately or proceed to their location if appropriate.",
   ].join("\n");
+}
+
+/**
+ * Normalises a saved contact number into the international (E.164 digits only)
+ * form WhatsApp requires. `fallbackDialCode` comes from the user's own phone
+ * number so local contacts can still be reached.
+ */
+export function normalizeWhatsappPhone(
+  phone: string | null | undefined,
+  fallbackDialCode?: string | null,
+): { number: string | null; problem?: string } {
+  const raw = (phone ?? "").trim();
+  if (!raw) return { number: null, problem: "No phone number saved for this contact." };
+  let digits = raw.replace(/[^\d]/g, "");
+  const international = raw.startsWith("+") || digits.startsWith("00");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (!international) {
+    // Strip a national trunk prefix ("0" in most countries) before prefixing.
+    const local = digits.replace(/^0+/, "");
+    const code = (fallbackDialCode ?? "").replace(/[^\d]/g, "");
+    if (local.length > 11) {
+      digits = local;
+    } else if (code) {
+      digits = `${code.slice(0, Math.max(0, code.length - local.length))}${local}` || `${code}${local}`;
+      digits = code.startsWith(local.slice(0, 2)) ? `${code}` : `${dialPrefix(code, local)}${local}`;
+    } else {
+      return {
+        number: null,
+        problem: "Add the country code (e.g. +91) to this contact's phone number.",
+      };
+    }
+  }
+  if (digits.length < 8 || digits.length > 15) {
+    return { number: null, problem: `“${raw}” is not a valid international number.` };
+  }
+  return { number: digits };
+}
+
+/** Best-effort dial code taken from the account owner's own number. */
+function dialPrefix(ownerDigits: string, localDigits: string) {
+  const guessLength = Math.max(1, ownerDigits.length - localDigits.length);
+  return ownerDigits.slice(0, Math.min(4, guessLength));
+}
+
+export function ownerDialCode(profile: Profile | null | undefined) {
+  return (profile?.phone ?? "").trim().startsWith("+") ? (profile?.phone ?? "") : null;
 }
 
 export function contactsWithPhone(contacts: EmergencyContact[]) {
@@ -101,6 +153,30 @@ export async function markWhatsappShared(id: string) {
   if (error) throw new Error(error.message);
 }
 
-export function whatsappShareLink(message: string, phone?: string | null) {
-  return whatsappHref(message, phone);
+/** Direct wa.me link for one contact, or null when the number is unusable. */
+export function whatsappShareLink(
+  message: string,
+  phone?: string | null,
+  fallbackDialCode?: string | null,
+) {
+  const { number, problem } = normalizeWhatsappPhone(phone, fallbackDialCode);
+  if (!number) return { href: null, problem };
+  return { href: whatsappHref(message, number), problem: undefined };
+}
+
+/** Records the outcome of every WhatsApp share attempt against the delivery row. */
+export async function logWhatsappAttempt(input: {
+  deliveryId: string;
+  ok: boolean;
+  error?: string;
+}) {
+  const { error } = await supabase
+    .from("emergency_alert_deliveries")
+    .update({
+      status: input.ok ? "delivered" : "failed",
+      error: input.ok ? null : (input.error ?? "WhatsApp could not be opened"),
+      sent_at: input.ok ? new Date().toISOString() : null,
+    })
+    .eq("id", input.deliveryId);
+  if (error) throw new Error(error.message);
 }
