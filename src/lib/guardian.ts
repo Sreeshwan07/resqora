@@ -39,7 +39,7 @@ export async function setGuardian(userId: string, contactId: string | null) {
 export async function ensureGuardianSession(input: {
   userId: string;
   emergencyId: string;
-  guardian: EmergencyContact;
+  guardian: Pick<EmergencyContact, "id" | "name" | "email" | "phone"> | null;
 }) {
   const existing = await supabase
     .from("guardian_sessions")
@@ -55,16 +55,34 @@ export async function ensureGuardianSession(input: {
     .insert({
       user_id: input.userId,
       emergency_id: input.emergencyId,
-      guardian_contact_id: input.guardian.id,
-      guardian_name: input.guardian.name,
-      guardian_email: input.guardian.email,
-      guardian_phone: input.guardian.phone,
+      guardian_contact_id: input.guardian?.id ?? null,
+      guardian_name: input.guardian?.name ?? "Trusted contact",
+      guardian_email: input.guardian?.email ?? null,
+      guardian_phone: input.guardian?.phone ?? null,
       token: randomToken(24),
     })
     .select("*")
     .single();
   if (error) throw new Error(error.message);
   return data as GuardianSession;
+}
+
+/**
+ * The single secure live-tracking URL for an emergency. Every SOS gets one
+ * Guardian session, so every alert (email, WhatsApp, share centre) points at the
+ * same Guardian dashboard instead of a plain tracking page.
+ */
+export async function ensureTrackingUrl(input: {
+  userId: string;
+  emergencyId: string;
+  guardian?: EmergencyContact | null;
+}) {
+  const session = await ensureGuardianSession({
+    userId: input.userId,
+    emergencyId: input.emergencyId,
+    guardian: input.guardian ?? null,
+  });
+  return { session, url: guardianUrl(session) };
 }
 
 /** Called when the emergency ends — the link expires after a short grace period. */
