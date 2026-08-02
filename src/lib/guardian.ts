@@ -154,7 +154,6 @@ export async function notifyGuardian(input: {
     return { session, dashboardUrl, configured: true, emailed: false };
   }
 
-  const payload = buildGuardianEmail({ ...input, dashboardUrl });
   const seeded = await supabase
     .from("emergency_alert_deliveries")
     .insert({
@@ -172,31 +171,29 @@ export async function notifyGuardian(input: {
     .single();
   if (seeded.error) throw new Error(seeded.error.message);
 
-  const { sendEmergencyEmails } = await import("@/lib/email.functions");
-  const response = await sendEmergencyEmails({
-    data: {
-      subject: payload.subject,
-      message: payload.message,
-      recipients: [
-        { id: seeded.data.id, name: input.guardian.name, email: input.guardian.email },
-      ],
+  const { sendAndRecord } = await import("@/lib/email-service");
+  const { buildTemplateParams } = await import("@/lib/email-alerts");
+  const result = await sendAndRecord({
+    deliveryId: seeded.data.id,
+    params: {
+      ...buildTemplateParams({
+        toEmail: input.guardian.email,
+        emergency: input.emergency,
+        profile: input.profile,
+        address: input.address,
+        trackingUrl: input.trackingUrl,
+      }),
+      tracking_link: dashboardUrl,
     },
   });
-  if (!response.configured) {
-    await supabase
-      .from("emergency_alert_deliveries")
-      .update({ status: "failed", error: "Email service is not connected yet" })
-      .eq("id", seeded.data.id);
-    return { session, dashboardUrl, configured: false, emailed: false };
+  if (!result.ok && result.attempts === 0) {
+    return { session, dashboardUrl, configured: false, emailed: false, error: result.error };
   }
-  const result = response.results[0];
-  await supabase
-    .from("emergency_alert_deliveries")
-    .update({
-      status: result.status,
-      error: result.error ?? null,
-      sent_at: result.status === "delivered" ? new Date().toISOString() : null,
-    })
-    .eq("id", seeded.data.id);
-  return { session, dashboardUrl, configured: true, emailed: result.status === "delivered" };
+  return {
+    session,
+    dashboardUrl,
+    configured: true,
+    emailed: result.ok,
+    error: result.ok ? undefined : result.error,
+  };
 }
