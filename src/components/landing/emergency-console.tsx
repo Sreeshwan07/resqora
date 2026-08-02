@@ -281,7 +281,7 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
               ) : (
                 <Siren className="size-6" aria-hidden="true" />
               )}
-              🚨 Emergency SOS
+              Emergency SOS
             </Button>
           ))}
 
@@ -298,7 +298,7 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
               ) : (
                 <Camera className="size-6" aria-hidden="true" />
               )}
-              📷 Report Incident
+              Report Incident
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" className="w-56 rounded-2xl">
