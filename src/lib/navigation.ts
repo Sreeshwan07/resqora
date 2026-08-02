@@ -19,6 +19,7 @@ import {
   IdCard,
   FileText,
   Share2,
+  MailCheck,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -123,6 +124,13 @@ export const shareCenterNav: NavItem = {
   description: "Email, WhatsApp, links & QR",
 };
 
+export const emailDiagnosticsNav: NavItem = {
+  label: "Email diagnostics",
+  to: "/email-diagnostics",
+  icon: MailCheck,
+  description: "Alert delivery health",
+};
+
 export const navSections: NavSection[] = [
   {
     title: "Emergency",
@@ -151,6 +159,7 @@ export const navSections: NavSection[] = [
       notificationsNav,
       primaryNav[4],
       { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
+      emailDiagnosticsNav,
       { label: "About", to: "/about", icon: Info, description: "How RESQORA works" },
     ],
   },
