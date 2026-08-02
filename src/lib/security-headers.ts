@@ -1,7 +1,7 @@
 /**
  * HTTP security headers applied to every server response.
  *
- * The CSP is written for how AEGIS actually loads: Google Maps embeds and tiles,
+ * The CSP is written for how RESQORA actually loads: Google Maps embeds and tiles,
  * the Lovable Cloud backend over HTTPS/WSS, and Google Fonts. Framing is limited
  * to this origin plus the Lovable editor preview so the app can still be
  * reviewed in-editor while remaining protected against clickjacking elsewhere.

@@ -89,7 +89,7 @@ export function ContactAlertStatus({
       <EmptyState
         icon={Send}
         title="No trusted contacts yet"
-        description="Add three emergency contacts in your profile so AEGIS can alert them instantly."
+        description="Add three emergency contacts in your profile so RESQORA can alert them instantly."
       />
     );
   }

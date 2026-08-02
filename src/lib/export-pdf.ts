@@ -9,7 +9,7 @@ function header(doc: jsPDF, title: string, subtitle: string) {
   doc.rect(0, 0, 210, 26, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(18);
-  doc.text("AEGIS", 14, 12);
+  doc.text("RESQORA", 14, 12);
   doc.setFontSize(10);
   doc.text(title, 14, 20);
   doc.setTextColor(90, 90, 90);
@@ -72,7 +72,7 @@ export function exportMedicalProfilePdf(input: {
     });
   }
 
-  doc.save(`aegis-medical-profile-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`resqora-medical-profile-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
 
 export function exportEmergencyHistoryPdf(input: {
@@ -84,7 +84,7 @@ export function exportEmergencyHistoryPdf(input: {
   header(
     doc,
     "Emergency history",
-    `${profile?.full_name || "AEGIS user"} — ${emergencies.length} recorded incident${emergencies.length === 1 ? "" : "s"}`,
+    `${profile?.full_name || "RESQORA user"} — ${emergencies.length} recorded incident${emergencies.length === 1 ? "" : "s"}`,
   );
 
   autoTable(doc, {
@@ -107,5 +107,5 @@ export function exportEmergencyHistoryPdf(input: {
     styles: { fontSize: 8, cellPadding: 2 },
   });
 
-  doc.save(`aegis-emergency-history-${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`resqora-emergency-history-${new Date().toISOString().slice(0, 10)}.pdf`);
 }

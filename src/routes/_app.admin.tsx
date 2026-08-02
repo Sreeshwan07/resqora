@@ -16,13 +16,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_app/admin")({
   head: () => ({
     meta: [
-      { title: "Admin control centre — AEGIS" },
+      { title: "Admin control centre — RESQORA" },
       {
         name: "description",
         content:
-          "Platform analytics for AEGIS operators: user growth, live emergencies, response times and an incident density heatmap.",
+          "Platform analytics for RESQORA operators: user growth, live emergencies, response times and an incident density heatmap.",
       },
-      { property: "og:title", content: "AEGIS Admin Control Centre" },
+      { property: "og:title", content: "RESQORA Admin Control Centre" },
       { property: "og:description", content: "User, emergency and response analytics for operators." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -81,12 +81,12 @@ function AdminPage() {
         <PageHeader
           icon={ShieldAlert}
           title="Admin control centre"
-          description="Restricted to AEGIS operators."
+          description="Restricted to RESQORA operators."
         />
         <EmptyState
           icon={ShieldAlert}
           title="Operator access required"
-          description="Your account doesn't have the admin role. Ask an AEGIS operator to grant access."
+          description="Your account doesn't have the admin role. Ask an RESQORA operator to grant access."
         />
       </>
     );

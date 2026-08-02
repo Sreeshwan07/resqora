@@ -1,5 +1,5 @@
 /**
- * Browser notification helpers. AEGIS uses the Notification API directly so
+ * Browser notification helpers. RESQORA uses the Notification API directly so
  * reminders and emergency updates work without a third-party push provider.
  */
 

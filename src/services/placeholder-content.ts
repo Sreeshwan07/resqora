@@ -15,7 +15,7 @@ export const featurePreviews: FeaturePreview[] = [
     id: "triage",
     title: "AI Incident Triage",
     description:
-      "Placeholder — describes how AEGIS classifies an incident and recommends the fastest route to help.",
+      "Placeholder — describes how RESQORA classifies an incident and recommends the fastest route to help.",
     icon: BrainCircuit,
     tone: "info",
   },

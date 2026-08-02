@@ -18,13 +18,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_app/history")({
   head: () => ({
     meta: [
-      { title: "Emergency history — AEGIS" },
+      { title: "Emergency history — RESQORA" },
       {
         name: "description",
         content:
-          "A complete timeline of your AEGIS emergencies with type, severity, location, duration and outcome.",
+          "A complete timeline of your RESQORA emergencies with type, severity, location, duration and outcome.",
       },
-      { property: "og:title", content: "AEGIS Emergency History" },
+      { property: "og:title", content: "RESQORA Emergency History" },
       { property: "og:description", content: "Every alert, response time and outcome in one timeline." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

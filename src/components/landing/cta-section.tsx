@@ -13,7 +13,7 @@ export function CtaSection() {
           Preparedness should feel effortless
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
-          Explore the AEGIS interface foundation — a calm, fast, accessible surface ready for
+          Explore the RESQORA interface foundation — a calm, fast, accessible surface ready for
           emergency intelligence.
         </p>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">

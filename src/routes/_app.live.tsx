@@ -38,13 +38,13 @@ import { formatDuration, statusLabel } from "@/lib/emergency";
 export const Route = createFileRoute("/_app/live")({
   head: () => ({
     meta: [
-      { title: "Live location — AEGIS" },
+      { title: "Live location — RESQORA" },
       {
         name: "description",
         content:
-          "Follow an active AEGIS emergency in real time: live GPS coordinates, responder status and the full alert timeline.",
+          "Follow an active RESQORA emergency in real time: live GPS coordinates, responder status and the full alert timeline.",
       },
-      { property: "og:title", content: "AEGIS Live Location" },
+      { property: "og:title", content: "RESQORA Live Location" },
       { property: "og:description", content: "Real-time coordinates and responder progress." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

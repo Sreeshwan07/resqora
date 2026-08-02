@@ -19,13 +19,13 @@ import { formatRelativeTime } from "@/utils/format";
 export const Route = createFileRoute("/_app/activity")({
   head: () => ({
     meta: [
-      { title: "Activity log & exports — AEGIS" },
+      { title: "Activity log & exports — RESQORA" },
       {
         name: "description",
         content:
-          "Review every AEGIS action — sign-ins, SOS activations, location sharing and profile edits — and export your records as PDF.",
+          "Review every RESQORA action — sign-ins, SOS activations, location sharing and profile edits — and export your records as PDF.",
       },
-      { property: "og:title", content: "AEGIS Activity Log" },
+      { property: "og:title", content: "RESQORA Activity Log" },
       {
         property: "og:description",
         content: "A chronological audit trail of your safety account, with PDF exports.",
@@ -62,7 +62,7 @@ function ActivityPage() {
       <PageHeader
         icon={Activity}
         title="Activity & exports"
-        description="A chronological record of everything that happened on your AEGIS account."
+        description="A chronological record of everything that happened on your RESQORA account."
         actions={
           <div className="flex flex-wrap gap-2">
             <Button

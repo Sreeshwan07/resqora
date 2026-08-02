@@ -30,13 +30,13 @@ import { formatDuration } from "@/lib/emergency";
 export const Route = createFileRoute("/guardian/$emergencyId/$token")({
   head: () => ({
     meta: [
-      { title: "Guardian dashboard — AEGIS emergency" },
+      { title: "Guardian dashboard — RESQORA emergency" },
       {
         name: "description",
         content:
-          "Secure AEGIS Guardian command centre: live location, movement trail, nearest emergency services and a live incident timeline.",
+          "Secure RESQORA Guardian command centre: live location, movement trail, nearest emergency services and a live incident timeline.",
       },
-      { property: "og:title", content: "AEGIS Guardian dashboard" },
+      { property: "og:title", content: "RESQORA Guardian dashboard" },
       {
         property: "og:description",
         content: "Live emergency command centre for the nominated Guardian.",
@@ -190,7 +190,7 @@ function GuardianDashboard() {
     : Math.max(0, Math.round((now - new Date(data.started_at).getTime()) / 1000));
   const lastUpdate = data.location_updated_at ?? data.track[0]?.created_at ?? null;
   const details = [
-    `AEGIS emergency ${data.reference}`,
+    `RESQORA emergency ${data.reference}`,
     `User: ${data.full_name}`,
     `Status: ${status.label}`,
     `Type: ${data.type} (${data.severity})`,

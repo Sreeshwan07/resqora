@@ -14,7 +14,7 @@ type CallTarget = {
 };
 
 /**
- * One-tap dialler. Every button only opens the device dialer — AEGIS never
+ * One-tap dialler. Every button only opens the device dialer — RESQORA never
  * places a call itself, so no telephony provider is involved.
  */
 export function QuickCallPanel({

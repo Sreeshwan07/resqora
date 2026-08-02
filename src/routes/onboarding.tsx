@@ -32,13 +32,13 @@ export const Route = createFileRoute("/onboarding")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Set up your safety profile — AEGIS" },
+      { title: "Set up your safety profile — RESQORA" },
       {
         name: "description",
         content:
-          "Complete your AEGIS onboarding: personal details, medical ID and three trusted emergency contacts.",
+          "Complete your RESQORA onboarding: personal details, medical ID and three trusted emergency contacts.",
       },
-      { property: "og:title", content: "Set up your AEGIS safety profile" },
+      { property: "og:title", content: "Set up your RESQORA safety profile" },
       { property: "og:description", content: "Personal details, medical ID and trusted contacts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -167,11 +167,11 @@ function OnboardingPage() {
       await notify(user.id, {
         category: "system",
         title: "Emergency protection activated",
-        body: "Your medical ID and 3 trusted contacts are live. AEGIS is now watching over you.",
+        body: "Your medical ID and 3 trusted contacts are live. RESQORA is now watching over you.",
       });
 
       await queryClient.invalidateQueries();
-      toast.success("You're protected — welcome to AEGIS");
+      toast.success("You're protected — welcome to RESQORA");
       navigate({ to: "/dashboard", replace: true });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not save your profile");
@@ -284,7 +284,7 @@ function OnboardingPage() {
               {step === 2 && (
                 <div className="space-y-5">
                   <p className="rounded-2xl bg-info/10 px-4 py-3 text-sm text-info">
-                    AEGIS requires exactly three contacts so someone always answers.
+                    RESQORA requires exactly three contacts so someone always answers.
                   </p>
                   {contacts.map((contact, index) => (
                     <div key={index} className="rounded-2xl border border-border bg-card/60 p-4">

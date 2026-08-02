@@ -11,13 +11,13 @@ export const Route = createFileRoute("/_app/nearby")({
     typeof search.category === "string" ? { category: search.category } : {},
   head: () => ({
     meta: [
-      { title: "Nearby emergency services — AEGIS" },
+      { title: "Nearby emergency services — RESQORA" },
       {
         name: "description",
         content:
           "Live hospitals, police stations, fire & rescue and blood banks around your GPS location with distance, ETA, call and navigation links.",
       },
-      { property: "og:title", content: "Nearby emergency services — AEGIS" },
+      { property: "og:title", content: "Nearby emergency services — RESQORA" },
       { property: "og:description", content: "Real hospitals, police, fire and blood banks around you." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

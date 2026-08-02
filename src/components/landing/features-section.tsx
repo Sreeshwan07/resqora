@@ -15,7 +15,7 @@ export function FeaturesSection() {
       <SectionHeading
         eyebrow="Platform preview"
         title="Built for the seconds that decide everything"
-        description="Placeholder feature previews outlining the AEGIS experience. Functionality is not wired up yet."
+        description="Placeholder feature previews outlining the RESQORA experience. Functionality is not wired up yet."
         align="center"
       />
       <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">

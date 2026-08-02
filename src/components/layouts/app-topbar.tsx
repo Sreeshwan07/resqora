@@ -41,7 +41,7 @@ export function AppTopbar() {
           >
             {menuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </Button>
-          <Link to="/" className="lg:hidden" aria-label="AEGIS home">
+          <Link to="/" className="lg:hidden" aria-label="RESQORA home">
             <Logo />
           </Link>
           <div className="relative hidden w-full max-w-sm md:block">

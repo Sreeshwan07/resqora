@@ -95,7 +95,7 @@ export function buildSosMessage(input: {
   const { emergency, profile, link } = input;
   const coords = coordsOf(emergency);
   const lines = [
-    `🚨 EMERGENCY — ${profile?.full_name || "An AEGIS user"} needs help.`,
+    `🚨 EMERGENCY — ${profile?.full_name || "An RESQORA user"} needs help.`,
     `Type: ${emergency.type}`,
     `Time: ${new Date(emergency.started_at).toLocaleString()}`,
   ];
@@ -123,6 +123,6 @@ export function smsHref(message: string, phone?: string | null) {
   return `sms:${digits}?&body=${encodeURIComponent(message)}`;
 }
 
-export function emailHref(message: string, subject = "AEGIS emergency alert") {
+export function emailHref(message: string, subject = "RESQORA emergency alert") {
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
 }

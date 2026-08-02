@@ -37,13 +37,13 @@ import { logActivity } from "@/lib/activity";
 export const Route = createFileRoute("/_app/profile")({
   head: () => ({
     meta: [
-      { title: "Your profile & medical ID — AEGIS" },
+      { title: "Your profile & medical ID — RESQORA" },
       {
         name: "description",
         content:
-          "Manage your AEGIS personal details, medical ID and the three trusted contacts we alert in an emergency.",
+          "Manage your RESQORA personal details, medical ID and the three trusted contacts we alert in an emergency.",
       },
-      { property: "og:title", content: "AEGIS Profile & Medical ID" },
+      { property: "og:title", content: "RESQORA Profile & Medical ID" },
       { property: "og:description", content: "Personal details, medical ID and trusted contacts." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -262,7 +262,7 @@ function ProfilePage() {
 
             <TabsContent value="contacts" className="mt-6 space-y-5">
               <p className="rounded-2xl bg-info/10 px-4 py-3 text-sm text-info">
-                AEGIS always keeps exactly three trusted contacts.
+                RESQORA always keeps exactly three trusted contacts.
               </p>
               {drafts.map((contact, index) => (
                 <div key={index} className="rounded-2xl border border-border bg-card/60 p-4">

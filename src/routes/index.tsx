@@ -20,13 +20,13 @@ import { activeEmergencyQuery } from "@/lib/api";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "AEGIS — Emergency SOS in Two Taps" },
+      { title: "RESQORA — Emergency SOS in Two Taps" },
       {
         name: "description",
         content:
-          "AEGIS puts one-tap SOS, AI accident reporting and the nearest hospital, police, fire and blood bank on a single emergency-ready screen.",
+          "RESQORA puts one-tap SOS, AI accident reporting and the nearest hospital, police, fire and blood bank on a single emergency-ready screen.",
       },
-      { property: "og:title", content: "AEGIS — Emergency SOS in Two Taps" },
+      { property: "og:title", content: "RESQORA — Emergency SOS in Two Taps" },
       {
         property: "og:description",
         content:
@@ -67,7 +67,7 @@ function Index() {
       <LandingNav />
       <main className="aurora">
         <div className="mx-auto w-full max-w-4xl space-y-3 px-4 py-4 sm:space-y-4 sm:px-6 sm:py-8">
-          <h1 className="sr-only">AEGIS — Autonomous Emergency Grid Intelligence Shield</h1>
+          <h1 className="sr-only">RESQORA — Autonomous Emergency Grid Intelligence Shield</h1>
 
           <EmergencyStatusCard
             status={status}

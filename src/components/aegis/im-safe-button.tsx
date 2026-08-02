@@ -38,7 +38,7 @@ export function ImSafeButton({
         open={open}
         onOpenChange={setOpen}
         title="Confirm you are safe?"
-        description="AEGIS will stop live tracking, close this emergency session and notify your trusted contacts that you are safe."
+        description="RESQORA will stop live tracking, close this emergency session and notify your trusted contacts that you are safe."
         confirmLabel="Yes, I'm safe"
         onConfirm={async () => {
           setOpen(false);

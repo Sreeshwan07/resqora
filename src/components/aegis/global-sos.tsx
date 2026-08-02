@@ -98,8 +98,8 @@ export function GlobalSosButton() {
         title={running ? "Stop the active SOS?" : "Send emergency SOS now?"}
         description={
           running
-            ? "AEGIS will stop live location sharing, close the emergency session, record the end time and notify your trusted contacts that you are safe."
-            : "AEGIS will capture your GPS location, start live tracking and alert your three trusted contacts immediately."
+            ? "RESQORA will stop live location sharing, close the emergency session, record the end time and notify your trusted contacts that you are safe."
+            : "RESQORA will capture your GPS location, start live tracking and alert your three trusted contacts immediately."
         }
         confirmLabel={running ? "Stop SOS — I'm safe" : "Send SOS"}
         onConfirm={async () => {

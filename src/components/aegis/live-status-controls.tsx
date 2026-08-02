@@ -51,7 +51,7 @@ export function LiveStatusControls({ emergency }: { emergency: Emergency }) {
       } else {
         await logActivity(user?.id, "Emergency status updated", label);
       }
-      showPush("AEGIS status update", label);
+      showPush("RESQORA status update", label);
       toast.success(label);
       await refresh();
     } catch (error) {

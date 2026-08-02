@@ -27,13 +27,13 @@ import { logActivity } from "@/lib/activity";
 export const Route = createFileRoute("/_app/notes")({
   head: () => ({
     meta: [
-      { title: "Emergency notes — AEGIS" },
+      { title: "Emergency notes — RESQORA" },
       {
         name: "description",
         content:
-          "Store key location, medical instructions, doctor and insurance details so responders find them on your AEGIS emergency profile.",
+          "Store key location, medical instructions, doctor and insurance details so responders find them on your RESQORA emergency profile.",
       },
-      { property: "og:title", content: "AEGIS Emergency Notes" },
+      { property: "og:title", content: "RESQORA Emergency Notes" },
       {
         property: "og:description",
         content: "Critical instructions responders can read during an emergency.",

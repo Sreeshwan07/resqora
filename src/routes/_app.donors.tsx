@@ -28,13 +28,13 @@ import { logActivity } from "@/lib/activity";
 export const Route = createFileRoute("/_app/donors")({
   head: () => ({
     meta: [
-      { title: "Blood donor directory — AEGIS" },
+      { title: "Blood donor directory — RESQORA" },
       {
         name: "description",
         content:
-          "Register as a blood donor and search available AEGIS donors by blood group and city when every minute counts.",
+          "Register as a blood donor and search available RESQORA donors by blood group and city when every minute counts.",
       },
-      { property: "og:title", content: "AEGIS Blood Donor Directory" },
+      { property: "og:title", content: "RESQORA Blood Donor Directory" },
       {
         property: "og:description",
         content: "Find available donors by blood group and city.",
@@ -72,7 +72,7 @@ function DonorsPage() {
       const { error } = await supabase.from("blood_donors").upsert(
         {
           user_id: user!.id,
-          full_name: profile.data?.full_name || "AEGIS donor",
+          full_name: profile.data?.full_name || "RESQORA donor",
           blood_group: values.blood_group,
           city: values.city.trim(),
           phone: values.phone.trim(),

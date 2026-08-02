@@ -1,6 +1,6 @@
 {
-  "name": "AEGIS — AI-Powered Emergency Intelligence",
-  "short_name": "AEGIS",
+  "name": "RESQORA — AI-Powered Emergency Intelligence",
+  "short_name": "RESQORA",
   "description": "One-tap SOS, live location sharing, medical ID and AI triage — built for the seconds that matter most.",
   "start_url": "/dashboard",
   "scope": "/",

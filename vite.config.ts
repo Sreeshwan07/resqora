@@ -29,14 +29,14 @@ export default defineConfig({
             {
               urlPattern: ({ request }) => request.mode === "navigate",
               handler: "NetworkFirst",
-              options: { cacheName: "aegis-pages", networkTimeoutSeconds: 5 },
+              options: { cacheName: "resqora-pages", networkTimeoutSeconds: 5 },
             },
             {
               urlPattern: ({ request, sameOrigin }) =>
                 sameOrigin && ["script", "style", "font", "image"].includes(request.destination),
               handler: "CacheFirst",
               options: {
-                cacheName: "aegis-assets",
+                cacheName: "resqora-assets",
                 expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 30 },
               },
             },

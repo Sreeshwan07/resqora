@@ -34,7 +34,7 @@ const NOTICES: Record<EmergencyNotice, { title: string; body: string }> = {
   },
   checkin_reminder: {
     title: "Safety check reminder",
-    body: "Confirm you are safe in AEGIS, or an emergency will be raised.",
+    body: "Confirm you are safe in RESQORA, or an emergency will be raised.",
   },
   services_changed: {
     title: "Nearby services changed",

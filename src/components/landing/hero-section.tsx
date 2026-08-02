@@ -22,7 +22,7 @@ export function HeroSection() {
             <span className="text-gradient">Emergency Assistance in Seconds</span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            AEGIS is an AI-powered emergency intelligence platform designed to help you reach the
+            RESQORA is an AI-powered emergency intelligence platform designed to help you reach the
             right assistance in moments that matter — and to keep the people who love you informed
             every step of the way.
           </p>

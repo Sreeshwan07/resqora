@@ -149,7 +149,7 @@ export function EmergencyAnalysisPanel({ emergency }: { emergency: Emergency }) 
         <div>
           <h2 className="text-sm font-semibold text-foreground">What happened?</h2>
           <p className="text-xs text-muted-foreground">
-            Speak or type — AEGIS scores severity and gives first-aid guidance while help is arranged.
+            Speak or type — RESQORA scores severity and gives first-aid guidance while help is arranged.
           </p>
         </div>
       </div>

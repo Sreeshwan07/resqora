@@ -46,13 +46,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/_app/dashboard")({
   head: () => ({
     meta: [
-      { title: "Home — AEGIS emergency console" },
+      { title: "Home — RESQORA emergency console" },
       {
         name: "description",
         content:
-          "Your AEGIS home screen: live safety status, one-tap SOS, live location, medical QR, nearby responders and check-ins.",
+          "Your RESQORA home screen: live safety status, one-tap SOS, live location, medical QR, nearby responders and check-ins.",
       },
-      { property: "og:title", content: "AEGIS Home" },
+      { property: "og:title", content: "RESQORA Home" },
       { property: "og:description", content: "One-tap emergency actions, always within reach." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -178,9 +178,9 @@ function HomePage() {
       } else {
         const position = await getCurrentPosition();
         const point = { lat: position.coords.latitude, lng: position.coords.longitude };
-        message = `${profile.data?.full_name || "An AEGIS user"} is sharing a live location.\n${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}\n${mapsLink(point)}`;
+        message = `${profile.data?.full_name || "An RESQORA user"} is sharing a live location.\n${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}\n${mapsLink(point)}`;
       }
-      const shared = await shareText("AEGIS live location", message);
+      const shared = await shareText("RESQORA live location", message);
       toast.success(shared ? "Location shared" : "Location copied to clipboard");
     } catch {
       toast.error("Could not read your location — check GPS permission");
@@ -267,7 +267,7 @@ function HomePage() {
       </section>
 
       {/* Feature tiles */}
-      <section aria-label="AEGIS features" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <section aria-label="RESQORA features" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         <Tile icon={Radar} label="Live location" to="/live" meta={coords ? "Tracking" : "Idle"} />
         <Tile icon={Bot} label="AI assistant" to="/assistant" meta="Triage" />
         <Tile icon={Users} label="Contacts" to="/profile" meta={`${contacts.data?.length ?? 0}/3`} />
@@ -287,7 +287,7 @@ function HomePage() {
         onOpenChange={setConfirmOpen}
         tone="emergency"
         title="Send SOS now?"
-        description="AEGIS captures your GPS position and alerts your trusted contacts immediately."
+        description="RESQORA captures your GPS position and alerts your trusted contacts immediately."
         confirmLabel="Send SOS"
         onConfirm={() => void triggerSos()}
       />

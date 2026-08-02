@@ -15,7 +15,7 @@ export function SiteFooter() {
           <div className="min-w-0">
             <Logo />
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
-              AEGIS is an AI-powered emergency intelligence platform built for speed, clarity, and
+              RESQORA is an AI-powered emergency intelligence platform built for speed, clarity, and
               trust when every second counts.
             </p>
           </div>
@@ -40,7 +40,7 @@ export function SiteFooter() {
           </div>
         </div>
         <div className="mt-12 flex flex-col gap-3 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <p>© {new Date().getFullYear()} AEGIS. Interface preview — not an emergency service.</p>
+          <p>© {new Date().getFullYear()} RESQORA. Interface preview — not an emergency service.</p>
           <p>In a real emergency, always contact your local emergency number.</p>
         </div>
       </div>
