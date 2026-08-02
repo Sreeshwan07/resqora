@@ -44,7 +44,7 @@ export async function sendViaEmailJs(input: {
       });
       if (!response.ok) {
         const body = await response.text();
-        console.error(`AEGIS email failed [${response.status}]: ${body}`);
+        console.error(`RESQORA email failed [${response.status}]: ${body}`);
         results.push({
           id: recipient.id,
           status: "failed",

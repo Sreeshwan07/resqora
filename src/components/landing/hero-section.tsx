@@ -16,13 +16,13 @@ export function HeroSection() {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-card/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground backdrop-blur-md">
             <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
-            Autonomous Emergency Grid Intelligence Shield
+            Every Second Matters. Every Life Connected.
           </span>
           <h1 className="mt-6 text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">
             <span className="text-gradient">Emergency Assistance in Seconds</span>
           </h1>
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            AEGIS is an AI-powered emergency intelligence platform designed to help you reach the
+            RESQORA is an AI-powered emergency intelligence platform designed to help you reach the
             right assistance in moments that matter — and to keep the people who love you informed
             every step of the way.
           </p>

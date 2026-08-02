@@ -20,13 +20,13 @@ import type { Theme } from "@/types";
 export const Route = createFileRoute("/_app/settings")({
   head: () => ({
     meta: [
-      { title: "Settings — AEGIS" },
+      { title: "Settings — RESQORA" },
       {
         name: "description",
         content:
-          "Control AEGIS privacy, location sharing, crash detection, notification preferences, appearance and account access.",
+          "Control RESQORA privacy, location sharing, crash detection, notification preferences, appearance and account access.",
       },
-      { property: "og:title", content: "AEGIS Settings" },
+      { property: "og:title", content: "RESQORA Settings" },
       { property: "og:description", content: "Privacy, location, notifications and appearance." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -65,7 +65,7 @@ function SettingsPage() {
   }
 
   async function signOut() {
-    void logSecurityEvent("Signed out", "User signed out of AEGIS");
+    void logSecurityEvent("Signed out", "User signed out of RESQORA");
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
@@ -130,7 +130,7 @@ function SettingsPage() {
             <ToggleRow
               id="notify-system"
               label="Product updates"
-              description="New AEGIS features and account notices."
+              description="New RESQORA features and account notices."
               checked={profile?.notify_system ?? true}
               onChange={(value) => update({ notify_system: value })}
             />
@@ -145,7 +145,7 @@ function SettingsPage() {
                       ? "Enabled — check-in reminders and emergency updates appear on this device."
                       : permission === "denied"
                         ? "Blocked in your browser settings. Re-allow notifications for this site."
-                        : "Allow AEGIS to send check-in reminders and disaster alerts to this device."}
+                        : "Allow RESQORA to send check-in reminders and disaster alerts to this device."}
                 </p>
               </div>
               <Button
@@ -154,13 +154,13 @@ function SettingsPage() {
                 disabled={permission === "unsupported" || permission === "denied"}
                 onClick={async () => {
                   if (permission === "granted") {
-                    showPush("AEGIS test alert", "Push notifications are working on this device.");
+                    showPush("RESQORA test alert", "Push notifications are working on this device.");
                     return;
                   }
                   const result = await requestPushPermission();
                   setPermission(result);
                   if (result === "granted") {
-                    showPush("Push notifications enabled", "AEGIS can now reach you on this device.");
+                    showPush("Push notifications enabled", "RESQORA can now reach you on this device.");
                     toast.success("Push notifications enabled");
                   } else {
                     toast.error("Notification permission was not granted");

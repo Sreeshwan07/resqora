@@ -10,13 +10,13 @@ import { contactsQuery, profileQuery } from "@/lib/api";
 export const Route = createFileRoute("/_app/medical-id")({
   head: () => ({
     meta: [
-      { title: "Medical ID for responders — AEGIS" },
+      { title: "Medical ID for responders — RESQORA" },
       {
         name: "description",
         content:
           "One-tap medical ID with blood group, allergies, conditions, medications and trusted contacts, plus a responder QR code.",
       },
-      { property: "og:title", content: "Medical ID — AEGIS" },
+      { property: "og:title", content: "Medical ID — RESQORA" },
       { property: "og:description", content: "Blood group, allergies, conditions and contacts in one tap." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

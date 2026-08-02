@@ -38,16 +38,16 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in — AEGIS Emergency Intelligence" },
+      { title: "Sign in — RESQORA Emergency Intelligence" },
       {
         name: "description",
         content:
-          "Sign in or create your AEGIS account to activate AI-powered emergency response, crash detection and trusted contacts.",
+          "Sign in or create your RESQORA account to activate AI-powered emergency response, crash detection and trusted contacts.",
       },
-      { property: "og:title", content: "Sign in — AEGIS" },
+      { property: "og:title", content: "Sign in — RESQORA" },
       {
         property: "og:description",
-        content: "Access your AEGIS emergency intelligence dashboard.",
+        content: "Access your RESQORA emergency intelligence dashboard.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -126,14 +126,14 @@ function AuthPage() {
       void logSecurityEvent("Sign-in failed", `Failed password sign-in for ${parsedEmail.data}`);
       toast.error(
         error.message.toLowerCase().includes("invalid")
-          ? "Those credentials don't match an AEGIS account."
+          ? "Those credentials don't match an RESQORA account."
           : error.message,
       );
       return;
     }
     clearRateLimit("signin");
     void logSecurityEvent("Sign-in succeeded", "Password sign-in");
-    toast.success("Welcome back to AEGIS");
+    toast.success("Welcome back to RESQORA");
     navigate({ to: await resolveDestination(data.user!.id, preferred), replace: true });
   }
 
@@ -173,7 +173,7 @@ function AuthPage() {
     if (error) {
       toast.error(
         error.message.toLowerCase().includes("already registered")
-          ? "That email already has an AEGIS account — try signing in."
+          ? "That email already has an RESQORA account — try signing in."
           : error.message,
       );
       return;
@@ -223,7 +223,7 @@ function AuthPage() {
         className="w-full max-w-md"
       >
         <div className="mb-6 flex justify-center">
-          <Link to="/" aria-label="AEGIS home">
+          <Link to="/" aria-label="RESQORA home">
             <Logo />
           </Link>
         </div>
@@ -303,7 +303,7 @@ function AuthPage() {
               </TabsContent>
 
               <TabsContent value="signup" className="mt-6">
-                <h1 className="text-xl font-semibold text-foreground">Create your AEGIS account</h1>
+                <h1 className="text-xl font-semibold text-foreground">Create your RESQORA account</h1>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Takes under two minutes to be protected.
                 </p>

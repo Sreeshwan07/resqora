@@ -94,7 +94,7 @@ export const guardianSessionQuery = (emergencyId: string | undefined) =>
     },
   });
 
-/** The Guardian email defined by the AEGIS Guardian protocol. */
+/** The Guardian email defined by the RESQORA Guardian protocol. */
 export function buildGuardianEmail(input: {
   emergency: Emergency;
   profile: Profile | null | undefined;
@@ -105,13 +105,13 @@ export function buildGuardianEmail(input: {
 }) {
   const { emergency, profile, guardian, dashboardUrl } = input;
   const coords = coordsOf(emergency);
-  const name = profile?.full_name || "An AEGIS user";
+  const name = profile?.full_name || "An RESQORA user";
   const address =
     input.address || emergency.address || profile?.home_address || "Address unavailable";
   return {
-    subject: `🚨 AEGIS Emergency Alert — ${name} needs you (Guardian)`,
+    subject: `🚨 RESQORA Emergency Alert — ${name} needs you (Guardian)`,
     message: [
-      "🚨 AEGIS Emergency Alert",
+      "🚨 RESQORA Emergency Alert",
       "",
       `${guardian.name}, you are the Guardian for ${name}.`,
       `${name} has activated Emergency SOS.`,

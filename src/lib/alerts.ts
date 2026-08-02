@@ -35,9 +35,9 @@ export function buildAlertMessage(input: {
   const coords = coordsOf(emergency);
   const started = new Date(emergency.started_at);
   const lines = [
-    `EMERGENCY ALERT — AEGIS`,
+    `EMERGENCY ALERT — RESQORA`,
     ``,
-    `${contact.name}, you are listed as a trusted contact for ${profile?.full_name || "an AEGIS user"}.`,
+    `${contact.name}, you are listed as a trusted contact for ${profile?.full_name || "an RESQORA user"}.`,
     ``,
     `Person: ${profile?.full_name || "Unknown"}${profile?.blood_group ? ` (blood group ${profile.blood_group})` : ""}`,
     `Type: ${emergency.type} emergency`,

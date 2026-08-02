@@ -15,7 +15,7 @@ import {
 } from "@/lib/whatsapp-alerts";
 
 /**
- * WhatsApp cannot be sent server-side without a paid Business API, so AEGIS
+ * WhatsApp cannot be sent server-side without a paid Business API, so RESQORA
  * prepares a complete message per contact and tracks which ones were shared.
  */
 export function WhatsappShareStatus({

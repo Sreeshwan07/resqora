@@ -22,7 +22,7 @@ export const deliveriesQuery = (emergencyId: string | undefined) =>
     },
   });
 
-/** Exact alert body defined by the AEGIS emergency protocol. */
+/** Exact alert body defined by the RESQORA emergency protocol. */
 export function buildEmergencyAlert(input: {
   emergency: Emergency;
   profile: Profile | null | undefined;
@@ -34,9 +34,9 @@ export function buildEmergencyAlert(input: {
   const address =
     input.address || emergency.address || profile?.home_address || "Address unavailable";
   return [
-    "🚨 AEGIS Emergency Alert",
+    "🚨 RESQORA Emergency Alert",
     "",
-    `${profile?.full_name || "An AEGIS user"} may need immediate assistance.`,
+    `${profile?.full_name || "An RESQORA user"} may need immediate assistance.`,
     "",
     "Current Address:",
     address,
@@ -61,9 +61,9 @@ export function buildResolvedAlert(input: {
 }) {
   const { emergency, profile } = input;
   return [
-    "✅ AEGIS Emergency Resolved",
+    "✅ RESQORA Emergency Resolved",
     "",
-    `${profile?.full_name || "An AEGIS user"} has confirmed they are safe.`,
+    `${profile?.full_name || "An RESQORA user"} has confirmed they are safe.`,
     "",
     "Emergency ID:",
     emergency.id.slice(0, 8).toUpperCase(),

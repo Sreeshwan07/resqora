@@ -81,14 +81,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "AEGIS — Autonomous Emergency Grid Intelligence Shield" },
+      { title: "RESQORA — Every Second Matters. Every Life Connected." },
       {
         name: "description",
         content:
-          "AEGIS is an AI-powered emergency intelligence platform for fast assistance and calm updates to loved ones.",
+          "RESQORA is an AI-powered emergency intelligence platform for fast assistance and calm updates to loved ones.",
       },
-      { name: "author", content: "AEGIS" },
-      { property: "og:title", content: "AEGIS — Emergency Assistance in Seconds" },
+      { name: "author", content: "RESQORA" },
+      { property: "og:title", content: "RESQORA — Emergency Assistance in Seconds" },
       {
         property: "og:description",
         content: "AI-powered emergency intelligence for the seconds that matter most.",
@@ -97,7 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#e11d2f" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "AEGIS" },
+      { name: "apple-mobile-web-app-title", content: "RESQORA" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
     ],
     links: [

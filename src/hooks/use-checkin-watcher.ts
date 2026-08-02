@@ -66,7 +66,7 @@ export function useCheckinWatcher() {
             await notify(user!.id, {
               category: "emergency",
               title: "Missed safety check-in",
-              body: `AEGIS raised an SOS because "${checkin.label}" was not confirmed in time.`,
+              body: `RESQORA raised an SOS because "${checkin.label}" was not confirmed in time.`,
             });
             await logActivity(user!.id, "SOS activated", `Missed check-in: ${checkin.label}`);
             showPush("SOS activated", "You missed a safety check-in — your contacts were alerted.");

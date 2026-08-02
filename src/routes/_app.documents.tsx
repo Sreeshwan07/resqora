@@ -11,13 +11,13 @@ import { exportEmergencyHistoryPdf, exportMedicalProfilePdf } from "@/lib/export
 export const Route = createFileRoute("/_app/documents")({
   head: () => ({
     meta: [
-      { title: "Emergency documents — AEGIS" },
+      { title: "Emergency documents — RESQORA" },
       {
         name: "description",
         content:
           "Generate and download your emergency medical profile and incident history as responder-ready PDF documents.",
       },
-      { property: "og:title", content: "Emergency documents — AEGIS" },
+      { property: "og:title", content: "Emergency documents — RESQORA" },
       { property: "og:description", content: "Responder-ready medical profile and incident history PDFs." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -70,7 +70,7 @@ function DocumentsPage() {
       <PageHeader
         icon={FileText}
         title="Documents"
-        description="Generate responder-ready documents from the data already stored on your AEGIS account."
+        description="Generate responder-ready documents from the data already stored on your RESQORA account."
         actions={
           <Button asChild variant="outline">
             <Link to="/notes">

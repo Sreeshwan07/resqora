@@ -37,7 +37,7 @@ export const EMERGENCY_TYPES = [
 export const STATUS_FLOW = [
   { key: "created", label: "SOS triggered", detail: "Alert created on your device." },
   { key: "locating", label: "Location captured", detail: "GPS coordinates attached to the alert." },
-  { key: "ai_analysis", label: "AI analysis started", detail: "AEGIS is scoring severity and routing priority." },
+  { key: "ai_analysis", label: "AI analysis started", detail: "RESQORA is scoring severity and routing priority." },
   { key: "contacts_notified", label: "Contacts notified", detail: "Your 3 trusted contacts were alerted." },
   { key: "active", label: "Emergency active", detail: "Responders are engaged and tracking your location." },
   { key: "resolved", label: "Resolved", detail: "Emergency closed." },

@@ -45,13 +45,13 @@ export const Route = createFileRoute("/_app/emergency")({
     search.auto === true || search.auto === "true" ? { auto: true } : {},
   head: () => ({
     meta: [
-      { title: "Emergency SOS — AEGIS" },
+      { title: "Emergency SOS — RESQORA" },
       {
         name: "description",
         content:
-          "Trigger an AEGIS SOS with GPS capture, instant contact alerts, live status tracking and automatic crash detection.",
+          "Trigger an RESQORA SOS with GPS capture, instant contact alerts, live status tracking and automatic crash detection.",
       },
-      { property: "og:title", content: "AEGIS Emergency SOS" },
+      { property: "og:title", content: "RESQORA Emergency SOS" },
       { property: "og:description", content: "One tap alerts your contacts and nearby responders." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

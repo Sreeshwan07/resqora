@@ -28,7 +28,7 @@ export const primaryNav: NavItem[] = [
   { label: "Nearby", to: "/nearby", icon: MapPinned, description: "Responders around you" },
   { label: "History", to: "/history", icon: History, description: "Past incidents" },
   { label: "Profile", to: "/profile", icon: UserRound, description: "Your safety identity" },
-  { label: "About", to: "/about", icon: Info, description: "How AEGIS works" },
+  { label: "About", to: "/about", icon: Info, description: "How RESQORA works" },
   { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
 ];
 
@@ -151,7 +151,7 @@ export const navSections: NavSection[] = [
       notificationsNav,
       primaryNav[4],
       { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
-      { label: "About", to: "/about", icon: Info, description: "How AEGIS works" },
+      { label: "About", to: "/about", icon: Info, description: "How RESQORA works" },
     ],
   },
 ];

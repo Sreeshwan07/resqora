@@ -23,16 +23,16 @@ import { Badge } from "@/components/ui/badge";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About AEGIS — How the emergency platform works" },
+      { title: "About RESQORA — How the emergency platform works" },
       {
         name: "description",
         content:
-          "How AEGIS works: one-tap SOS, AI triage, live location sharing, medical ID, safety check-ins, trusted contacts, blood donors and nearby responders.",
+          "How RESQORA works: one-tap SOS, AI triage, live location sharing, medical ID, safety check-ins, trusted contacts, blood donors and nearby responders.",
       },
-      { property: "og:title", content: "About AEGIS — Autonomous Emergency Grid Intelligence Shield" },
+      { property: "og:title", content: "About RESQORA — Every Second Matters. Every Life Connected." },
       {
         property: "og:description",
-        content: "The complete AEGIS emergency workflow, explained step by step.",
+        content: "The complete RESQORA emergency workflow, explained step by step.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -50,7 +50,7 @@ const FEATURES = [
   {
     icon: Camera,
     title: "AI image analysis",
-    body: "Photograph an accident from the home screen and AEGIS detects the emergency type, estimates severity with a confidence score and writes a responder-ready summary.",
+    body: "Photograph an accident from the home screen and RESQORA detects the emergency type, estimates severity with a confidence score and writes a responder-ready summary.",
   },
   {
     icon: Radar,
@@ -65,7 +65,7 @@ const FEATURES = [
   {
     icon: AlarmClock,
     title: "Safety check-in",
-    body: "Start a timer before a walk home or a solo trip. Miss the confirmation and AEGIS escalates to your full SOS workflow automatically.",
+    body: "Start a timer before a walk home or a solo trip. Miss the confirmation and RESQORA escalates to your full SOS workflow automatically.",
   },
   {
     icon: Users,
@@ -107,7 +107,7 @@ function AboutPage() {
             <Logo />
           </Link>
           <Button asChild variant="hero" size="sm">
-            <Link to="/dashboard">Open AEGIS</Link>
+            <Link to="/dashboard">Open RESQORA</Link>
           </Button>
         </header>
 
@@ -119,13 +119,13 @@ function AboutPage() {
         >
           <Badge variant="secondary" className="rounded-full">
             <Sparkles className="size-3.5" aria-hidden="true" />
-            Autonomous Emergency Grid Intelligence Shield
+            Every Second Matters. Every Life Connected.
           </Badge>
           <h1 className="mt-4 font-display text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
-            What AEGIS is
+            What RESQORA is
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            AEGIS is a personal emergency platform. It keeps everything a responder or a loved one
+            RESQORA is a personal emergency platform. It keeps everything a responder or a loved one
             needs — who you are, where you are, what care you need — one tap away, and it acts for
             you when you cannot act for yourself. The home screen carries only actions; every
             explanation lives on this page.
@@ -164,7 +164,7 @@ function AboutPage() {
 
         <section className="mt-12">
           <h2 className="font-display text-2xl font-semibold text-foreground">
-            Everything inside AEGIS
+            Everything inside RESQORA
           </h2>
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
             {FEATURES.map((feature, index) => (

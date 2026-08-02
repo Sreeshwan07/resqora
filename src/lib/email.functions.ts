@@ -25,7 +25,7 @@ export type SendEmailsResponse = {
 };
 
 /**
- * Sends the AEGIS emergency email to every trusted contact through EmailJS.
+ * Sends the RESQORA emergency email to every trusted contact through EmailJS.
  * Sign-in is required and the caller is rate limited so the endpoint can never
  * be used as an open relay.
  */

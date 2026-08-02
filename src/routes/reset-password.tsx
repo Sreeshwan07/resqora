@@ -14,10 +14,10 @@ export const Route = createFileRoute("/reset-password")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Choose a new password — AEGIS" },
-      { name: "description", content: "Set a new password for your AEGIS emergency account." },
-      { property: "og:title", content: "Reset your AEGIS password" },
-      { property: "og:description", content: "Set a new password for your AEGIS account." },
+      { title: "Choose a new password — RESQORA" },
+      { name: "description", content: "Set a new password for your RESQORA emergency account." },
+      { property: "og:title", content: "Reset your RESQORA password" },
+      { property: "og:description", content: "Set a new password for your RESQORA account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -58,7 +58,7 @@ function ResetPasswordPage() {
     <div className="aurora grid min-h-dvh place-items-center bg-background px-4">
       <div className="w-full max-w-md">
         <div className="mb-6 flex justify-center">
-          <Link to="/" aria-label="AEGIS home">
+          <Link to="/" aria-label="RESQORA home">
             <Logo />
           </Link>
         </div>

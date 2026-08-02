@@ -29,7 +29,7 @@ export function AppSidebar({
       )}
     >
       <div className="flex items-center justify-between gap-2 px-1">
-        <Link to="/" aria-label="AEGIS home">
+        <Link to="/" aria-label="RESQORA home">
           <Logo compact={collapsed} />
         </Link>
         {!collapsed && (

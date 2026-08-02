@@ -360,7 +360,7 @@ export async function geocodePlace(query: string) {
     }
   }
   const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(query)}`;
-  const res = await fetch(url, { headers: { "User-Agent": "AEGIS-emergency-app" } });
+  const res = await fetch(url, { headers: { "User-Agent": "RESQORA-emergency-app" } });
   if (!res.ok) throw new Error(`Geocoding failed (${res.status})`);
   const data = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>;
   const hit = data[0];

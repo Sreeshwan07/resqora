@@ -28,13 +28,13 @@ import { useCheckinWatcher } from "@/hooks/use-checkin-watcher";
 export const Route = createFileRoute("/_app/checkins")({
   head: () => ({
     meta: [
-      { title: "Safety check-ins — AEGIS" },
+      { title: "Safety check-ins — RESQORA" },
       {
         name: "description",
         content:
-          "Schedule an AEGIS safety check-in. If you don't confirm you're safe in time, AEGIS automatically triggers your SOS workflow.",
+          "Schedule an RESQORA safety check-in. If you don't confirm you're safe in time, RESQORA automatically triggers your SOS workflow.",
       },
-      { property: "og:title", content: "AEGIS Safety Check-ins" },
+      { property: "og:title", content: "RESQORA Safety Check-ins" },
       {
         property: "og:description",
         content: "Timed safety confirmations with automatic SOS escalation.",
@@ -108,7 +108,7 @@ function CheckinsPage() {
       <PageHeader
         icon={AlarmClock}
         title="Safety check-ins"
-        description="Set a timer before you travel. Miss it, and AEGIS raises an SOS for you automatically."
+        description="Set a timer before you travel. Miss it, and RESQORA raises an SOS for you automatically."
         actions={
           pushPermission() === "granted" ? (
             <Badge variant="secondary" className="rounded-full">
@@ -189,7 +189,7 @@ function CheckinsPage() {
             Start check-in timer
           </Button>
           <p className="text-xs text-muted-foreground">
-            Keep AEGIS open in a tab — if the timer runs out without a confirmation, your SOS
+            Keep RESQORA open in a tab — if the timer runs out without a confirmation, your SOS
             workflow starts and your trusted contacts are alerted.
           </p>
         </div>

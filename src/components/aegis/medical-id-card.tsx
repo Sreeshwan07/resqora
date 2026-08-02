@@ -20,7 +20,7 @@ export function medicalIdPayload(
 ) {
   const age = ageFromDob(profile?.date_of_birth);
   const lines = [
-    "AEGIS MEDICAL ID",
+    "RESQORA MEDICAL ID",
     `Name: ${profile?.full_name || "Unknown"}`,
     `Age: ${age ?? "Unknown"}`,
     `Blood group: ${profile?.blood_group || "Unknown"}`,

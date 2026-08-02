@@ -1,5 +1,5 @@
 /**
- * AEGIS application security helpers: input sanitisation, validation schemas,
+ * RESQORA application security helpers: input sanitisation, validation schemas,
  * client-side abuse throttling and upload validation. Everything here is
  * defence-in-depth on top of database RLS and server-side validation — never a
  * replacement for it.

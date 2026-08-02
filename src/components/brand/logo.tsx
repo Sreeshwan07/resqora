@@ -16,10 +16,10 @@ export function Logo({
       {!compact && (
         <span className="min-w-0">
           <span className="block font-display text-lg font-bold leading-none tracking-tight text-foreground">
-            AEGIS
+            RESQORA
           </span>
           <span className="block text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-            Emergency Intelligence
+            Emergency Response
           </span>
         </span>
       )}

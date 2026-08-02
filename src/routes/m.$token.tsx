@@ -8,13 +8,13 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/m/$token")({
   head: () => ({
     meta: [
-      { title: "Emergency medical profile — AEGIS" },
+      { title: "Emergency medical profile — RESQORA" },
       {
         name: "description",
         content:
-          "Responder view of an AEGIS emergency medical profile: blood group, allergies, conditions, notes and trusted contacts.",
+          "Responder view of an RESQORA emergency medical profile: blood group, allergies, conditions, notes and trusted contacts.",
       },
-      { property: "og:title", content: "Emergency medical profile — AEGIS" },
+      { property: "og:title", content: "Emergency medical profile — RESQORA" },
       { property: "og:description", content: "Secure responder access to critical medical details." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -80,7 +80,7 @@ function SharedProfilePage() {
               {profile.avatar_url ? (
                 <img
                   src={profile.avatar_url}
-                  alt={`Portrait of ${profile.full_name ?? "the AEGIS user"}`}
+                  alt={`Portrait of ${profile.full_name ?? "the RESQORA user"}`}
                   className="size-16 rounded-2xl object-cover"
                 />
               ) : (
@@ -93,7 +93,7 @@ function SharedProfilePage() {
                   Emergency medical profile
                 </p>
                 <h1 className="font-display text-2xl font-bold text-foreground">
-                  {profile.full_name || "AEGIS user"}
+                  {profile.full_name || "RESQORA user"}
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   {[age ? `${age} yrs` : null, profile.gender, profile.current_city]

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 export function QrCode({
   value,
   label,
-  filename = "aegis-qr.png",
+  filename = "resqora-qr.png",
   size = 220,
 }: {
   value: string | null;

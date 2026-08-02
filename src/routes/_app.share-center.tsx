@@ -42,13 +42,13 @@ import {
 export const Route = createFileRoute("/_app/share-center")({
   head: () => ({
     meta: [
-      { title: "Emergency share centre — AEGIS" },
+      { title: "Emergency share centre — RESQORA" },
       {
         name: "description",
         content:
           "Send emergency emails, share on WhatsApp, copy the secure live tracking link and hand out QR codes for your medical ID — all from one screen.",
       },
-      { property: "og:title", content: "Emergency share centre — AEGIS" },
+      { property: "og:title", content: "Emergency share centre — RESQORA" },
       {
         property: "og:description",
         content: "Email alerts, WhatsApp share, tracking link and QR codes in one place.",
@@ -131,7 +131,7 @@ function ShareCenterPage() {
   async function nativeShare() {
     if (!message) return;
     const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
-    const payload = { title: "AEGIS emergency alert", text: message, url: trackingUrl ?? undefined };
+    const payload = { title: "RESQORA emergency alert", text: message, url: trackingUrl ?? undefined };
     if (nav.share) {
       try {
         await nav.share(payload);
@@ -335,9 +335,9 @@ function ShareCenterPage() {
         <QrCode
           value={trackingUrl}
           label="Live emergency tracking"
-          filename="aegis-live-tracking.png"
+          filename="resqora-live-tracking.png"
         />
-        <QrCode value={medicalUrl} label="Medical ID & profile" filename="aegis-medical-id.png" />
+        <QrCode value={medicalUrl} label="Medical ID & profile" filename="resqora-medical-id.png" />
       </section>
 
       <QuickCallPanel contacts={contactList} nearby={nearby.data} />

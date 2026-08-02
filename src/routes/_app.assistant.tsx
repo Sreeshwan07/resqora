@@ -19,13 +19,13 @@ import {
 export const Route = createFileRoute("/_app/assistant")({
   head: () => ({
     meta: [
-      { title: "AI Emergency Assistant — AEGIS" },
+      { title: "AI Emergency Assistant — RESQORA" },
       {
         name: "description",
         content:
-          "Guided AEGIS triage: answer seven questions to get a 0–100 severity score and step-by-step first-aid instructions.",
+          "Guided RESQORA triage: answer seven questions to get a 0–100 severity score and step-by-step first-aid instructions.",
       },
-      { property: "og:title", content: "AEGIS AI Emergency Assistant" },
+      { property: "og:title", content: "RESQORA AI Emergency Assistant" },
       {
         property: "og:description",
         content: "Severity triage and first-aid guidance in under a minute.",
@@ -44,7 +44,7 @@ function AssistantPage() {
     {
       id: "intro",
       role: "assistant",
-      text: "I'm the AEGIS assistant. I'll ask seven quick questions to score severity from 0 to 100 and give you first-aid steps. If anyone is in immediate danger, trigger an SOS first.",
+      text: "I'm the RESQORA assistant. I'll ask seven quick questions to score severity from 0 to 100 and give you first-aid steps. If anyone is in immediate danger, trigger an SOS first.",
     },
     { id: "q0", role: "assistant", text: triageQuestions[0].prompt },
   ]);

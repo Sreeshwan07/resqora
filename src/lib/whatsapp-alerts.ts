@@ -10,7 +10,7 @@ const LIVE_LABELS: Record<string, string> = {
   safe: "Marked safe",
 };
 
-/** Exact WhatsApp body defined by the AEGIS contact notification protocol. */
+/** Exact WhatsApp body defined by the RESQORA contact notification protocol. */
 export function buildWhatsappAlert(input: {
   emergency: Emergency;
   profile: Profile | null | undefined;
@@ -19,11 +19,11 @@ export function buildWhatsappAlert(input: {
 }) {
   const { emergency, profile, trackingUrl } = input;
   const coords = coordsOf(emergency);
-  const name = profile?.full_name || "An AEGIS user";
+  const name = profile?.full_name || "An RESQORA user";
   const address =
     input.address || emergency.address || profile?.home_address || "Address unavailable";
   return [
-    "🚨 AEGIS Emergency Alert",
+    "🚨 RESQORA Emergency Alert",
     "",
     `${name} has triggered an Emergency SOS.`,
     "",
@@ -52,7 +52,7 @@ export function contactsWithPhone(contacts: EmergencyContact[]) {
 }
 
 /**
- * WhatsApp cannot be delivered by a server without a paid Business API, so AEGIS
+ * WhatsApp cannot be delivered by a server without a paid Business API, so RESQORA
  * prepares one ready-to-send message per contact and records the share state.
  */
 export async function prepareWhatsappShares(input: {

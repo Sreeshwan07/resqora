@@ -31,14 +31,14 @@ import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 export const Route = createFileRoute("/s/$token")({
   head: () => ({
     meta: [
-      { title: "Live emergency location — AEGIS" },
+      { title: "Live emergency location — RESQORA" },
       {
         name: "description",
         content:
-          "Follow a shared AEGIS emergency in real time. This secure link shows the person's latest GPS position and status.",
+          "Follow a shared RESQORA emergency in real time. This secure link shows the person's latest GPS position and status.",
       },
-      { property: "og:title", content: "Live emergency location — AEGIS" },
-      { property: "og:description", content: "A secure AEGIS link with a live emergency position." },
+      { property: "og:title", content: "Live emergency location — RESQORA" },
+      { property: "og:description", content: "A secure RESQORA link with a live emergency position." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex,nofollow" },
@@ -143,7 +143,7 @@ function SharedLocationPage() {
 
   const details = info
     ? [
-        "🚨 AEGIS Emergency Alert",
+        "🚨 RESQORA Emergency Alert",
         `Person: ${info.full_name}`,
         `Status: ${resolved ? "Emergency resolved" : (LIVE_LABELS[info.live_status] ?? "Emergency active")}`,
         `Type: ${info.type}`,

@@ -3,7 +3,7 @@ import { coordsOf, mapsLink } from "@/lib/alerts";
 import type { AlertDelivery } from "@/lib/alert-delivery";
 import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
 
-/** Full emergency email body defined by the AEGIS communication protocol. */
+/** Full emergency email body defined by the RESQORA communication protocol. */
 export function buildEmergencyEmail(input: {
   emergency: Emergency;
   profile: Profile | null | undefined;
@@ -13,10 +13,10 @@ export function buildEmergencyEmail(input: {
 }) {
   const { emergency, profile, trackingUrl } = input;
   const coords = coordsOf(emergency);
-  const name = profile?.full_name || "An AEGIS user";
+  const name = profile?.full_name || "An RESQORA user";
   const address =
     input.address || emergency.address || profile?.home_address || "Address unavailable";
-  const subject = `🚨 AEGIS Emergency Alert — ${name}`;
+  const subject = `🚨 RESQORA Emergency Alert — ${name}`;
   const shareMedical = profile?.share_medical_in_alerts !== false;
   const medical = shareMedical
     ? [
@@ -27,7 +27,7 @@ export function buildEmergencyEmail(input: {
       ].filter(Boolean)
     : [];
   const message = [
-    "🚨 AEGIS Emergency Alert",
+    "🚨 RESQORA Emergency Alert",
     "",
     `${name} has triggered an Emergency SOS and may need immediate assistance.`,
     "",
@@ -56,11 +56,11 @@ export function buildResolvedEmail(input: {
   emergency: Emergency;
   profile: Profile | null | undefined;
 }) {
-  const name = input.profile?.full_name || "An AEGIS user";
+  const name = input.profile?.full_name || "An RESQORA user";
   return {
-    subject: `✅ AEGIS Emergency Resolved — ${name}`,
+    subject: `✅ RESQORA Emergency Resolved — ${name}`,
     message: [
-      "✅ AEGIS Emergency Resolved",
+      "✅ RESQORA Emergency Resolved",
       "",
       `${name} has confirmed they are safe.`,
       "",

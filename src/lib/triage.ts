@@ -178,7 +178,7 @@ export function firstAidSteps(answers: Record<string, string>, severity: Severit
   steps.push("Keep them warm, talk calmly and stay with them until help arrives.");
 
   if (severity === "critical" || severity === "high") {
-    steps.push("Trigger an AEGIS SOS now so responders and your contacts get your live location.");
+    steps.push("Trigger an RESQORA SOS now so responders and your contacts get your live location.");
   }
 
   return steps;

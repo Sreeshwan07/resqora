@@ -51,7 +51,7 @@ export const sendEmergencyAlerts = createServerFn({ method: "POST" })
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              sender: "AEGIS",
+              sender: "RESQORA",
               recipient: msisdn,
               message: data.message.slice(0, 1000),
             }),
@@ -59,7 +59,7 @@ export const sendEmergencyAlerts = createServerFn({ method: "POST" })
         );
         if (!response.ok) {
           const body = await response.text();
-          console.error(`AEGIS SMS failed [${response.status}]: ${body}`);
+          console.error(`RESQORA SMS failed [${response.status}]: ${body}`);
           results.push({
             id: recipient.id,
             status: "failed",
