@@ -308,16 +308,23 @@ export async function createEmergency(options: {
           count: 0,
         });
       } else if (emailResult.configured) {
+        const failures = emailResult.results.filter((r) => !r.ok);
+        const detail =
+          failures.length === 0
+            ? `Emergency email delivered to ${emailResult.sent} contact(s).`
+            : `${emailResult.sent} delivered, ${failures.length} failed — ${failures
+                .map((f) => `${f.name}: ${f.error}`)
+                .join("; ")}`;
         await logEvent(
           data.id,
           options.userId,
-          "Email sent",
-          `Emergency email delivered to ${emailResult.sent} contact(s).`,
+          failures.length === 0 ? "Email sent" : "Email partially delivered",
+          detail,
         );
         report.push({
           channel: "email",
-          status: "sent",
-          detail: `Emergency email sent to ${emailResult.sent} contact(s).`,
+          status: emailResult.sent > 0 ? "sent" : "failed",
+          detail,
           count: emailResult.sent,
         });
       } else {
@@ -325,12 +332,12 @@ export async function createEmergency(options: {
           data.id,
           options.userId,
           "Email delivery unavailable",
-          "Automatic email is not connected — send it from the share centre.",
+          "Email service is not configured.",
         );
         report.push({
           channel: "email",
           status: "unavailable",
-          detail: "Automatic email is not connected yet — send it from the share centre.",
+          detail: "Email service is not configured.",
           count: 0,
         });
       }
