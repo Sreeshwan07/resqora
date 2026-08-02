@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchNearbyServices, geocodeAddress } from "@/lib/nearby.functions";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 import { haversineKm } from "@/lib/geo";
+import { hasCoords } from "@/lib/alerts";
 import type { LivePosition } from "@/hooks/use-live-position";
 
 export type NearbyResult = Record<PlaceCategory, NearbyPlace[]>;
@@ -88,6 +89,20 @@ export function useNearbyServices(
     setManualError(null);
   }, []);
 
+  // Data validation: a service is only shown when it has a real name and real
+  // coordinates, so Navigate/Map can never open a blank map.
+  const validated = useMemo(() => {
+    const raw = query.data;
+    if (!raw) return EMPTY;
+    const next = { ...EMPTY } as NearbyResult;
+    for (const key of Object.keys(next) as PlaceCategory[]) {
+      next[key] = (raw[key] ?? []).filter(
+        (place) => Boolean(place?.name?.trim()) && hasCoords(place),
+      );
+    }
+    return next;
+  }, [query.data]);
+
   return {
     origin: anchor,
     manual,
@@ -96,7 +111,7 @@ export function useNearbyServices(
     geocoding,
     searchAddress,
     clearManual,
-    data: query.data ?? EMPTY,
+    data: validated,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     error: query.error as Error | null,
