@@ -10,6 +10,7 @@ import {
 import { EmergencyConsole } from "@/components/landing/emergency-console";
 import { EmergencyContactsCard } from "@/components/landing/emergency-contacts-card";
 import { NearestServices } from "@/components/resqora/nearest-services";
+import { LocationGate } from "@/components/resqora/location-gate";
 import { RecentActivityCard } from "@/components/resqora/recent-activity-card";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
@@ -42,7 +43,7 @@ export const Route = createFileRoute("/")({
 function Index() {
   const { user } = useAuth();
   useSosTheme();
-  const { position, address, denied } = useLivePosition();
+  const { position, address, denied, resolvingAddress } = useLivePosition();
   const active = useQuery(activeEmergencyQuery(user?.id));
   const emergencyId = active.data && active.data.status !== "resolved" ? active.data.id : null;
   const nearby = useNearbyServices(position, { sessionKey: emergencyId });
@@ -74,6 +75,7 @@ function Index() {
             now={now}
             position={position}
             address={address}
+            resolvingAddress={resolvingAddress}
             denied={denied}
           />
 
@@ -89,6 +91,7 @@ function Index() {
         </div>
       </main>
       <SiteFooter />
+      <LocationGate />
     </div>
   );
 }
