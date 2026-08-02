@@ -296,7 +296,13 @@ export async function sendEmergencyEmailAlerts(input: {
 }) {
   const targets = contactsWithEmail(input.contacts);
   if (targets.length === 0) {
-    return { sent: 0, failed: 0, configured: true, skipped: true, results: [] as EmailDeliveryOutcome[] };
+    return {
+      sent: 0,
+      failed: 0,
+      configured: true,
+      skipped: true,
+      results: [] as EmailDeliveryOutcome[],
+    };
   }
   const deliveries = await seedEmailDeliveries({
     userId: input.userId,

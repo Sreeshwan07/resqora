@@ -6,12 +6,13 @@ import { mapsNavigateLink, mapsPlaceLink } from "@/lib/alerts";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 
-const CATEGORIES: { key: PlaceCategory; label: string; emoji: string; icon: typeof Stethoscope }[] = [
-  { key: "hospital", label: "Hospitals", emoji: "🏥", icon: Stethoscope },
-  { key: "police", label: "Police stations", emoji: "🚓", icon: ShieldCheck },
-  { key: "fire", label: "Fire & rescue", emoji: "🚒", icon: Flame },
-  { key: "blood_bank", label: "Blood banks", emoji: "🩸", icon: Droplets },
-];
+const CATEGORIES: { key: PlaceCategory; label: string; emoji: string; icon: typeof Stethoscope }[] =
+  [
+    { key: "hospital", label: "Hospitals", emoji: "🏥", icon: Stethoscope },
+    { key: "police", label: "Police stations", emoji: "🚓", icon: ShieldCheck },
+    { key: "fire", label: "Fire & rescue", emoji: "🚒", icon: Flame },
+    { key: "blood_bank", label: "Blood banks", emoji: "🩸", icon: Droplets },
+  ];
 
 /**
  * Top 3 real nearby responders per category, anchored to the user's live GPS

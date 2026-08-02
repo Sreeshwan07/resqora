@@ -149,12 +149,14 @@ function GuardianDashboard() {
   }, []);
 
   const data = view.data ?? null;
-  const coords = data?.latitude != null && data.longitude != null
-    ? { lat: data.latitude, lng: data.longitude }
-    : null;
+  const coords =
+    data?.latitude != null && data.longitude != null
+      ? { lat: data.latitude, lng: data.longitude }
+      : null;
 
   const telemetry = useMemo(() => {
-    if (!data || data.track.length === 0) return { speedKmh: null as number | null, battery: null as number | null };
+    if (!data || data.track.length === 0)
+      return { speedKmh: null as number | null, battery: null as number | null };
     const [latest, previous] = data.track;
     let speedKmh: number | null =
       latest.speed != null ? Math.max(0, Math.round(latest.speed * 3.6)) : null;
@@ -164,7 +166,8 @@ function GuardianDashboard() {
         { lat: previous.latitude, lng: previous.longitude },
       );
       const hours =
-        (new Date(latest.created_at).getTime() - new Date(previous.created_at).getTime()) / 3_600_000;
+        (new Date(latest.created_at).getTime() - new Date(previous.created_at).getTime()) /
+        3_600_000;
       if (hours > 0) speedKmh = Math.round(km / hours);
     }
     return { speedKmh, battery: latest.battery_level };
@@ -271,7 +274,11 @@ function GuardianDashboard() {
           </div>
 
           <dl className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            <Metric icon={Clock} label="Started" value={new Date(data.started_at).toLocaleTimeString()} />
+            <Metric
+              icon={Clock}
+              label="Started"
+              value={new Date(data.started_at).toLocaleTimeString()}
+            />
             <Metric icon={Activity} label="Duration" value={formatDuration(elapsed)} />
             <Metric
               icon={MapPin}
@@ -287,11 +294,7 @@ function GuardianDashboard() {
               icon={telemetry.battery != null ? BatteryMedium : online ? Wifi : WifiOff}
               label={telemetry.battery != null ? "Battery" : "Connection"}
               value={
-                telemetry.battery != null
-                  ? `${telemetry.battery}%`
-                  : online
-                    ? "Online"
-                    : "Offline"
+                telemetry.battery != null ? `${telemetry.battery}%` : online ? "Online" : "Offline"
               }
             />
           </dl>
@@ -408,11 +411,7 @@ function GuardianDashboard() {
               <p className="mb-3 text-xs text-muted-foreground">
                 Live results around {data.full_name.split(" ")[0]}’s current position.
               </p>
-              <GuardianServices
-                lat={data.latitude}
-                lng={data.longitude}
-                onNearest={setNearest}
-              />
+              <GuardianServices lat={data.latitude} lng={data.longitude} onNearest={setNearest} />
             </section>
 
             <section className="glass-panel rounded-2xl p-4">

@@ -162,7 +162,9 @@ function CategoryCard({
             aria-expanded={expanded}
           >
             {expanded ? "Show less" : "View more"}
-            <ChevronDown className={cn("size-3.5 transition-transform", expanded && "rotate-180")} />
+            <ChevronDown
+              className={cn("size-3.5 transition-transform", expanded && "rotate-180")}
+            />
           </Button>
         )}
       </div>
@@ -182,11 +184,7 @@ function CategoryCard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: index * 0.04 }}
             >
-              <PlaceCard
-                place={place}
-                origin={origin}
-                rank={ordered.indexOf(place) + 1}
-              />
+              <PlaceCard place={place} origin={origin} rank={ordered.indexOf(place) + 1} />
             </motion.div>
           ))
         )}
@@ -271,9 +269,7 @@ export function NearestServices({
           </Button>
         </form>
       )}
-      {state.manualError && (
-        <p className="mt-2 text-xs text-alert">{state.manualError}</p>
-      )}
+      {state.manualError && <p className="mt-2 text-xs text-alert">{state.manualError}</p>}
       {state.error && (
         <p className="mt-2 text-xs text-alert">
           Live service lookup failed. Tap refresh to try again.
