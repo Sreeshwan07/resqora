@@ -449,6 +449,86 @@ export type Database = {
           },
         ]
       }
+      medai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          language: string
+          shared_medical_history: boolean
+          specialist: string | null
+          title: string
+          updated_at: string
+          urgency: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language?: string
+          shared_medical_history?: boolean
+          specialist?: string | null
+          title?: string
+          updated_at?: string
+          urgency?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string
+          shared_medical_history?: boolean
+          specialist?: string | null
+          title?: string
+          updated_at?: string
+          urgency?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      medai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          has_image: boolean
+          id: string
+          role: string
+          specialist: string | null
+          urgency: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          has_image?: boolean
+          id?: string
+          role?: string
+          specialist?: string | null
+          urgency?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          has_image?: boolean
+          id?: string
+          role?: string
+          specialist?: string | null
+          urgency?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "medai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null

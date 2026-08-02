@@ -20,6 +20,7 @@ import {
   FileText,
   Share2,
   MailCheck,
+  Stethoscope,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -38,6 +39,13 @@ export const assistantNav: NavItem = {
   to: "/assistant",
   icon: Bot,
   description: "Triage & first aid",
+};
+
+export const medAiNav: NavItem = {
+  label: "AI Medical Assistant",
+  to: "/medai",
+  icon: Stethoscope,
+  description: "MedAI symptoms & first aid",
 };
 
 export const liveLocationNav: NavItem = {
@@ -166,6 +174,7 @@ export const navSections: NavSection[] = [
 ];
 
 export const supportNav: NavItem[] = [
+  medAiNav,
   assistantNav,
   checkinsNav,
   notesNav,
