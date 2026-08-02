@@ -8,6 +8,7 @@ import { MobileNav } from "@/components/layouts/mobile-nav";
 import { GlobalSosButton } from "@/components/resqora/global-sos";
 import { LiveEmergencyWidget } from "@/components/resqora/live-emergency-widget";
 import { LiveLocationCard } from "@/components/resqora/live-location-card";
+import { LocationGate } from "@/components/resqora/location-gate";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useAuth } from "@/hooks/use-auth";
 import { useSosTheme } from "@/hooks/use-sos-theme";
@@ -17,7 +18,7 @@ import { ensureNotificationPermission } from "@/lib/emergency-notifications";
 
 export function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
-  const { position, address, denied } = useLivePosition();
+  const { position, address, denied, status, resolvingAddress } = useLivePosition();
   useSosTheme();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
@@ -50,13 +51,20 @@ export function AppLayout({ children }: { children: ReactNode }) {
             className="mx-auto w-full max-w-6xl space-y-8"
           >
             {showLocationCard && (
-              <LiveLocationCard position={position} address={address} denied={denied} />
+              <LiveLocationCard
+                position={position}
+                address={address}
+                denied={denied}
+                status={status}
+                resolvingAddress={resolvingAddress}
+              />
             )}
             {children}
           </motion.div>
         </main>
       </div>
       <MobileNav />
+      <LocationGate />
       <GlobalSosButton />
       <LiveEmergencyWidget />
     </div>
