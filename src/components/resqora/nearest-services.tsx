@@ -68,48 +68,68 @@ export function PlaceCard({
   place,
   origin,
   rank,
+  serviceLabel,
 }: {
   place: NearbyPlace;
   origin: NearbyOrigin | null;
   rank?: number;
+  serviceLabel?: string;
 }) {
   const verified = place.phone ? place.phone.replace(/[^+\d]/g, "") : null;
   const tel = verified ?? NATIONAL_NUMBER[place.category];
+  const Icon = CATEGORY_ICON[place.category];
   return (
-    <div className="rounded-2xl border border-border/60 bg-background/60 p-3">
-      <p className="text-sm font-semibold leading-snug text-foreground">
-        {rank ? `${rank}. ` : ""}
-        {place.name}
-      </p>
-      {place.address && (
-        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{place.address}</p>
-      )}
-      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-        <Badge variant="secondary" className="rounded-full text-[10px] font-semibold">
-          {place.distanceKm.toFixed(1)} km
-        </Badge>
-        <Badge variant="secondary" className="rounded-full text-[10px] font-semibold">
-          ~{place.etaMinutes} min
-        </Badge>
-        {!verified && (
-          <span className="text-[10px] text-muted-foreground">
-            No published number — calls {NATIONAL_NUMBER[place.category]}
-          </span>
-        )}
+    <div className="rounded-3xl border border-border/70 bg-card p-4 sm:p-5">
+      <div className="flex min-w-0 items-start gap-3">
+        <span
+          aria-hidden="true"
+          className="grid size-11 shrink-0 place-items-center rounded-2xl bg-teal/10 text-teal"
+        >
+          <Icon className="size-5" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            {serviceLabel ?? CATEGORY_LABEL[place.category]}
+          </p>
+          <p className="mt-0.5 truncate font-display text-base font-bold text-foreground">
+            {place.name}
+          </p>
+          {place.address && (
+            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{place.address}</p>
+          )}
+        </div>
       </div>
 
-      <div className="mt-3 flex gap-2">
-        <Button asChild size="lg" variant="emergency" className="h-11 flex-1 text-sm">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5">
+        <Badge variant="secondary" className="rounded-full text-[11px] font-bold">
+          {place.distanceKm.toFixed(1)} km
+        </Badge>
+        <Badge variant="secondary" className="rounded-full text-[11px] font-bold">
+          ETA ~{place.etaMinutes} min
+        </Badge>
+      </div>
+
+      <div className="mt-4 flex gap-2">
+        <Button
+          asChild
+          size="lg"
+          className="h-12 flex-1 rounded-2xl bg-alert text-sm font-bold text-alert-foreground hover:bg-alert/90"
+        >
           <a href={`tel:${tel}`}>
             <PhoneCall className="size-4" /> Call
           </a>
         </Button>
-        <Button asChild size="lg" variant="outline" className="h-11 flex-1 text-sm">
+        <Button
+          asChild
+          size="lg"
+          variant="outline"
+          className="h-12 flex-1 rounded-2xl bg-card text-sm font-bold"
+        >
           <a href={mapsNavigateLink(place)} target="_blank" rel="noreferrer">
             <Navigation className="size-4" /> Navigate
           </a>
         </Button>
-        <Button asChild size="icon" variant="outline" className="size-11 shrink-0">
+        <Button asChild size="icon" variant="outline" className="size-12 shrink-0 rounded-full bg-card">
           <a
             href={mapsPlaceLink(place)}
             target="_blank"
@@ -136,45 +156,18 @@ function CategoryCard({
   loading: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const Icon = CATEGORY_ICON[category];
 
   const ordered = [...places].sort((a, b) => a.distanceKm - b.distanceKm);
   const visible = expanded ? ordered.slice(0, 3) : ordered.slice(0, 1);
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-          <span
-            aria-hidden="true"
-            className="grid size-8 place-items-center rounded-xl bg-primary/10 text-primary"
-          >
-            <Icon className="size-4" />
-          </span>
-          {CATEGORY_EMOJI[category]} {CATEGORY_LABEL[category]}
-        </h3>
-        {places.length > 1 && (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-[11px]"
-            onClick={() => setExpanded((value) => !value)}
-            aria-expanded={expanded}
-          >
-            {expanded ? "Show less" : "View more"}
-            <ChevronDown
-              className={cn("size-3.5 transition-transform", expanded && "rotate-180")}
-            />
-          </Button>
-        )}
-      </div>
-
-      <div className="mt-2 grid gap-2">
+    <div className="min-w-0">
+      <div className="grid gap-2">
         {loading && places.length === 0 ? (
-          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-44 w-full rounded-3xl" />
         ) : places.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-border/60 p-3 text-xs text-muted-foreground">
-            No nearby services found.
+          <p className="rounded-3xl border border-dashed border-border p-4 text-xs text-muted-foreground">
+            No nearby {CATEGORY_LABEL[category].toLowerCase()} found.
           </p>
         ) : (
           visible.map((place, index) => (
@@ -184,11 +177,27 @@ function CategoryCard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: index * 0.04 }}
             >
-              <PlaceCard place={place} origin={origin} rank={ordered.indexOf(place) + 1} />
+              <PlaceCard
+                place={place}
+                origin={origin}
+                serviceLabel={`${CATEGORY_EMOJI[category]} ${CATEGORY_LABEL[category]}`}
+              />
             </motion.div>
           ))
         )}
       </div>
+      {places.length > 1 && (
+        <Button
+          size="sm"
+          variant="ghost"
+          className="mt-2 h-9 w-full rounded-2xl text-xs font-bold text-muted-foreground"
+          onClick={() => setExpanded((value) => !value)}
+          aria-expanded={expanded}
+        >
+          {expanded ? "Show less" : `View more ${CATEGORY_LABEL[category].toLowerCase()}`}
+          <ChevronDown className={cn("size-3.5 transition-transform", expanded && "rotate-180")} />
+        </Button>
+      )}
     </div>
   );
 }
@@ -211,9 +220,11 @@ export function NearestServices({
   const needsManual = !position && !state.manual;
 
   return (
-    <section aria-label={title} className="glass-panel rounded-2xl p-4">
+    <section aria-label={title} className="soft-card rounded-3xl p-4 sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+        <h2 className="font-display text-lg font-extrabold tracking-tight text-foreground sm:text-xl">
+          {title}
+        </h2>
         <div className="flex items-center gap-2">
           <p className="text-[11px] text-muted-foreground">
             {state.updatedAt
@@ -276,7 +287,7 @@ export function NearestServices({
         </p>
       )}
 
-      <div className="mt-3 grid gap-2 sm:grid-cols-2">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 sm:gap-4">
         {categories.map((category) => (
           <CategoryCard
             key={category}
