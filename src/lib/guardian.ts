@@ -199,9 +199,8 @@ export async function notifyGuardian(input: {
         emergency: input.emergency,
         profile: input.profile,
         address: input.address,
-        trackingUrl: input.trackingUrl,
+        trackingUrl: dashboardUrl,
       }),
-      tracking_link: dashboardUrl,
     },
   });
   if (!result.ok && result.attempts === 0) {
