@@ -496,7 +496,9 @@ export async function touchConversation(input: {
   language?: LanguageCode;
   title?: string;
 }) {
-  const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  const patch: Database["public"]["Tables"]["medai_conversations"]["Update"] = {
+    updated_at: new Date().toISOString(),
+  };
   if (input.urgency) patch.urgency = input.urgency;
   if (input.specialist) patch.specialist = input.specialist;
   if (input.language) patch.language = input.language;
