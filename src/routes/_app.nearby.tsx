@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MapPinned } from "lucide-react";
 import { PageHeader } from "@/components/system/page-header";
-import { NearestServices } from "@/components/aegis/nearest-services";
+import { NearestServices } from "@/components/resqora/nearest-services";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import type { PlaceCategory } from "@/lib/nearby.server";

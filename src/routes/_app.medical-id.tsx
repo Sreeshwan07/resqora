@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { IdCard } from "lucide-react";
 import { PageHeader } from "@/components/system/page-header";
 import { Button } from "@/components/ui/button";
-import { MedicalIdCard } from "@/components/aegis/medical-id-card";
+import { MedicalIdCard } from "@/components/resqora/medical-id-card";
 import { useAuth } from "@/hooks/use-auth";
 import { contactsQuery, profileQuery } from "@/lib/api";
 

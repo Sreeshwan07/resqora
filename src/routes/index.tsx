@@ -9,8 +9,8 @@ import {
 } from "@/components/landing/emergency-status-card";
 import { EmergencyConsole } from "@/components/landing/emergency-console";
 import { EmergencyContactsCard } from "@/components/landing/emergency-contacts-card";
-import { NearestServices } from "@/components/aegis/nearest-services";
-import { RecentActivityCard } from "@/components/aegis/recent-activity-card";
+import { NearestServices } from "@/components/resqora/nearest-services";
+import { RecentActivityCard } from "@/components/resqora/recent-activity-card";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { useAuth } from "@/hooks/use-auth";

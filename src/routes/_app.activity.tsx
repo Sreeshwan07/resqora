@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { activityQuery } from "@/lib/activity";
 import { contactsQuery, emergenciesQuery, profileQuery } from "@/lib/api";
-import { notesQuery } from "@/lib/aegis-data";
+import { notesQuery } from "@/lib/resqora-data";
 import { exportEmergencyHistoryPdf, exportMedicalProfilePdf } from "@/lib/export-pdf";
 import { formatRelativeTime } from "@/utils/format";
 

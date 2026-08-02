@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
-import type { EmergencyNote } from "@/lib/aegis-data";
+import type { EmergencyNote } from "@/lib/resqora-data";
 import { statusLabel, formatDuration } from "@/lib/emergency";
 
 function header(doc: jsPDF, title: string, subtitle: string) {

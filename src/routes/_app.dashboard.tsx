@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ConfirmModal } from "@/components/system/confirm-modal";
-import { MedicalIdQr } from "@/components/aegis/medical-id-card";
+import { MedicalIdQr } from "@/components/resqora/medical-id-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -37,7 +37,7 @@ import {
   notificationsQuery,
   profileQuery,
 } from "@/lib/api";
-import { checkinsQuery } from "@/lib/aegis-data";
+import { checkinsQuery } from "@/lib/resqora-data";
 import { coordsOf, copyText, mapsLink, shareText } from "@/lib/alerts";
 import { createEmergency, statusLabel } from "@/lib/emergency";
 import { buildSosMessage, ensureLiveShareLink, ensureMedicalShareLink, shareUrl } from "@/lib/share";

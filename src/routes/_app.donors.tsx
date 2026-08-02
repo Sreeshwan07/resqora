@@ -22,7 +22,7 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { profileQuery } from "@/lib/api";
-import { BLOOD_GROUPS, donorSearchQuery, myDonorQuery, revealDonorPhone } from "@/lib/aegis-data";
+import { BLOOD_GROUPS, donorSearchQuery, myDonorQuery, revealDonorPhone } from "@/lib/resqora-data";
 import { logActivity } from "@/lib/activity";
 
 export const Route = createFileRoute("/_app/donors")({
