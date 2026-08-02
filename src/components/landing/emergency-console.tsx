@@ -252,15 +252,15 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
   }
 
   return (
-    <section aria-label="Emergency actions" className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2">
+    <section aria-label="Emergency actions" className="space-y-3 sm:space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
         {mode === "full" &&
           (sosActive ? (
             <Button
               size="xl"
               disabled={sosBusy}
               onClick={cancelSos}
-              className="h-18 rounded-2xl bg-linear-to-r from-success to-success/80 text-base font-semibold text-white shadow-lg shadow-success/25 hover:opacity-95 sm:h-20 sm:text-lg"
+              className="h-20 rounded-3xl bg-success text-base font-bold text-success-foreground shadow-lg shadow-success/20 hover:bg-success/90 sm:h-24 sm:text-lg"
             >
               {sosBusy ? (
                 <Loader2 className="size-6 animate-spin" aria-hidden="true" />
@@ -271,10 +271,9 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
             </Button>
           ) : (
             <Button
-              variant="emergency"
               size="xl"
               disabled={sosBusy}
-              className="h-18 rounded-2xl text-base font-semibold shadow-lg shadow-alert/25 sm:h-20 sm:text-lg"
+              className="h-20 rounded-3xl bg-alert text-base font-bold text-alert-foreground shadow-lg shadow-alert/25 hover:bg-alert/90 sm:h-24 sm:text-lg"
               onClick={() => triggerSos()}
             >
               {sosBusy ? (
@@ -282,16 +281,16 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
               ) : (
                 <Siren className="size-6" aria-hidden="true" />
               )}
-              Emergency SOS
+              🚨 Emergency SOS
             </Button>
           ))}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              variant="glass"
               size="xl"
-              className="h-18 rounded-2xl text-base font-semibold sm:h-20 sm:text-lg"
+              variant="outline"
+              className="soft-card h-20 rounded-3xl text-base font-bold text-foreground hover:bg-secondary sm:h-24 sm:text-lg"
               disabled={busy}
             >
               {busy ? (
@@ -299,7 +298,7 @@ export function EmergencyConsole({ mode = "full" }: { mode?: "full" | "report" }
               ) : (
                 <Camera className="size-6" aria-hidden="true" />
               )}
-              Report accident
+              📷 Report Incident
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="center" className="w-56 rounded-2xl">
