@@ -1,22 +1,25 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, MessageCircle } from "lucide-react";
+import { AlertTriangle, Check, Copy, Loader2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
 import { deliveriesQuery } from "@/lib/alert-delivery";
+import { copyText } from "@/lib/alerts";
+import { logActivity } from "@/lib/activity";
 import {
   buildWhatsappAlert,
   contactsWithPhone,
-  markWhatsappShared,
+  logWhatsappAttempt,
   prepareWhatsappShares,
   whatsappShareLink,
 } from "@/lib/whatsapp-alerts";
 
 /**
- * WhatsApp cannot be sent server-side without a paid Business API, so RESQORA
- * prepares a complete message per contact and tracks which ones were shared.
+ * WhatsApp cannot be delivered server-side without a paid Business API, so
+ * RESQORA prepares a fully written message per contact, opens WhatsApp with it
+ * pre-filled, and records every attempt (success or failure) in the database.
  */
 export function WhatsappShareStatus({
   emergency,
@@ -33,7 +36,7 @@ export function WhatsappShareStatus({
 }) {
   const queryClient = useQueryClient();
   const deliveries = useQuery(deliveriesQuery(emergency.id));
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
   const reachable = contactsWithPhone(contacts);
   const rows = (deliveries.data ?? []).filter((row) => row.channel === "whatsapp");
   const message = buildWhatsappAlert({ emergency, profile, address, trackingUrl });
@@ -52,16 +55,39 @@ export function WhatsappShareStatus({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [emergency.id, reachable.length, rows.length, deliveries.isLoading]);
 
-  async function share(id: string, phone: string | null) {
-    setBusy(true);
+  async function copyMessage() {
+    await copyText(message);
+    toast.success("Emergency message copied — paste it into WhatsApp");
+  }
+
+  async function share(id: string, name: string, phone: string | null) {
+    setBusy(id);
     try {
-      window.open(whatsappShareLink(message, phone), "_blank", "noreferrer");
-      await markWhatsappShared(id);
-      await queryClient.invalidateQueries({ queryKey: ["alert-deliveries", emergency.id] });
+      const { href, problem } = whatsappShareLink(message, phone, profile?.phone);
+      if (!href) {
+        await logWhatsappAttempt({ deliveryId: id, ok: false, error: problem });
+        toast.error(problem ?? "This number cannot be used for WhatsApp");
+        return;
+      }
+      const opened = window.open(href, "_blank", "noreferrer");
+      if (!opened) {
+        await logWhatsappAttempt({
+          deliveryId: id,
+          ok: false,
+          error: "WhatsApp is not installed.",
+        });
+        await copyText(message);
+        toast.error("WhatsApp is not installed. The emergency message was copied instead.");
+        return;
+      }
+      await logWhatsappAttempt({ deliveryId: id, ok: true });
+      await logActivity(emergency.user_id, "WhatsApp alert shared", name);
+      toast.success(`WhatsApp opened for ${name}`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not record the WhatsApp share");
     } finally {
-      setBusy(false);
+      setBusy(null);
+      await queryClient.invalidateQueries({ queryKey: ["alert-deliveries", emergency.id] });
     }
   }
 
@@ -84,51 +110,71 @@ export function WhatsappShareStatus({
       ) : (
         <>
           <p className="mt-2 text-xs text-muted-foreground">
-            WhatsApp needs your confirmation to send. Each message is fully written — tap to open
-            WhatsApp and press send.
+            Each message is fully written with your live location and tracking link — tap a contact
+            to open WhatsApp and press send.
           </p>
           <ul className="mt-3 space-y-2">
-            {rows.map((row) => (
-              <li
-                key={row.id}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/60 px-3 py-2 text-xs"
-              >
-                <span className="min-w-0">
-                  <span className="block truncate font-medium text-foreground">
-                    {row.contact_name}
-                  </span>
-                  <span className="block truncate text-muted-foreground">{row.contact_phone}</span>
-                </span>
-                <span className="flex items-center gap-2">
-                  {row.status === "delivered" ? (
-                    <span className="flex items-center gap-1 font-semibold text-success">
-                      <Check className="size-3" aria-hidden="true" />
-                      Shared
-                      {row.sent_at ? ` · ${new Date(row.sent_at).toLocaleTimeString()}` : ""}
+            {rows.map((row) => {
+              const check = whatsappShareLink(message, row.contact_phone, profile?.phone);
+              return (
+                <li
+                  key={row.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-muted/60 px-3 py-2 text-xs"
+                >
+                  <span className="min-w-0">
+                    <span className="block truncate font-medium text-foreground">
+                      {row.contact_name}
                     </span>
-                  ) : (
-                    <span className="font-semibold text-muted-foreground">Ready to send</span>
-                  )}
-                  <Button
-                    size="sm"
-                    variant={row.status === "delivered" ? "outline" : "hero"}
-                    disabled={busy}
-                    onClick={() => share(row.id, row.contact_phone)}
-                  >
-                    {busy ? (
-                      <Loader2 className="size-4 animate-spin" />
+                    <span className="block truncate text-muted-foreground">
+                      {row.contact_phone}
+                    </span>
+                    {check.problem ? (
+                      <span className="mt-1 flex items-center gap-1 text-alert">
+                        <AlertTriangle className="size-3" aria-hidden="true" />
+                        {check.problem}
+                      </span>
+                    ) : null}
+                    {row.status === "failed" && row.error ? (
+                      <span className="mt-1 block text-alert">✗ {row.error}</span>
+                    ) : null}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    {row.status === "delivered" ? (
+                      <span className="flex items-center gap-1 font-semibold text-success">
+                        <Check className="size-3" aria-hidden="true" />
+                        Shared
+                        {row.sent_at ? ` · ${new Date(row.sent_at).toLocaleTimeString()}` : ""}
+                      </span>
                     ) : (
-                      <MessageCircle className="size-4" />
+                      <span className="font-semibold text-muted-foreground">Ready to send</span>
                     )}
-                    {row.status === "delivered" ? "Send again" : "Send"}
-                  </Button>
-                </span>
-              </li>
-            ))}
+                    <Button
+                      size="sm"
+                      variant={row.status === "delivered" ? "outline" : "hero"}
+                      disabled={busy === row.id}
+                      onClick={() => share(row.id, row.contact_name, row.contact_phone)}
+                    >
+                      {busy === row.id ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <MessageCircle className="size-4" />
+                      )}
+                      WhatsApp {row.contact_name.split(" ")[0]}
+                    </Button>
+                  </span>
+                </li>
+              );
+            })}
             {rows.length === 0 && (
               <li className="text-xs text-muted-foreground">Preparing WhatsApp messages…</li>
             )}
           </ul>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" onClick={copyMessage}>
+              <Copy className="size-4" />
+              Copy emergency message
+            </Button>
+          </div>
           <details className="mt-3 rounded-xl border border-border p-3">
             <summary className="cursor-pointer text-xs font-medium text-primary">
               Preview the WhatsApp message

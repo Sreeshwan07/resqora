@@ -1,16 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Copy,
-  Link2,
-  Mail,
-  MapPin,
-  MessageCircle,
-  Send,
-  Share2,
-  ShieldAlert,
-} from "lucide-react";
+import { Copy, Link2, Mail, MapPin, Send, Share2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/system/page-header";
 import { Button } from "@/components/ui/button";
@@ -30,14 +21,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { buildEmergencyEmail, contactsWithEmail, sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { logActivity } from "@/lib/activity";
 import { recentSharesQuery } from "@/lib/shares";
-import {
-  buildSosMessage,
-  emailHref,
-  ensureLiveShareLink,
-  ensureMedicalShareLink,
-  shareUrl,
-  whatsappHref,
-} from "@/lib/share";
+import { buildWhatsappAlert } from "@/lib/whatsapp-alerts";
+import { emailHref, ensureLiveShareLink, ensureMedicalShareLink, shareUrl } from "@/lib/share";
 
 export const Route = createFileRoute("/_app/share-center")({
   head: () => ({
@@ -67,7 +52,7 @@ function ShareCenterPage() {
   const active = useQuery(activeEmergencyQuery(user?.id));
   const deliveries = useQuery(deliveriesQuery(active.data?.id));
   const shares = useQuery(recentSharesQuery(user?.id));
-  const { position } = useLivePosition();
+  const { position, address } = useLivePosition();
   const nearby = useNearbyServices(position);
   const [trackingUrl, setTrackingUrl] = useState<string | null>(null);
   const [medicalUrl, setMedicalUrl] = useState<string | null>(null);
@@ -93,7 +78,7 @@ function ShareCenterPage() {
   }, [user?.id, user]);
 
   const message = emergency
-    ? buildSosMessage({ emergency, profile: profile.data, link: trackingUrl })
+    ? buildWhatsappAlert({ emergency, profile: profile.data, address, trackingUrl })
     : null;
   const emailPreview = emergency
     ? buildEmergencyEmail({
@@ -289,19 +274,25 @@ function ShareCenterPage() {
             profile={profile.data}
             contacts={contactList}
             trackingUrl={trackingUrl}
+            address={address}
           />
 
-          <div className="grid gap-2 sm:grid-cols-3">
-            <Button asChild variant="hero">
-              <a
-                href={whatsappHref(message ?? "", contactList[0]?.phone)}
-                target="_blank"
-                rel="noreferrer"
-                onClick={() => void logActivity(user?.id, "Emergency shared", "WhatsApp quick share")}
-              >
-                <MessageCircle className="size-4" />
-                WhatsApp share
-              </a>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <Button
+              variant="hero"
+              disabled={!message}
+              onClick={() => message && copy(message, "Emergency message")}
+            >
+              <Copy className="size-4" />
+              Copy emergency message
+            </Button>
+            <Button
+              variant="outline"
+              disabled={!trackingUrl}
+              onClick={() => trackingUrl && copy(trackingUrl, "Live tracking link")}
+            >
+              <Link2 className="size-4" />
+              Copy live tracking link
             </Button>
             <Button variant="outline" onClick={nativeShare}>
               <Share2 className="size-4" />
@@ -309,30 +300,11 @@ function ShareCenterPage() {
             </Button>
             <Button
               variant="outline"
-              disabled={!trackingUrl}
-              onClick={() => trackingUrl && copy(trackingUrl, "Tracking link")}
-            >
-              <Link2 className="size-4" />
-              Copy tracking link
-            </Button>
-          </div>
-
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Button
-              variant="outline"
-              disabled={!message}
-              onClick={() => message && copy(message, "Emergency details")}
-            >
-              <Copy className="size-4" />
-              Copy emergency details
-            </Button>
-            <Button
-              variant="outline"
               disabled={!coords}
               onClick={() => coords && copy(mapsLink(coords), "Location")}
             >
               <MapPin className="size-4" />
-              Copy location
+              Copy Google Maps link
             </Button>
           </div>
         </section>
