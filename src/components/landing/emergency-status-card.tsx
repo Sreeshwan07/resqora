@@ -7,22 +7,22 @@ import { useHydrated } from "@/hooks/use-hydrated";
 export type LandingStatus = "safe" | "checkin" | "active" | "coordinating" | "resolved";
 
 const STATUS_META: Record<LandingStatus, { label: string; dot: string; ring: string }> = {
-  safe: { label: "SAFE", dot: "bg-success", ring: "border-success/30 bg-success/5" },
+  safe: { label: "SAFE", dot: "bg-success", ring: "text-success" },
   checkin: {
     label: "Safety check pending",
     dot: "bg-warning",
-    ring: "border-warning/30 bg-warning/5",
+    ring: "text-warning",
   },
-  active: { label: "EMERGENCY ACTIVE", dot: "bg-alert", ring: "border-alert/40 bg-alert/5" },
+  active: { label: "EMERGENCY ACTIVE", dot: "bg-alert", ring: "text-alert" },
   coordinating: {
     label: "EMERGENCY ACTIVE",
     dot: "bg-alert",
-    ring: "border-alert/40 bg-alert/5",
+    ring: "text-alert",
   },
   resolved: {
     label: "EMERGENCY RESOLVED",
     dot: "bg-success",
-    ring: "border-success/30 bg-success/5",
+    ring: "text-success",
   },
 };
 
@@ -59,46 +59,49 @@ export function EmergencyStatusCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       aria-label="Live safety status"
-      className={cn("glass-panel rounded-2xl border p-4", meta.ring)}
+      className="soft-card rounded-3xl p-5 sm:p-7"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-          <span className={cn("size-2.5 animate-pulse rounded-full", meta.dot)} aria-hidden="true" />
-          {meta.label}
-        </span>
-        <span className="inline-flex items-center gap-1.5 font-mono text-sm text-muted-foreground">
-          <Clock className="size-3.5" aria-hidden="true" />
-          {hydrated ? now.toLocaleTimeString() : "--:--:--"}
-        </span>
-      </div>
-
-      <dl className="mt-4 grid gap-3 sm:grid-cols-3">
-        <div className="min-w-0">
-          <dt className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-            Current address
+      <dl className="grid gap-5 divide-border/70 sm:grid-cols-3 sm:gap-0 sm:divide-x">
+        <div className="min-w-0 sm:pr-6">
+          <dt className="flex items-center gap-2">
+            <span
+              className={cn("size-2.5 shrink-0 animate-pulse rounded-full", meta.dot)}
+              aria-hidden="true"
+            />
+            <span className={cn("font-display text-base font-extrabold tracking-tight", meta.ring)}>
+              {meta.label}
+            </span>
           </dt>
-          <dd className="mt-0.5 flex items-start gap-1.5 text-sm font-medium text-foreground">
-            <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
-            <span className="min-w-0 break-words">
-              {locationLabel}
+          <dd className="mt-3">
+            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Current address
+            </span>
+            <span className="mt-1 flex items-start gap-1.5 text-sm font-semibold text-foreground">
+              <MapPin className="mt-0.5 size-4 shrink-0 text-teal" aria-hidden="true" />
+              <span className="min-w-0 break-words">{locationLabel}</span>
             </span>
           </dd>
         </div>
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+
+        <div className="min-w-0 sm:px-6">
+          <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
             GPS accuracy
           </dt>
-          <dd className="mt-0.5 flex items-center gap-1.5 text-sm font-medium text-foreground">
-            <Satellite className="size-3.5 shrink-0 text-primary" aria-hidden="true" />
+          <dd className="mt-2 flex items-center gap-2 font-display text-2xl font-extrabold tracking-tight text-foreground">
+            <Satellite className="size-5 shrink-0 text-teal" aria-hidden="true" />
             {position ? `±${Math.round(position.accuracy)} m` : "—"}
           </dd>
         </div>
-        <div>
-          <dt className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-            Last updated
+
+        <div className="min-w-0 sm:pl-6">
+          <dt className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Last update
           </dt>
-          <dd className="mt-0.5 text-sm font-medium text-foreground">
-            {hydrated && position ? position.updatedAt.toLocaleTimeString() : "—"}
+          <dd className="mt-2 flex items-center gap-2 font-display text-2xl font-extrabold tracking-tight text-foreground">
+            <Clock className="size-5 shrink-0 text-teal" aria-hidden="true" />
+            <span className="font-mono text-xl sm:text-2xl">
+              {hydrated ? now.toLocaleTimeString() : "--:--:--"}
+            </span>
           </dd>
         </div>
       </dl>
