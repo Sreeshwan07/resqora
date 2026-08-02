@@ -66,8 +66,8 @@ function Index() {
   return (
     <div className="min-h-dvh bg-background">
       <LandingNav />
-      <main className="aurora">
-        <div className="mx-auto w-full max-w-4xl space-y-3 px-4 py-4 sm:space-y-4 sm:px-6 sm:py-8">
+      <main>
+        <div className="mx-auto w-full max-w-5xl space-y-4 px-4 py-5 sm:space-y-6 sm:px-6 sm:py-8">
           <h1 className="sr-only">RESQORA — Every Second Matters. Every Life Connected.</h1>
 
           <EmergencyStatusCard
@@ -81,7 +81,7 @@ function Index() {
 
           <EmergencyConsole />
 
-          <NearestServices position={position} nearby={nearby} />
+          <NearestServices position={position} nearby={nearby} title="Nearest Emergency Services" />
 
           <EmergencyContactsCard
             notified={Boolean(emergency && emergency.status !== "created")}
