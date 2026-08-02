@@ -32,14 +32,25 @@ export function EmergencyStatusCard({
   position,
   address,
   denied,
+  resolvingAddress,
 }: {
   status: LandingStatus;
   now: Date;
   position: LivePosition | null;
   address: string | null;
   denied: boolean;
+  resolvingAddress?: boolean;
 }) {
   const meta = STATUS_META[status];
+  const locationLabel = address
+    ? address
+    : position
+      ? resolvingAddress
+        ? "Resolving address…"
+        : `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`
+      : denied
+        ? "Add your address to continue"
+        : "Getting your location…";
   // Locale time only renders after hydration so SSR markup can't mismatch.
   const hydrated = useHydrated();
   return (
@@ -69,12 +80,7 @@ export function EmergencyStatusCard({
           <dd className="mt-0.5 flex items-start gap-1.5 text-sm font-medium text-foreground">
             <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
             <span className="min-w-0 break-words">
-              {denied
-                ? "Location permission needed"
-                : address ??
-                  (position
-                    ? `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`
-                    : "Locating…")}
+              {locationLabel}
             </span>
           </dd>
         </div>
