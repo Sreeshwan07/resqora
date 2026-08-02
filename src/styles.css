@@ -198,6 +198,15 @@
   box-shadow: 0 12px 40px -18px oklch(0.3 0.08 260 / 35%);
 }
 
+/* Premium medical surface: flat white card, very soft shadow, big radius. */
+@utility soft-card {
+  background: var(--card);
+  border: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+  box-shadow:
+    0 1px 2px -1px oklch(0.3 0.06 260 / 8%),
+    0 18px 40px -28px oklch(0.3 0.06 260 / 30%);
+}
+
 @utility aurora {
   background-image:
     radial-gradient(60% 60% at 15% 10%, oklch(0.62 0.2 258 / 18%), transparent 70%),
