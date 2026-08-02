@@ -505,10 +505,10 @@ function MedAiPage() {
               {firstAidLibrary.map((topic) => (
                 <details key={topic.id} className="rounded-xl border border-border/60 bg-card/50">
                   <summary className="cursor-pointer list-none px-3 py-2.5 text-sm font-medium">
-                    <span aria-hidden="true">{topic.emoji}</span> {topic.label}
+                    <span aria-hidden="true">{topic.emoji}</span> {topic.title}
                   </summary>
                   <div className="px-2 pb-2">
-                    <FirstAidChecklist steps={topic.steps} title={topic.label} />
+                    <FirstAidChecklist steps={topic.steps} title={topic.title} />
                   </div>
                 </details>
               ))}
