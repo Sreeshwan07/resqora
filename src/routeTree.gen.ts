@@ -23,6 +23,7 @@ import { Route as AppContactsRouteImport } from './routes/_app.contacts'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
 import { Route as AppDocumentsRouteImport } from './routes/_app.documents'
 import { Route as AppDonorsRouteImport } from './routes/_app.donors'
+import { Route as AppEmailDiagnosticsRouteImport } from './routes/_app.email-diagnostics'
 import { Route as AppEmergencyRouteImport } from './routes/_app.emergency'
 import { Route as AppHistoryRouteImport } from './routes/_app.history'
 import { Route as AppLiveRouteImport } from './routes/_app.live'
@@ -105,6 +106,11 @@ const AppDocumentsRoute = AppDocumentsRouteImport.update({
 const AppDonorsRoute = AppDonorsRouteImport.update({
   id: '/donors',
   path: '/donors',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEmailDiagnosticsRoute = AppEmailDiagnosticsRouteImport.update({
+  id: '/email-diagnostics',
+  path: '/email-diagnostics',
   getParentRoute: () => AppRoute,
 } as any)
 const AppEmergencyRoute = AppEmergencyRouteImport.update({
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRoute
   '/donors': typeof AppDonorsRoute
+  '/email-diagnostics': typeof AppEmailDiagnosticsRoute
   '/emergency': typeof AppEmergencyRoute
   '/history': typeof AppHistoryRoute
   '/live': typeof AppLiveRoute
@@ -222,6 +229,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AppDashboardRoute
   '/documents': typeof AppDocumentsRoute
   '/donors': typeof AppDonorsRoute
+  '/email-diagnostics': typeof AppEmailDiagnosticsRoute
   '/emergency': typeof AppEmergencyRoute
   '/history': typeof AppHistoryRoute
   '/live': typeof AppLiveRoute
@@ -253,6 +261,7 @@ export interface FileRoutesById {
   '/_app/dashboard': typeof AppDashboardRoute
   '/_app/documents': typeof AppDocumentsRoute
   '/_app/donors': typeof AppDonorsRoute
+  '/_app/email-diagnostics': typeof AppEmailDiagnosticsRoute
   '/_app/emergency': typeof AppEmergencyRoute
   '/_app/history': typeof AppHistoryRoute
   '/_app/live': typeof AppLiveRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/donors'
+    | '/email-diagnostics'
     | '/emergency'
     | '/history'
     | '/live'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/documents'
     | '/donors'
+    | '/email-diagnostics'
     | '/emergency'
     | '/history'
     | '/live'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/_app/dashboard'
     | '/_app/documents'
     | '/_app/donors'
+    | '/_app/email-diagnostics'
     | '/_app/emergency'
     | '/_app/history'
     | '/_app/live'
@@ -471,6 +483,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppDonorsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/email-diagnostics': {
+      id: '/_app/email-diagnostics'
+      path: '/email-diagnostics'
+      fullPath: '/email-diagnostics'
+      preLoaderRoute: typeof AppEmailDiagnosticsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/emergency': {
       id: '/_app/emergency'
       path: '/emergency'
@@ -581,6 +600,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppDonorsRoute: typeof AppDonorsRoute
+  AppEmailDiagnosticsRoute: typeof AppEmailDiagnosticsRoute
   AppEmergencyRoute: typeof AppEmergencyRoute
   AppHistoryRoute: typeof AppHistoryRoute
   AppLiveRoute: typeof AppLiveRoute
@@ -603,6 +623,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppDocumentsRoute: AppDocumentsRoute,
   AppDonorsRoute: AppDonorsRoute,
+  AppEmailDiagnosticsRoute: AppEmailDiagnosticsRoute,
   AppEmergencyRoute: AppEmergencyRoute,
   AppHistoryRoute: AppHistoryRoute,
   AppLiveRoute: AppLiveRoute,
@@ -632,3 +653,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
