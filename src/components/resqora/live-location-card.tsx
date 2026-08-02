@@ -1,7 +1,7 @@
 import { MapPin, Navigation, Satellite, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { mapsLink } from "@/lib/alerts";
-import type { LivePosition } from "@/hooks/use-live-position";
+import type { LivePosition, LocationStatus } from "@/hooks/use-live-position";
 import { cn } from "@/lib/utils";
 
 /** Compact always-on location strip. Refreshes with the shared GPS watcher (10s). */
@@ -9,13 +9,28 @@ export function LiveLocationCard({
   position,
   address,
   denied,
+  status,
+  resolvingAddress,
   className,
 }: {
   position: LivePosition | null;
   address: string | null;
   denied: boolean;
+  status?: LocationStatus;
+  resolvingAddress?: boolean;
   className?: string;
 }) {
+  const label = address
+    ? address
+    : position
+      ? resolvingAddress
+        ? "Resolving address…"
+        : `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)}`
+      : status === "denied" || (!status && denied)
+        ? "Add your address to continue"
+        : status === "unavailable"
+          ? "GPS unavailable — enter your address"
+          : "Getting your location…";
   return (
     <section
       aria-label="Live location"
@@ -28,12 +43,13 @@ export function LiveLocationCard({
           </p>
           <p className="mt-0.5 flex items-start gap-1.5 text-sm font-semibold text-foreground">
             <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" aria-hidden="true" />
-            <span className="min-w-0 break-words">
-              {denied
-                ? "Location permission needed"
-                : (address ?? (position ? "Resolving address…" : "Locating…"))}
-            </span>
+            <span className="min-w-0 break-words">{label}</span>
           </p>
+          {position?.source === "manual" && (
+            <p className="mt-0.5 text-[11px] text-muted-foreground">
+              Using your manually entered address
+            </p>
+          )}
         </div>
         {position && (
           <Button asChild size="sm" variant="outline">
