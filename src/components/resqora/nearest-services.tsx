@@ -4,7 +4,6 @@ import {
   ChevronDown,
   Droplets,
   Ambulance,
-  ExternalLink,
   Flame,
   MapPin,
   Navigation,
@@ -18,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapsDirectionsLink, mapsLink } from "@/lib/alerts";
+import { mapsDirectionsLink } from "@/lib/alerts";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 import { useNearbyServices, type NearbyOrigin } from "@/hooks/use-nearby-services";
 import type { LivePosition } from "@/hooks/use-live-position";
@@ -56,90 +55,63 @@ const DEFAULT_CATEGORIES: PlaceCategory[] = [
   "blood_bank",
 ];
 
+/** Official Indian emergency numbers used when a facility publishes no number. */
+const NATIONAL_NUMBER: Record<PlaceCategory, string> = {
+  hospital: "108",
+  ambulance: "108",
+  police: "112",
+  fire: "101",
+  blood_bank: "108",
+};
+
 export function PlaceCard({
   place,
   origin,
-  selected,
-  onSelect,
   rank,
 }: {
   place: NearbyPlace;
   origin: NearbyOrigin | null;
-  selected?: boolean;
-  onSelect?: (place: NearbyPlace) => void;
   rank?: number;
 }) {
-  const tel = place.phone ? place.phone.replace(/[^+\d]/g, "") : null;
+  const verified = place.phone ? place.phone.replace(/[^+\d]/g, "") : null;
+  const tel = verified ?? NATIONAL_NUMBER[place.category];
   const destination = `${place.lat},${place.lng}`;
   return (
-    <div
-      className={cn(
-        "rounded-2xl border border-border/60 bg-background/60 p-3 transition-colors",
-        selected && "border-primary/60 bg-primary/5",
+    <div className="rounded-2xl border border-border/60 bg-background/60 p-3">
+      <p className="text-sm font-semibold leading-snug text-foreground">
+        {rank ? `${rank}. ` : ""}
+        {place.name}
+      </p>
+      {place.address && (
+        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{place.address}</p>
       )}
-    >
-      <div className="flex items-start gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-foreground">
-            {rank ? `${rank}. ` : ""}
-            {place.name}
-          </p>
-          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
-            {place.address || "Address not published"}
-          </p>
-          <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-            <Badge variant="secondary" className="rounded-full text-[10px] font-semibold">
-              {place.distanceKm.toFixed(1)} km
-            </Badge>
-            <Badge variant="secondary" className="rounded-full text-[10px] font-semibold">
-              ~{place.etaMinutes} min
-            </Badge>
-            {place.openNow === true && (
-              <Badge className="rounded-full bg-success/15 text-[10px] font-semibold text-success">
-                Open 24/7
-              </Badge>
-            )}
-            {place.phone && (
-              <span className="text-[11px] text-muted-foreground">{place.phone}</span>
-            )}
-          </div>
-        </div>
-        {onSelect && (
-          <Button
-            size="sm"
-            variant={selected ? "secondary" : "ghost"}
-            className="shrink-0 text-[11px]"
-            onClick={() => onSelect(place)}
-          >
-            {selected ? "Selected" : "Select"}
-          </Button>
+      <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+        <Badge variant="secondary" className="rounded-full text-[10px] font-semibold">
+          {place.distanceKm.toFixed(1)} km
+        </Badge>
+        <Badge variant="secondary" className="rounded-full text-[10px] font-semibold">
+          ~{place.etaMinutes} min
+        </Badge>
+        {!verified && (
+          <span className="text-[10px] text-muted-foreground">
+            No published number — calls {NATIONAL_NUMBER[place.category]}
+          </span>
         )}
       </div>
 
-      <div className="mt-2.5 flex flex-wrap gap-1.5">
-        {tel ? (
-          <Button asChild size="sm" variant="emergency" className="flex-1 min-w-[92px]">
-            <a href={`tel:${tel}`}>
-              <PhoneCall className="size-3.5" /> Call
-            </a>
-          </Button>
-        ) : (
-          <Button size="sm" variant="secondary" className="flex-1 min-w-[92px]" disabled>
-            <PhoneCall className="size-3.5" /> No number
-          </Button>
-        )}
-        <Button asChild size="sm" variant="outline" className="flex-1 min-w-[92px]">
+      <div className="mt-3 flex gap-2">
+        <Button asChild size="lg" variant="emergency" className="h-11 flex-1 text-sm">
+          <a href={`tel:${tel}`}>
+            <PhoneCall className="size-4" /> Call
+          </a>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="h-11 flex-1 text-sm">
           <a
             href={mapsDirectionsLink(destination, origin ? { lat: origin.lat, lng: origin.lng } : null)}
             target="_blank"
             rel="noreferrer"
           >
-            <Navigation className="size-3.5" /> Navigate
-          </a>
-        </Button>
-        <Button asChild size="sm" variant="ghost" className="flex-1 min-w-[92px]">
-          <a href={mapsLink({ lat: place.lat, lng: place.lng })} target="_blank" rel="noreferrer">
-            <ExternalLink className="size-3.5" /> Maps
+            <Navigation className="size-4" /> Navigate
           </a>
         </Button>
       </div>
@@ -159,15 +131,10 @@ function CategoryCard({
   loading: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
   const Icon = CATEGORY_ICON[category];
 
-  const ordered = selectedId
-    ? [...places].sort((a, b) =>
-        a.id === selectedId ? -1 : b.id === selectedId ? 1 : a.distanceKm - b.distanceKm,
-      )
-    : places;
-  const visible = expanded ? ordered : ordered.slice(0, 1);
+  const ordered = [...places].sort((a, b) => a.distanceKm - b.distanceKm);
+  const visible = expanded ? ordered.slice(0, 3) : ordered.slice(0, 1);
 
   return (
     <div className="rounded-2xl border border-border/60 bg-background/40 p-3">
@@ -214,12 +181,6 @@ function CategoryCard({
                 place={place}
                 origin={origin}
                 rank={ordered.indexOf(place) + 1}
-                selected={selectedId === place.id}
-                onSelect={
-                  places.length > 1
-                    ? (value) => setSelectedId((current) => (current === value.id ? null : value.id))
-                    : undefined
-                }
               />
             </motion.div>
           ))
