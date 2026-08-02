@@ -213,8 +213,9 @@ function MedAiPage() {
     setImage(null);
     setSending(true);
 
+    let assessment: MedAiAssessment;
     try {
-      const assessment = await askMedAi({
+      assessment = await askMedAi({
         data: {
           language,
           message: prompt,
@@ -223,8 +224,17 @@ function MedAiPage() {
           medicalContext,
         },
       });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "MedAI could not answer right now.";
+      toast.error(message);
+      setBubbles((prev) => prev.filter((bubble) => bubble.id !== userBubble.id));
+      setInput(prompt);
+      setSending(false);
+      return;
+    }
 
-      setBubbles((prev) => [
+    setBubbles((prev) => [
         ...prev,
         {
           id: `local-${Date.now()}-a`,
@@ -232,10 +242,13 @@ function MedAiPage() {
           content: assessment.reply,
           assessment,
         },
-      ]);
-      setLatest(assessment);
+    ]);
+    setLatest(assessment);
+    setSending(false);
 
-      // Persist the exchange so the user can review or continue it later.
+    // Persist the exchange so the user can review or continue it later. A
+    // storage failure must never discard guidance already on screen.
+    try {
       let id = conversationId;
       if (!id) {
         const conversation = await createConversation({
@@ -270,16 +283,9 @@ function MedAiPage() {
         title: assessment.title || undefined,
       });
       await queryClient.invalidateQueries({ queryKey: ["medai-conversations"] });
-
-      if (voice.ttsSupported && voice.speaking) voice.stopSpeaking();
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "MedAI could not answer right now.";
-      toast.error(message);
-      setBubbles((prev) => prev.filter((bubble) => bubble.id !== userBubble.id));
-      setInput(prompt);
-    } finally {
-      setSending(false);
+      console.error("MedAI history save failed", error);
+      toast.error("This answer could not be saved to your history.");
     }
   }
 
