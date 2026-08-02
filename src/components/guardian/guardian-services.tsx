@@ -27,7 +27,9 @@ export function GuardianServices({
   onNearest?: (services: Partial<Record<PlaceCategory, NearbyPlace>>) => void;
 }) {
   const position =
-    lat != null && lng != null ? { lat, lng, accuracy: 0, updatedAt: new Date() } : null;
+    lat != null && lng != null
+      ? { lat, lng, accuracy: 0, updatedAt: new Date(), source: "gps" as const }
+      : null;
   const nearby = useNearbyServices(position);
 
   useEffect(() => {
