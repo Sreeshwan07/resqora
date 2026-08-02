@@ -2,6 +2,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { coordsOf, mapsLink } from "@/lib/alerts";
 import type { AlertDelivery } from "@/lib/alert-delivery";
 import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
+import {
+  EMAIL_NOT_CONFIGURED,
+  isEmailConfigured,
+  sendAndRecord,
+  type EmergencyTemplateParams,
+} from "@/lib/email-service";
 
 /** Full emergency email body defined by the RESQORA communication protocol. */
 export function buildEmergencyEmail(input: {
@@ -105,48 +111,90 @@ export async function seedEmailDeliveries(input: {
   return data as AlertDelivery[];
 }
 
+/** The exact EmailJS template parameters used by every RESQORA alert. */
+export function buildTemplateParams(input: {
+  toEmail: string;
+  emergency: Emergency;
+  profile: Profile | null | undefined;
+  address?: string | null;
+  trackingUrl?: string | null;
+}): EmergencyTemplateParams {
+  const coords = coordsOf(input.emergency);
+  return {
+    to_email: input.toEmail,
+    user_name: input.profile?.full_name || "An RESQORA user",
+    time: new Date().toLocaleString(),
+    address:
+      input.address ||
+      input.emergency.address ||
+      input.profile?.home_address ||
+      "Address unavailable",
+    map_link: coords ? mapsLink(coords) : "Pending location capture",
+    tracking_link: input.trackingUrl || "Not available",
+    emergency_id: input.emergency.id.slice(0, 8).toUpperCase(),
+    reply_to: input.profile?.email || input.profile?.phone || "no-reply@resqora.app",
+  };
+}
+
+export type EmailDeliveryOutcome = {
+  id: string;
+  name: string;
+  email: string;
+  ok: boolean;
+  attempts: number;
+  error?: string;
+};
+
 /**
- * Sends the emergency email to every trusted contact and records the delivery
- * outcome. Returns false when no free email service is connected yet so the UI
- * can offer the mail-app hand-off instead.
+ * Sends the emergency email to every trusted contact through EmailJS and
+ * records each attempt in the database. Returns false for `configured` when the
+ * EmailJS environment variables are missing.
  */
 export async function dispatchEmailAlerts(input: {
   deliveries: AlertDelivery[];
-  subject: string;
-  message: string;
-}) {
+  emergency: Emergency;
+  profile: Profile | null | undefined;
+  address?: string | null;
+  trackingUrl?: string | null;
+}): Promise<{ configured: boolean; results: EmailDeliveryOutcome[] }> {
   const targets = input.deliveries.filter((d) => d.contact_email && d.status !== "delivered");
-  if (targets.length === 0) return true;
-  const { sendEmergencyEmails } = await import("@/lib/email.functions");
-  const response = await sendEmergencyEmails({
-    data: {
-      subject: input.subject,
-      message: input.message,
-      recipients: targets.map((d) => ({
-        id: d.id,
-        name: d.contact_name,
-        email: d.contact_email!,
-      })),
-    },
-  });
-  if (!response.configured) return false;
-  await Promise.all(
-    response.results.map(async (result) => {
-      const { error } = await supabase
-        .from("emergency_alert_deliveries")
-        .update({
-          status: result.status,
-          error: result.error ?? null,
-          sent_at: result.status === "delivered" ? new Date().toISOString() : null,
-        })
-        .eq("id", result.id);
-      if (error) throw new Error(error.message);
+  if (!isEmailConfigured()) {
+    await Promise.all(
+      targets.map((d) =>
+        supabase
+          .from("emergency_alert_deliveries")
+          .update({ status: "failed", error: EMAIL_NOT_CONFIGURED })
+          .eq("id", d.id),
+      ),
+    );
+    return { configured: false, results: [] };
+  }
+  const results = await Promise.all(
+    targets.map(async (delivery) => {
+      const result = await sendAndRecord({
+        deliveryId: delivery.id,
+        params: buildTemplateParams({
+          toEmail: delivery.contact_email!,
+          emergency: input.emergency,
+          profile: input.profile,
+          address: input.address,
+          trackingUrl: input.trackingUrl,
+        }),
+      });
+      return {
+        id: delivery.id,
+        name: delivery.contact_name,
+        email: delivery.contact_email!,
+        ok: result.ok,
+        attempts: result.attempts,
+        error: result.ok ? undefined : result.error,
+      } satisfies EmailDeliveryOutcome;
     }),
   );
-  return true;
+  return { configured: true, results };
 }
 
-/** One call: seed rows + send. Used by the SOS workflow and the share centre. */
+/** One call: seed rows + send + log. Used by the SOS workflow and share centre. */
 export async function sendEmergencyEmailAlerts(input: {
   userId: string;
   emergency: Emergency;
@@ -157,22 +205,27 @@ export async function sendEmergencyEmailAlerts(input: {
   kind?: "alert" | "resolved";
 }) {
   const targets = contactsWithEmail(input.contacts);
-  if (targets.length === 0) return { sent: 0, configured: true, skipped: true };
+  if (targets.length === 0) {
+    return { sent: 0, failed: 0, configured: true, skipped: true, results: [] as EmailDeliveryOutcome[] };
+  }
   const deliveries = await seedEmailDeliveries({
     userId: input.userId,
     emergencyId: input.emergency.id,
     contacts: targets,
     kind: input.kind,
   });
-  const payload =
-    input.kind === "resolved"
-      ? buildResolvedEmail({ emergency: input.emergency, profile: input.profile })
-      : buildEmergencyEmail({
-          emergency: input.emergency,
-          profile: input.profile,
-          address: input.address,
-          trackingUrl: input.trackingUrl,
-        });
-  const configured = await dispatchEmailAlerts({ deliveries, ...payload });
-  return { sent: configured ? deliveries.length : 0, configured, skipped: false };
+  const { configured, results } = await dispatchEmailAlerts({
+    deliveries,
+    emergency: input.emergency,
+    profile: input.profile,
+    address: input.address,
+    trackingUrl: input.trackingUrl,
+  });
+  return {
+    sent: results.filter((r) => r.ok).length,
+    failed: results.filter((r) => !r.ok).length,
+    configured,
+    skipped: false,
+    results,
+  };
 }
