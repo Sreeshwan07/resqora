@@ -21,17 +21,17 @@ import { activeEmergencyQuery } from "@/lib/api";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "RESQORA — Emergency SOS in Two Taps" },
+      { title: "RESQORA — Emergency SOS" },
       {
         name: "description",
         content:
           "RESQORA puts one-tap SOS, AI accident reporting and the nearest hospital, police, fire and blood bank on a single emergency-ready screen.",
       },
-      { property: "og:title", content: "RESQORA — Emergency SOS in Two Taps" },
+      { property: "og:title", content: "RESQORA — Emergency SOS" },
       {
         property: "og:description",
         content:
-          "One-tap SOS, AI photo triage and nearest responders with call and navigate actions.",
+          "RESQORA puts one-tap SOS, AI accident reporting and the nearest hospital, police, fire and blood bank on a single emergency-ready screen.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
