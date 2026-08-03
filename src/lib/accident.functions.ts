@@ -104,7 +104,8 @@ export const analyzeAccidentScene = createServerFn({ method: "POST" })
       }),
     });
 
-    if (response.status === 429) throw new Error("AI is busy right now — please retry in a moment.");
+    if (response.status === 429)
+      throw new Error("AI is busy right now — please retry in a moment.");
     if (response.status === 402) throw new Error("AI credits exhausted for this workspace.");
     if (!response.ok) throw new Error(`AI analysis failed (${response.status})`);
 
@@ -133,7 +134,8 @@ export const analyzeAccidentScene = createServerFn({ method: "POST" })
       observations: strings(parsed.observations, 6),
       possibleInjuries: strings(parsed.possibleInjuries, 6),
       hazards: strings(parsed.hazards, 5),
-      victimCount: Number.isFinite(victims) && victims > 0 ? Math.min(99, Math.round(victims)) : null,
+      victimCount:
+        Number.isFinite(victims) && victims > 0 ? Math.min(99, Math.round(victims)) : null,
       hospitalSpecialty: SPECIALTIES.includes(parsed.hospitalSpecialty as HospitalSpecialty)
         ? (parsed.hospitalSpecialty as HospitalSpecialty)
         : emergencyType === "fire"

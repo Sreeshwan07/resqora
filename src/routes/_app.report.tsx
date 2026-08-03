@@ -15,7 +15,8 @@ export const Route = createFileRoute("/_app/report")({
       { property: "og:title", content: "Report an accident — RESQORA" },
       {
         property: "og:description",
-        content: "AI photo and video triage for accidents, with one-tap contact and responder alerts.",
+        content:
+          "AI photo and video triage for accidents, with one-tap contact and responder alerts.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

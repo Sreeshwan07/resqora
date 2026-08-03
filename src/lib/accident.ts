@@ -3,13 +3,7 @@
 export type AccidentSeverity = "minor" | "moderate" | "serious" | "critical";
 export type AccidentPriority = "green" | "yellow" | "orange" | "red";
 export type HospitalSpecialty =
-  | "trauma"
-  | "cardiac"
-  | "neuro"
-  | "burn"
-  | "pediatric"
-  | "maternity"
-  | "general";
+  "trauma" | "cardiac" | "neuro" | "burn" | "pediatric" | "maternity" | "general";
 
 /** Emergency types RESQORA already coordinates responders for. */
 export type CoreEmergencyType = "accident" | "fire" | "medical" | "crime" | "natural" | "sos";

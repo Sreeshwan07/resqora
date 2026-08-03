@@ -107,7 +107,9 @@ export function MedicalReportCard({
               : ["No specific injuries visible in the media"]
           }
         />
-        {report.hazards.length > 0 && <Block title="Scene hazards" tone="warning" items={report.hazards} />}
+        {report.hazards.length > 0 && (
+          <Block title="Scene hazards" tone="warning" items={report.hazards} />
+        )}
         {report.recommendedActions.length > 0 && (
           <Block title="Recommended next actions" items={report.recommendedActions} />
         )}

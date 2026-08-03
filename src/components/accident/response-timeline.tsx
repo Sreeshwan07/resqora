@@ -4,7 +4,10 @@ import type { TimelineEntry } from "@/lib/accident";
 /** Automatic, timestamped record of the whole response. */
 export function ResponseTimeline({ entries }: { entries: TimelineEntry[] }) {
   return (
-    <section aria-label="Emergency response timeline" className="glass-panel rounded-3xl p-4 sm:p-5">
+    <section
+      aria-label="Emergency response timeline"
+      className="glass-panel rounded-3xl p-4 sm:p-5"
+    >
       <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
         <History className="size-4 text-primary" aria-hidden="true" />
         Response timeline
@@ -28,9 +31,7 @@ export function ResponseTimeline({ entries }: { entries: TimelineEntry[] }) {
                     {entry.at.toLocaleTimeString()}
                   </span>
                 </p>
-                {entry.detail && (
-                  <p className="text-xs text-muted-foreground">{entry.detail}</p>
-                )}
+                {entry.detail && <p className="text-xs text-muted-foreground">{entry.detail}</p>}
               </div>
             </li>
           ))}

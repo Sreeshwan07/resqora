@@ -69,7 +69,6 @@ export function SceneCapture({
 
   useEffect(() => {
     if (recording && seconds >= MAX_RECORD_SECONDS) stopRecording();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seconds, recording]);
 
   useEffect(
