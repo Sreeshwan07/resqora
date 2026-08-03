@@ -28,8 +28,7 @@ import {
 } from "@/lib/accident";
 import { createEmergency } from "@/lib/emergency";
 import { ensureLiveShareLink, ensureMedicalShareLink, shareUrl } from "@/lib/share";
-import { mapsLink } from "@/lib/alerts";
-import { shareText } from "@/lib/alerts";
+import { mapsLink, shareText } from "@/lib/alerts";
 import { checkRateLimit } from "@/lib/security";
 import { logActivity } from "@/lib/activity";
 
