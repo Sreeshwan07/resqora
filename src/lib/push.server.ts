@@ -8,13 +8,8 @@
 
 type ServiceAccount = { client_email: string; private_key: string; project_id: string };
 
-export type PushMessage = {
-  title: string;
-  body: string;
-  url: string;
-  tag: string;
-  kind: "sos" | "guardian" | "tracking" | "resolved";
-};
+export type { PushMessage } from "@/lib/push-messages";
+import type { PushMessage } from "@/lib/push-messages";
 
 function serviceAccount(): ServiceAccount | null {
   const raw = process.env["FIREBASE_SERVICE_ACCOUNT_JSON"];
