@@ -9,6 +9,8 @@ import { GlobalSosButton } from "@/components/resqora/global-sos";
 import { LiveEmergencyWidget } from "@/components/resqora/live-emergency-widget";
 import { LiveLocationCard } from "@/components/resqora/live-location-card";
 import { LocationGate } from "@/components/resqora/location-gate";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { PushRegistrar } from "@/components/pwa/push-registrar";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useAuth } from "@/hooks/use-auth";
 import { useSosTheme } from "@/hooks/use-sos-theme";
