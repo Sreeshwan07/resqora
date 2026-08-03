@@ -34,6 +34,7 @@ import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppReportRouteImport } from './routes/_app.report'
+import { Route as AppResqrIdRouteImport } from './routes/_app.resqr-id'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppShareCenterRouteImport } from './routes/_app.share-center'
 import { Route as MTokenRouteImport } from './routes/m.$token'
@@ -166,6 +167,11 @@ const AppReportRoute = AppReportRouteImport.update({
   path: '/report',
   getParentRoute: () => AppRoute,
 } as any)
+const AppResqrIdRoute = AppResqrIdRouteImport.update({
+  id: '/resqr-id',
+  path: '/resqr-id',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
+  '/resqr-id': typeof AppResqrIdRoute
   '/settings': typeof AppSettingsRoute
   '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
+  '/resqr-id': typeof AppResqrIdRoute
   '/settings': typeof AppSettingsRoute
   '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/report': typeof AppReportRoute
+  '/_app/resqr-id': typeof AppResqrIdRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/report'
+    | '/resqr-id'
     | '/settings'
     | '/share-center'
     | '/m/$token'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/report'
+    | '/resqr-id'
     | '/settings'
     | '/share-center'
     | '/m/$token'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/_app/notifications'
     | '/_app/profile'
     | '/_app/report'
+    | '/_app/resqr-id'
     | '/_app/settings'
     | '/_app/share-center'
     | '/m/$token'
@@ -598,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReportRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/resqr-id': {
+      id: '/_app/resqr-id'
+      path: '/resqr-id'
+      fullPath: '/resqr-id'
+      preLoaderRoute: typeof AppResqrIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -670,6 +689,7 @@ interface AppRouteChildren {
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReportRoute: typeof AppReportRoute
+  AppResqrIdRoute: typeof AppResqrIdRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppShareCenterRoute: typeof AppShareCenterRoute
 }
@@ -694,6 +714,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppReportRoute: AppReportRoute,
+  AppResqrIdRoute: AppResqrIdRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppShareCenterRoute: AppShareCenterRoute,
 }
