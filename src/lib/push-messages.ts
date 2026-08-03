@@ -1,4 +1,10 @@
-import type { PushMessage } from "@/lib/push.server";
+export type PushMessage = {
+  title: string;
+  body: string;
+  url: string;
+  tag: string;
+  kind: "sos" | "guardian" | "tracking" | "resolved";
+};
 
 /** The RESQORA push copy used by both the server sender and the UI previews. */
 export function buildEmergencyPush(input: {
