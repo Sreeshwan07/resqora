@@ -46,3 +46,30 @@ export function notifyEmergency(notice: EmergencyNotice, detail?: string) {
   const preset = NOTICES[notice];
   return showPush(preset.title, detail ? `${preset.body}\n${detail}` : preset.body, notice);
 }
+
+/**
+ * Real Firebase Cloud Messaging push for the four emergency milestones. Fired
+ * from the SOS workflow; failures never interrupt the emergency.
+ */
+export async function pushEmergencyAlert(input: {
+  kind: "sos" | "guardian" | "tracking" | "resolved";
+  emergencyId: string;
+  personName?: string | null;
+  detail?: string | null;
+  guardianUrl?: string | null;
+}) {
+  try {
+    const { sendEmergencyPush } = await import("@/lib/push-alerts.functions");
+    await sendEmergencyPush({
+      data: {
+        kind: input.kind,
+        emergencyId: input.emergencyId,
+        personName: input.personName || "A RESQORA user",
+        detail: input.detail ?? null,
+        guardianUrl: input.guardianUrl ?? null,
+      },
+    });
+  } catch {
+    /* push delivery is best-effort — email, WhatsApp and in-app alerts still run */
+  }
+}

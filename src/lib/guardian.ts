@@ -168,6 +168,13 @@ export async function notifyGuardian(input: {
     guardian: input.guardian,
   });
   const dashboardUrl = guardianUrl(session);
+  const { pushEmergencyAlert } = await import("@/lib/emergency-notifications");
+  void pushEmergencyAlert({
+    kind: "guardian",
+    emergencyId: input.emergency.id,
+    personName: input.profile?.full_name,
+    guardianUrl: dashboardUrl,
+  });
   if (!input.guardian.email?.includes("@")) {
     return { session, dashboardUrl, configured: true, emailed: false };
   }

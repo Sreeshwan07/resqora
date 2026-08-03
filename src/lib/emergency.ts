@@ -19,7 +19,7 @@ import {
 import { isOffline, queueEmergency } from "@/lib/offline";
 import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { prepareWhatsappShares } from "@/lib/whatsapp-alerts";
-import { notifyEmergency } from "@/lib/emergency-notifications";
+import { notifyEmergency, pushEmergencyAlert } from "@/lib/emergency-notifications";
 import {
   ensureTrackingUrl,
   expireGuardianSessions,
@@ -425,6 +425,18 @@ export async function createEmergency(options: {
     emergency_id: data.id,
   });
   notifyEmergency("sos_activated", address ?? undefined);
+  void pushEmergencyAlert({
+    kind: "sos",
+    emergencyId: data.id,
+    personName: options.profile?.full_name,
+    detail: address ?? undefined,
+  });
+  void pushEmergencyAlert({
+    kind: "tracking",
+    emergencyId: data.id,
+    personName: options.profile?.full_name,
+    detail: address ?? undefined,
+  });
 
   const { data: fresh } = await supabase.from("emergencies").select("*").eq("id", data.id).single();
   return { ...((fresh ?? data) as Emergency), notifications: report };
@@ -464,6 +476,11 @@ export async function confirmSafe(input: {
     /* the session expires with the emergency anyway */
   }
   notifyEmergency("emergency_closed");
+  void pushEmergencyAlert({
+    kind: "resolved",
+    emergencyId: emergency.id,
+    personName: profile?.full_name,
+  });
 
   if (contacts.length > 0) {
     try {

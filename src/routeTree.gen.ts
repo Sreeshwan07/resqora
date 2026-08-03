@@ -38,6 +38,7 @@ import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppShareCenterRouteImport } from './routes/_app.share-center'
 import { Route as MTokenRouteImport } from './routes/m.$token'
 import { Route as STokenRouteImport } from './routes/s.$token'
+import { Route as ApiPublicPushConfigRouteImport } from './routes/api/public/push-config'
 import { Route as GuardianEmergencyIdTokenRouteImport } from './routes/guardian.$emergencyId.$token'
 
 const IndexRoute = IndexRouteImport.update({
@@ -184,6 +185,11 @@ const STokenRoute = STokenRouteImport.update({
   path: '/s/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPushConfigRoute = ApiPublicPushConfigRouteImport.update({
+  id: '/api/public/push-config',
+  path: '/api/public/push-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const GuardianEmergencyIdTokenRoute =
   GuardianEmergencyIdTokenRouteImport.update({
     id: '/guardian/$emergencyId/$token',
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
+  '/api/public/push-config': typeof ApiPublicPushConfigRoute
   '/guardian/$emergencyId/$token': typeof GuardianEmergencyIdTokenRoute
 }
 export interface FileRoutesByTo {
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
+  '/api/public/push-config': typeof ApiPublicPushConfigRoute
   '/guardian/$emergencyId/$token': typeof GuardianEmergencyIdTokenRoute
 }
 export interface FileRoutesById {
@@ -284,6 +292,7 @@ export interface FileRoutesById {
   '/_app/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
   '/s/$token': typeof STokenRoute
+  '/api/public/push-config': typeof ApiPublicPushConfigRoute
   '/guardian/$emergencyId/$token': typeof GuardianEmergencyIdTokenRoute
 }
 export interface FileRouteTypes {
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/share-center'
     | '/m/$token'
     | '/s/$token'
+    | '/api/public/push-config'
     | '/guardian/$emergencyId/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -348,6 +358,7 @@ export interface FileRouteTypes {
     | '/share-center'
     | '/m/$token'
     | '/s/$token'
+    | '/api/public/push-config'
     | '/guardian/$emergencyId/$token'
   id:
     | '__root__'
@@ -380,6 +391,7 @@ export interface FileRouteTypes {
     | '/_app/share-center'
     | '/m/$token'
     | '/s/$token'
+    | '/api/public/push-config'
     | '/guardian/$emergencyId/$token'
   fileRoutesById: FileRoutesById
 }
@@ -392,6 +404,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   MTokenRoute: typeof MTokenRoute
   STokenRoute: typeof STokenRoute
+  ApiPublicPushConfigRoute: typeof ApiPublicPushConfigRoute
   GuardianEmergencyIdTokenRoute: typeof GuardianEmergencyIdTokenRoute
 }
 
@@ -600,6 +613,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof STokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/push-config': {
+      id: '/api/public/push-config'
+      path: '/api/public/push-config'
+      fullPath: '/api/public/push-config'
+      preLoaderRoute: typeof ApiPublicPushConfigRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/guardian/$emergencyId/$token': {
       id: '/guardian/$emergencyId/$token'
       path: '/guardian/$emergencyId/$token'
@@ -669,6 +689,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   MTokenRoute: MTokenRoute,
   STokenRoute: STokenRoute,
+  ApiPublicPushConfigRoute: ApiPublicPushConfigRoute,
   GuardianEmergencyIdTokenRoute: GuardianEmergencyIdTokenRoute,
 }
 export const routeTree = rootRouteImport
