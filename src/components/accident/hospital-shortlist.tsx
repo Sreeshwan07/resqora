@@ -2,7 +2,7 @@ import { Building2, Clock, Loader2, Navigation, PhoneCall, Route } from "lucide-
 import { Button } from "@/components/ui/button";
 import { SPECIALTY_META, rankBySpecialty, type HospitalSpecialty } from "@/lib/accident";
 import type { NearbyPlace } from "@/lib/nearby.server";
-import { mapsNavigateLink } from "@/lib/alerts";
+import { mapsClickHandler, mapsHref } from "@/lib/maps";
 
 /** Top 3 real hospitals able to handle the detected emergency. */
 export function HospitalShortlist({
@@ -92,7 +92,12 @@ export function HospitalShortlist({
                   className="h-11 flex-1 rounded-xl"
                   onClick={() => onNavigate?.(place)}
                 >
-                  <a href={mapsNavigateLink(place)} target="_blank" rel="noreferrer noopener">
+                  <a
+                    href={mapsHref(place, "navigate")}
+                    onClick={mapsClickHandler(place, "navigate")}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
                     <Navigation className="size-4" aria-hidden="true" />
                     Navigate
                   </a>

@@ -20,7 +20,7 @@ const CSP = [
   "connect-src 'self' https: wss:",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
-  "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.com/maps/",
+  "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.com/maps/ https://www.openstreetmap.org",
   "frame-ancestors 'self' https://lovable.dev https://*.lovable.dev https://*.lovable.app https://*.lovableproject.com",
   "upgrade-insecure-requests",
 ].join("; ");

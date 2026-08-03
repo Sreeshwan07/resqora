@@ -1,5 +1,7 @@
-import { MessageSquare, Plus, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
+import { MessageSquare, Plus, Search, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { languages, urgencyMeta, type MedAiConversation, type Urgency } from "@/lib/medai";
 
 /** Saved consultations: continue, review or delete previous conversations. */
@@ -18,6 +20,15 @@ export function MedAiHistoryPanel({
   onNew: () => void;
   onClearAll: () => void;
 }) {
+  const [query, setQuery] = useState("");
+  const filtered = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return conversations;
+    return conversations.filter((conversation) =>
+      `${conversation.title} ${conversation.urgency ?? ""}`.toLowerCase().includes(term),
+    );
+  }, [conversations, query]);
+
   return (
     <aside className="glass-panel rounded-2xl p-4">
       <div className="flex items-center justify-between gap-2">
@@ -27,13 +38,31 @@ export function MedAiHistoryPanel({
         </Button>
       </div>
 
+      {conversations.length > 0 && (
+        <div className="relative mt-3">
+          <Search
+            className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search previous chats"
+            aria-label="Search previous consultations"
+            className="h-10 rounded-xl pl-9"
+          />
+        </div>
+      )}
+
       {conversations.length === 0 ? (
         <p className="mt-3 text-xs text-muted-foreground">
           Your saved consultations will appear here. History is private to your account.
         </p>
+      ) : filtered.length === 0 ? (
+        <p className="mt-3 text-xs text-muted-foreground">No consultation matches “{query}”.</p>
       ) : (
         <ul className="mt-3 space-y-1.5">
-          {conversations.map((conversation) => {
+          {filtered.map((conversation) => {
             const active = conversation.id === activeId;
             const urgency = (conversation.urgency as Urgency | null) ?? null;
             return (
