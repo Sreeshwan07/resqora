@@ -78,6 +78,8 @@ function ProfilePage() {
     allergies: "",
     medical_conditions: "",
     medications: "",
+    preferred_hospital: "",
+    language: "en",
   });
   const [drafts, setDrafts] = useState<ContactDraft[]>([]);
 
@@ -94,6 +96,8 @@ function ProfilePage() {
       allergies: profile.data.allergies ?? "",
       medical_conditions: profile.data.medical_conditions ?? "",
       medications: profile.data.medications ?? "",
+      preferred_hospital: profile.data.preferred_hospital ?? "",
+      language: profile.data.language ?? "en",
     });
   }, [profile.data]);
 
@@ -130,6 +134,8 @@ function ProfilePage() {
         allergies: sanitizeMultiline(form.allergies, 1000) || null,
         medical_conditions: sanitizeMultiline(form.medical_conditions, 1000) || null,
         medications: sanitizeMultiline(form.medications, 1000) || null,
+        preferred_hospital: sanitizeText(form.preferred_hospital, 160) || null,
+        language: sanitizeText(form.language, 20) || "en",
         safety_score: score,
       })
       .eq("id", user.id);
@@ -251,6 +257,17 @@ function ProfilePage() {
                 label="Medications"
                 value={form.medications}
                 onChange={(v) => setForm({ ...form, medications: v })}
+              />
+              <Field
+                label="Preferred hospital"
+                value={form.preferred_hospital}
+                onChange={(v) => setForm({ ...form, preferred_hospital: v })}
+              />
+              <SelectField
+                label="Preferred language"
+                value={form.language}
+                onChange={(v) => setForm({ ...form, language: v })}
+                options={["en", "hi", "te"]}
               />
               <div>
                 <Button variant="hero" onClick={saveProfile} disabled={saving}>

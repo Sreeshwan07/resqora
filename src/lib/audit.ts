@@ -20,6 +20,7 @@ export type SecurityEvent =
   | "Guardian changed"
   | "Share link revoked"
   | "Share link rotated"
+  | "RESQR ID regenerated"
   | "Admin action";
 
 export async function logSecurityEvent(

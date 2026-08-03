@@ -34,9 +34,12 @@ import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppReportRouteImport } from './routes/_app.report'
+import { Route as AppResqrIdRouteImport } from './routes/_app.resqr-id'
+import { Route as AppScanRouteImport } from './routes/_app.scan'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppShareCenterRouteImport } from './routes/_app.share-center'
 import { Route as MTokenRouteImport } from './routes/m.$token'
+import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as STokenRouteImport } from './routes/s.$token'
 import { Route as ApiPublicPushConfigRouteImport } from './routes/api/public/push-config'
 import { Route as GuardianEmergencyIdTokenRouteImport } from './routes/guardian.$emergencyId.$token'
@@ -165,6 +168,16 @@ const AppReportRoute = AppReportRouteImport.update({
   path: '/report',
   getParentRoute: () => AppRoute,
 } as any)
+const AppResqrIdRoute = AppResqrIdRouteImport.update({
+  id: '/resqr-id',
+  path: '/resqr-id',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScanRoute = AppScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -178,6 +191,11 @@ const AppShareCenterRoute = AppShareCenterRouteImport.update({
 const MTokenRoute = MTokenRouteImport.update({
   id: '/m/$token',
   path: '/m/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RCodeRoute = RCodeRouteImport.update({
+  id: '/r/$code',
+  path: '/r/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const STokenRoute = STokenRouteImport.update({
@@ -222,9 +240,12 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
+  '/resqr-id': typeof AppResqrIdRoute
+  '/scan': typeof AppScanRoute
   '/settings': typeof AppSettingsRoute
   '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
+  '/r/$code': typeof RCodeRoute
   '/s/$token': typeof STokenRoute
   '/api/public/push-config': typeof ApiPublicPushConfigRoute
   '/guardian/$emergencyId/$token': typeof GuardianEmergencyIdTokenRoute
@@ -254,9 +275,12 @@ export interface FileRoutesByTo {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
+  '/resqr-id': typeof AppResqrIdRoute
+  '/scan': typeof AppScanRoute
   '/settings': typeof AppSettingsRoute
   '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
+  '/r/$code': typeof RCodeRoute
   '/s/$token': typeof STokenRoute
   '/api/public/push-config': typeof ApiPublicPushConfigRoute
   '/guardian/$emergencyId/$token': typeof GuardianEmergencyIdTokenRoute
@@ -288,9 +312,12 @@ export interface FileRoutesById {
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/report': typeof AppReportRoute
+  '/_app/resqr-id': typeof AppResqrIdRoute
+  '/_app/scan': typeof AppScanRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
+  '/r/$code': typeof RCodeRoute
   '/s/$token': typeof STokenRoute
   '/api/public/push-config': typeof ApiPublicPushConfigRoute
   '/guardian/$emergencyId/$token': typeof GuardianEmergencyIdTokenRoute
@@ -322,9 +349,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/report'
+    | '/resqr-id'
+    | '/scan'
     | '/settings'
     | '/share-center'
     | '/m/$token'
+    | '/r/$code'
     | '/s/$token'
     | '/api/public/push-config'
     | '/guardian/$emergencyId/$token'
@@ -354,9 +384,12 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/report'
+    | '/resqr-id'
+    | '/scan'
     | '/settings'
     | '/share-center'
     | '/m/$token'
+    | '/r/$code'
     | '/s/$token'
     | '/api/public/push-config'
     | '/guardian/$emergencyId/$token'
@@ -387,9 +420,12 @@ export interface FileRouteTypes {
     | '/_app/notifications'
     | '/_app/profile'
     | '/_app/report'
+    | '/_app/resqr-id'
+    | '/_app/scan'
     | '/_app/settings'
     | '/_app/share-center'
     | '/m/$token'
+    | '/r/$code'
     | '/s/$token'
     | '/api/public/push-config'
     | '/guardian/$emergencyId/$token'
@@ -403,6 +439,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   MTokenRoute: typeof MTokenRoute
+  RCodeRoute: typeof RCodeRoute
   STokenRoute: typeof STokenRoute
   ApiPublicPushConfigRoute: typeof ApiPublicPushConfigRoute
   GuardianEmergencyIdTokenRoute: typeof GuardianEmergencyIdTokenRoute
@@ -585,6 +622,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReportRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/resqr-id': {
+      id: '/_app/resqr-id'
+      path: '/resqr-id'
+      fullPath: '/resqr-id'
+      preLoaderRoute: typeof AppResqrIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/scan': {
+      id: '/_app/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof AppScanRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -604,6 +655,13 @@ declare module '@tanstack/react-router' {
       path: '/m/$token'
       fullPath: '/m/$token'
       preLoaderRoute: typeof MTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/r/$code': {
+      id: '/r/$code'
+      path: '/r/$code'
+      fullPath: '/r/$code'
+      preLoaderRoute: typeof RCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$token': {
@@ -650,6 +708,8 @@ interface AppRouteChildren {
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReportRoute: typeof AppReportRoute
+  AppResqrIdRoute: typeof AppResqrIdRoute
+  AppScanRoute: typeof AppScanRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppShareCenterRoute: typeof AppShareCenterRoute
 }
@@ -674,6 +734,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppReportRoute: AppReportRoute,
+  AppResqrIdRoute: AppResqrIdRoute,
+  AppScanRoute: AppScanRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppShareCenterRoute: AppShareCenterRoute,
 }
@@ -688,6 +750,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   MTokenRoute: MTokenRoute,
+  RCodeRoute: RCodeRoute,
   STokenRoute: STokenRoute,
   ApiPublicPushConfigRoute: ApiPublicPushConfigRoute,
   GuardianEmergencyIdTokenRoute: GuardianEmergencyIdTokenRoute,
