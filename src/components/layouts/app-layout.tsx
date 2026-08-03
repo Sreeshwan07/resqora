@@ -69,6 +69,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
       <LocationGate />
       <GlobalSosButton />
       <LiveEmergencyWidget />
+      <InstallPrompt />
+      <PushRegistrar />
     </div>
   );
 }
