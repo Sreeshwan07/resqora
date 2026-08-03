@@ -32,23 +32,27 @@ export function hasCoords(place: { lat?: number | null; lng?: number | null } | 
  * always the starting point, so this never navigates *to* the user.
  */
 export function mapsNavigateLink(place: { lat: number; lng: number; name?: string | null }) {
-  const params = new URLSearchParams({
-    api: "1",
-    destination: `${place.lat},${place.lng}`,
-    travelmode: "driving",
-    dir_action: "navigate",
-  });
-  return `https://www.google.com/maps/dir/?${params.toString()}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}&travelmode=driving`;
 }
 
 /** Opens the selected place on Google Maps (never a blank map). */
 export function mapsPlaceLink(place: { lat: number; lng: number; name?: string | null }) {
-  const params = new URLSearchParams({ api: "1", query: `${place.lat},${place.lng}` });
-  return `https://www.google.com/maps/search/?${params.toString()}`;
+  return `https://www.google.com/maps/search/?api=1&query=${place.lat},${place.lng}`;
 }
 
+/**
+ * Embeddable map. Uses the official Maps Embed API when the browser key is
+ * available (the legacy `output=embed` endpoint is blocked by Google), and an
+ * OpenStreetMap embed otherwise, so a map always renders.
+ */
 export function mapsEmbedUrl(coords: Coords, zoom = 16) {
-  return `https://maps.google.com/maps?q=${coords.lat},${coords.lng}&z=${zoom}&output=embed`;
+  const key = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
+  if (key) {
+    return `https://www.google.com/maps/embed/v1/view?key=${key}&center=${coords.lat},${coords.lng}&zoom=${zoom}&maptype=roadmap`;
+  }
+  const d = 0.008;
+  const bbox = `${coords.lng - d},${coords.lat - d},${coords.lng + d},${coords.lat + d}`;
+  return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${coords.lat},${coords.lng}`;
 }
 
 /**

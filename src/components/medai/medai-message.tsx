@@ -1,4 +1,13 @@
-import { AlertTriangle, Bot, ImageIcon, Siren, Stethoscope, UserRound, Volume2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Bot,
+  ImageIcon,
+  Navigation,
+  Siren,
+  Stethoscope,
+  UserRound,
+  Volume2,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { FirstAidChecklist } from "@/components/medai/first-aid-checklist";
@@ -19,10 +28,12 @@ export function MedAiMessage({
   message,
   onSpeak,
   onActivateSos,
+  hospitalNavigateUrl,
 }: {
   message: MedAiBubble;
   onSpeak?: (text: string) => void;
   onActivateSos?: () => void;
+  hospitalNavigateUrl?: string | null;
 }) {
   if (message.role === "user") {
     return (
@@ -78,6 +89,28 @@ export function MedAiMessage({
 
         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
 
+        {assessment?.possibleCause && (
+          <div className="rounded-2xl border border-border/60 bg-background/60 p-3">
+            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Possible cause
+            </p>
+            <p className="mt-1 text-sm">{assessment.possibleCause}</p>
+          </div>
+        )}
+
+        {assessment?.immediateSteps?.length ? (
+          <div className="rounded-2xl border border-border/60 bg-background/60 p-3">
+            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              Immediate steps
+            </p>
+            <ol className="mt-1 list-decimal space-y-0.5 pl-4 text-sm">
+              {assessment.immediateSteps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        ) : null}
+
         {assessment?.imageObservation && (
           <p className="rounded-xl bg-muted/50 p-3 text-sm">
             <span className="font-semibold">What I can see: </span>
@@ -103,6 +136,13 @@ export function MedAiMessage({
               <Button asChild size="sm" variant="outline" className="h-10">
                 <a href="tel:108">Call 108</a>
               </Button>
+              {hospitalNavigateUrl && (
+                <Button asChild size="sm" variant="outline" className="h-10">
+                  <a href={hospitalNavigateUrl} target="_blank" rel="noreferrer">
+                    <Navigation className="size-4" /> Nearest emergency hospital
+                  </a>
+                </Button>
+              )}
               <Button asChild size="sm" variant="ghost" className="h-10">
                 <Link to="/emergency">Emergency console</Link>
               </Button>
@@ -111,6 +151,15 @@ export function MedAiMessage({
         )}
 
         {assessment?.firstAid?.length ? <FirstAidChecklist steps={assessment.firstAid} /> : null}
+
+        {assessment?.whenToSeekCare && (
+          <div className="rounded-2xl border border-alert/30 bg-alert/5 p-3">
+            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              When to seek emergency care
+            </p>
+            <p className="mt-1 text-sm">{assessment.whenToSeekCare}</p>
+          </div>
+        )}
 
         {assessment?.specialist && (
           <div className="rounded-2xl border border-border/60 bg-background/60 p-3">

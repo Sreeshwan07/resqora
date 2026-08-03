@@ -1,6 +1,6 @@
 import { Loader2, MapPin, Navigation, Phone, Stethoscope } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mapsNavigateLink, mapsPlaceLink } from "@/lib/alerts";
+import { mapsClickHandler, mapsHref } from "@/lib/maps";
 import type { NearbyPlace } from "@/lib/nearby.server";
 
 /** India's ambulance / hospital emergency line, used when a facility has no verified number. */
@@ -49,13 +49,19 @@ export function HospitalRecommendations({
                 </a>
               </Button>
               <Button asChild size="sm" variant="outline" className="h-10 flex-1">
-                <a href={mapsNavigateLink(hospital)} target="_blank" rel="noreferrer">
+                <a
+                  href={mapsHref(hospital, "navigate")}
+                  onClick={mapsClickHandler(hospital, "navigate")}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <Navigation className="size-4" /> Navigate
                 </a>
               </Button>
               <Button asChild size="icon" variant="outline" className="size-10 shrink-0">
                 <a
-                  href={mapsPlaceLink(hospital)}
+                  href={mapsHref(hospital, "view")}
+                  onClick={mapsClickHandler(hospital, "view")}
                   target="_blank"
                   rel="noreferrer"
                   aria-label={`Open ${hospital.name} on Google Maps`}

@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { LanguageSelector } from "@/components/medai/language-selector";
 import { MedAiHistoryPanel } from "@/components/medai/history-panel";
 import { MedAiMessage, type MedAiBubble } from "@/components/medai/medai-message";
+import { mapsHref } from "@/lib/maps";
 import { HospitalRecommendations } from "@/components/medai/hospital-recommendations";
 import { FirstAidChecklist } from "@/components/medai/first-aid-checklist";
 import { useAuth } from "@/hooks/use-auth";
@@ -118,6 +119,9 @@ function MedAiPage() {
           message.role === "assistant" && message.urgency
             ? ({
                 reply: message.content,
+                possibleCause: null,
+                immediateSteps: [],
+                whenToSeekCare: null,
                 followUpQuestion: null,
                 urgency: message.urgency,
                 urgencyReason: "",
@@ -365,6 +369,9 @@ function MedAiPage() {
                       message={bubble}
                       onSpeak={voice.ttsSupported ? voice.speak : undefined}
                       onActivateSos={() => navigate({ to: "/emergency", search: { auto: true } })}
+                      hospitalNavigateUrl={
+                        hospitals[0] ? mapsHref(hospitals[0], "navigate") : null
+                      }
                     />
                   </motion.div>
                 ))}

@@ -373,7 +373,7 @@ function GuardianDashboard() {
                 {coords && (
                   <Button asChild variant="outline">
                     <a
-                      href={`https://www.google.com/maps/search/blood+bank/@${coords.lat},${coords.lng},13z`}
+                      href={`https://www.google.com/maps/search/?api=1&query=blood+bank+near+${coords.lat},${coords.lng}`}
                       target="_blank"
                       rel="noreferrer"
                     >

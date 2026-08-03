@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { mapsNavigateLink, mapsPlaceLink } from "@/lib/alerts";
+import { mapsClickHandler, mapsHref } from "@/lib/maps";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
 import { useNearbyServices, type NearbyOrigin } from "@/hooks/use-nearby-services";
 import type { LivePosition } from "@/hooks/use-live-position";
@@ -125,13 +125,19 @@ export function PlaceCard({
           variant="outline"
           className="h-12 flex-1 rounded-2xl bg-card text-sm font-bold"
         >
-          <a href={mapsNavigateLink(place)} target="_blank" rel="noreferrer">
+          <a
+            href={mapsHref(place, "navigate")}
+            onClick={mapsClickHandler(place, "navigate")}
+            target="_blank"
+            rel="noreferrer"
+          >
             <Navigation className="size-4" /> Navigate
           </a>
         </Button>
         <Button asChild size="icon" variant="outline" className="size-12 shrink-0 rounded-full bg-card">
           <a
-            href={mapsPlaceLink(place)}
+            href={mapsHref(place, "view")}
+            onClick={mapsClickHandler(place, "view")}
             target="_blank"
             rel="noreferrer"
             aria-label={`Open ${place.name} on Google Maps`}
