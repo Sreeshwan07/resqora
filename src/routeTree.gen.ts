@@ -35,6 +35,7 @@ import { Route as AppNotificationsRouteImport } from './routes/_app.notification
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppReportRouteImport } from './routes/_app.report'
 import { Route as AppResqrIdRouteImport } from './routes/_app.resqr-id'
+import { Route as AppScanRouteImport } from './routes/_app.scan'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppShareCenterRouteImport } from './routes/_app.share-center'
 import { Route as MTokenRouteImport } from './routes/m.$token'
@@ -172,6 +173,11 @@ const AppResqrIdRoute = AppResqrIdRouteImport.update({
   path: '/resqr-id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppScanRoute = AppScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -235,6 +241,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
   '/resqr-id': typeof AppResqrIdRoute
+  '/scan': typeof AppScanRoute
   '/settings': typeof AppSettingsRoute
   '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
@@ -269,6 +276,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
   '/resqr-id': typeof AppResqrIdRoute
+  '/scan': typeof AppScanRoute
   '/settings': typeof AppSettingsRoute
   '/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
@@ -305,6 +313,7 @@ export interface FileRoutesById {
   '/_app/profile': typeof AppProfileRoute
   '/_app/report': typeof AppReportRoute
   '/_app/resqr-id': typeof AppResqrIdRoute
+  '/_app/scan': typeof AppScanRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/share-center': typeof AppShareCenterRoute
   '/m/$token': typeof MTokenRoute
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/report'
     | '/resqr-id'
+    | '/scan'
     | '/settings'
     | '/share-center'
     | '/m/$token'
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/report'
     | '/resqr-id'
+    | '/scan'
     | '/settings'
     | '/share-center'
     | '/m/$token'
@@ -410,6 +421,7 @@ export interface FileRouteTypes {
     | '/_app/profile'
     | '/_app/report'
     | '/_app/resqr-id'
+    | '/_app/scan'
     | '/_app/settings'
     | '/_app/share-center'
     | '/m/$token'
@@ -617,6 +629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppResqrIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/scan': {
+      id: '/_app/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof AppScanRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -690,6 +709,7 @@ interface AppRouteChildren {
   AppProfileRoute: typeof AppProfileRoute
   AppReportRoute: typeof AppReportRoute
   AppResqrIdRoute: typeof AppResqrIdRoute
+  AppScanRoute: typeof AppScanRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppShareCenterRoute: typeof AppShareCenterRoute
 }
@@ -715,6 +735,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppProfileRoute: AppProfileRoute,
   AppReportRoute: AppReportRoute,
   AppResqrIdRoute: AppResqrIdRoute,
+  AppScanRoute: AppScanRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppShareCenterRoute: AppShareCenterRoute,
 }

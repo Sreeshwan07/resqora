@@ -21,6 +21,8 @@ import {
   Share2,
   MailCheck,
   Stethoscope,
+  QrCode,
+  ScanLine,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -118,6 +120,20 @@ export const medicalIdNav: NavItem = {
   description: "Responder medical card",
 };
 
+export const resqrIdNav: NavItem = {
+  label: "My RESQR ID",
+  to: "/resqr-id",
+  icon: QrCode,
+  description: "Emergency QR & wallet card",
+};
+
+export const scanNav: NavItem = {
+  label: "Scan RESQR ID",
+  to: "/scan",
+  icon: ScanLine,
+  description: "Open someone's emergency summary",
+};
+
 export const documentsNav: NavItem = {
   label: "Documents",
   to: "/documents",
@@ -149,6 +165,7 @@ export const navSections: NavSection[] = [
       { label: "Nearby services", to: "/nearby", icon: MapPinned, description: "Responders around you" },
       liveLocationNav,
       shareCenterNav,
+      scanNav,
     ],
   },
   {
@@ -158,6 +175,7 @@ export const navSections: NavSection[] = [
       { label: "Emergency history", to: "/history", icon: History, description: "Past incidents" },
       contactsNav,
       medicalIdNav,
+      resqrIdNav,
       documentsNav,
     ],
   },
