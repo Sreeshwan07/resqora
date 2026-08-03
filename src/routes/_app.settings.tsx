@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { profileQuery, type Profile } from "@/lib/api";
 import { logSecurityEvent } from "@/lib/audit";
 import { pushPermission, requestPushPermission, showPush } from "@/lib/push";
+import { pushConfigured, registerPushDevice, unregisterPushDevice } from "@/lib/fcm";
 import { cn } from "@/lib/utils";
 import type { Theme } from "@/types";
 
@@ -48,10 +49,46 @@ function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { data: profile } = useQuery(profileQuery(user?.id));
   const [permission, setPermission] = useState<ReturnType<typeof pushPermission>>("default");
+  const [fcmReady, setFcmReady] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     setPermission(pushPermission());
+    void pushConfigured().then(setFcmReady);
   }, []);
+
+  async function togglePush(next: boolean) {
+    if (!user) return;
+    setBusy(true);
+    try {
+      if (next) {
+        const result = await registerPushDevice(user.id);
+        if (result.status === "denied") {
+          setPermission("denied");
+          toast.error("Notifications are blocked in your browser settings");
+          return;
+        }
+        if (result.status === "not-configured") {
+          toast.error("Push notifications are not configured for this deployment yet");
+          return;
+        }
+        if (result.status === "unsupported") {
+          toast.error("This browser cannot receive push notifications");
+          return;
+        }
+        if (result.status === "failed") {
+          toast.error(result.error);
+          return;
+        }
+        setPermission("granted");
+      } else {
+        await unregisterPushDevice(user.id);
+      }
+      await update({ notify_push: next });
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function update(patch: Partial<Profile>) {
     if (!user) return;
@@ -134,6 +171,24 @@ function SettingsPage() {
               checked={profile?.notify_system ?? true}
               onChange={(value) => update({ notify_system: value })}
             />
+            <Separator />
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">Emergency push notifications</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {fcmReady
+                    ? "SOS activation, Guardian alerts, live tracking and resolution reach this device instantly."
+                    : "Push delivery is not configured for this deployment yet."}
+                </p>
+              </div>
+              <Switch
+                id="notify-push"
+                aria-label="Emergency push notifications"
+                disabled={busy || !fcmReady || permission === "unsupported"}
+                checked={(profile?.notify_push ?? true) && permission === "granted"}
+                onCheckedChange={(value) => void togglePush(value)}
+              />
+            </div>
             <Separator />
             <div className="flex items-start justify-between gap-4">
               <div>
