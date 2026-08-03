@@ -583,6 +583,7 @@ export type Database = {
           notify_system: boolean
           onboarding_completed: boolean
           phone: string | null
+          preferred_hospital: string | null
           safety_score: number
           share_medical_in_alerts: boolean
           theme: string
@@ -611,6 +612,7 @@ export type Database = {
           notify_system?: boolean
           onboarding_completed?: boolean
           phone?: string | null
+          preferred_hospital?: string | null
           safety_score?: number
           share_medical_in_alerts?: boolean
           theme?: string
@@ -639,6 +641,7 @@ export type Database = {
           notify_system?: boolean
           onboarding_completed?: boolean
           phone?: string | null
+          preferred_hospital?: string | null
           safety_score?: number
           share_medical_in_alerts?: boolean
           theme?: string
@@ -678,6 +681,36 @@ export type Database = {
           token?: string
           updated_at?: string
           user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resqr_ids: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          id: string
+          regenerated_count: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          id?: string
+          regenerated_count?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          id?: string
+          regenerated_count?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -831,6 +864,7 @@ export type Database = {
         Args: { _emergency_id: string; _token: string }
         Returns: Json
       }
+      get_resqr_summary: { Args: { _code: string }; Returns: Json }
       get_shared_location: { Args: { _token: string }; Returns: Json }
       get_shared_profile: { Args: { _token: string }; Returns: Json }
       get_shared_track: {
