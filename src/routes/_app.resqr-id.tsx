@@ -124,7 +124,10 @@ function MyResqrIdPage() {
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
-              onClick={() => url && void copyText(url, "RESQR ID link copied")}
+              onClick={() => {
+                if (!url) return;
+                void copyText(url).then(() => toast.success("RESQR ID link copied"));
+              }}
               disabled={!url}
             >
               <Copy className="size-4" />
