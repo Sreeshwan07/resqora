@@ -578,6 +578,7 @@ export type Database = {
           medical_conditions: string | null
           medications: string | null
           notify_emergency: boolean
+          notify_push: boolean
           notify_safety_tips: boolean
           notify_system: boolean
           onboarding_completed: boolean
@@ -605,6 +606,7 @@ export type Database = {
           medical_conditions?: string | null
           medications?: string | null
           notify_emergency?: boolean
+          notify_push?: boolean
           notify_safety_tips?: boolean
           notify_system?: boolean
           onboarding_completed?: boolean
@@ -632,6 +634,7 @@ export type Database = {
           medical_conditions?: string | null
           medications?: string | null
           notify_emergency?: boolean
+          notify_push?: boolean
           notify_safety_tips?: boolean
           notify_system?: boolean
           onboarding_completed?: boolean
@@ -640,6 +643,42 @@ export type Database = {
           share_medical_in_alerts?: boolean
           theme?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          last_seen_at: string
+          platform: string
+          token: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          platform?: string
+          token: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          last_seen_at?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
