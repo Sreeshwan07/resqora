@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Camera } from "lucide-react";
 import { PageHeader } from "@/components/system/page-header";
-import { EmergencyConsole } from "@/components/landing/emergency-console";
+import { AccidentResponseEngine } from "@/components/accident/accident-response-engine";
 
 export const Route = createFileRoute("/_app/report")({
   head: () => ({
@@ -15,7 +15,8 @@ export const Route = createFileRoute("/_app/report")({
       { property: "og:title", content: "Report an accident — RESQORA" },
       {
         property: "og:description",
-        content: "AI photo and video triage for accidents, with one-tap contact and responder alerts.",
+        content:
+          "AI photo and video triage for accidents, with one-tap contact and responder alerts.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -30,9 +31,9 @@ function ReportPage() {
       <PageHeader
         icon={Camera}
         title="Report accident"
-        description="Take a photo, upload an image or a video — RESQORA returns the emergency type, severity and confidence, and recommends the next action."
+        description="Photo, 30-second clip or upload — RESQORA returns an AI-assisted medical report, guided first aid, specialist hospitals and one-tap emergency actions."
       />
-      <EmergencyConsole mode="report" />
+      <AccidentResponseEngine />
     </>
   );
 }
