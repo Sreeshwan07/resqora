@@ -24,6 +24,8 @@ export default defineConfig({
         filename: "sw.js",
         manifest: false,
         workbox: {
+          // The FCM worker is a separate registration and must never be precached.
+          globIgnores: ["**/firebase-messaging-sw.js"],
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           runtimeCaching: [
             {
