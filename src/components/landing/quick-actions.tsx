@@ -65,20 +65,20 @@ export function QuickActions() {
             >
               <span
                 aria-hidden="true"
-                className="grid size-11 shrink-0 place-items-center rounded-2xl bg-teal/10 text-teal transition-colors group-hover:bg-teal/15 sm:size-12"
+                className="grid size-10 shrink-0 place-items-center rounded-2xl bg-teal/10 text-teal transition-colors group-hover:bg-teal/15 sm:size-12"
               >
                 <action.icon className="size-5 sm:size-6" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-display text-sm font-bold text-foreground sm:text-base">
+                <span className="block font-display text-sm font-bold leading-tight text-foreground sm:text-base">
                   {action.title}
                 </span>
-                <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+                <span className="mt-0.5 block text-xs leading-tight text-muted-foreground">
                   {action.subtitle}
                 </span>
               </span>
               <ChevronRight
-                className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                className="hidden size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:block"
                 aria-hidden="true"
               />
             </Link>
