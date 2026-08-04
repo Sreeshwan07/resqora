@@ -22,6 +22,9 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+import { Mail, MapPin, ScrollText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/system/page-header";
 import { StatCard } from "@/components/system/stat-card";
 import { StatCardSkeleton, PanelSkeleton } from "@/components/system/loading-skeletons";
@@ -38,12 +41,18 @@ import {
   adminDataQuery,
   isQrScanActivity,
   setApprovalStatus,
+  roleFor,
   type AdminActivity,
+  type AdminDelivery,
   type AdminEmergency,
   type AdminMedAiLog,
+  type AdminPushToken,
   type AdminResqrId,
+  type AdminRole,
+  type AdminSecurityEvent,
   type AdminUser,
 } from "@/lib/admin";
+import { deleteUserAccount } from "@/lib/admin.functions";
 import { SUPER_ADMIN_EMAIL, type ApprovalStatus } from "@/lib/access";
 import { formatDuration, statusLabel } from "@/lib/emergency";
 import { logSecurityEvent } from "@/lib/audit";
@@ -72,16 +81,20 @@ export const Route = createFileRoute("/_app/admin")({
 
 const MENU = [
   { id: "dashboard", label: "Dashboard", icon: Gauge },
+  { id: "users", label: "User Management", icon: Users },
   { id: "pending", label: "Pending Approvals", icon: Clock },
   { id: "approved", label: "Approved Users", icon: UserCheck },
   { id: "rejected", label: "Rejected Users", icon: ShieldX },
-  { id: "reports", label: "Emergency Reports", icon: ShieldAlert },
-  { id: "sos", label: "SOS Sessions", icon: Siren },
-  { id: "incidents", label: "Reported Incidents", icon: Camera },
-  { id: "medai", label: "Medical AI Logs", icon: Stethoscope },
-  { id: "scans", label: "QR Scans", icon: QrCode },
+  { id: "sos", label: "Active SOS Sessions", icon: Siren },
+  { id: "incidents", label: "Accident Reports", icon: Camera },
+  { id: "scans", label: "RESQR ID Management", icon: QrCode },
+  { id: "medai", label: "AI Consultation Logs", icon: Stethoscope },
+  { id: "live", label: "Live Emergency Monitor", icon: MapPin },
+  { id: "email", label: "Email Notification Logs", icon: Mail },
+  { id: "push", label: "Push Notification Logs", icon: Bell },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
-  { id: "settings", label: "Settings", icon: Settings },
+  { id: "audit", label: "Audit Logs", icon: ScrollText },
+  { id: "settings", label: "System Settings", icon: Settings },
 ] as const;
 
 type MenuId = (typeof MENU)[number]["id"];
@@ -112,12 +125,29 @@ function AdminPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const removal = useMutation({
+    mutationFn: async (target: AdminUser) => {
+      await deleteUserAccount({ data: { userId: target.id } });
+      return target;
+    },
+    onSuccess: (target) => {
+      toast.success(`${target.full_name || target.email} was deleted`);
+      void logSecurityEvent("Admin action", `Account deleted: ${target.email ?? target.id}`);
+      void queryClient.invalidateQueries({ queryKey: ["admin-data"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const stats = useMemo(() => {
     const users = data.data?.users ?? [];
     const emergencies = data.data?.emergencies ?? [];
     const activity = data.data?.activity ?? [];
     const medai = data.data?.medai ?? [];
     const resqr = data.data?.resqr ?? [];
+    const deliveries = data.data?.deliveries ?? [];
+    const pushTokens = data.data?.pushTokens ?? [];
+    const security = data.data?.security ?? [];
+    const roles = data.data?.roles ?? [];
 
     const pending = users.filter((u) => u.approval_status === "pending");
     const approved = users.filter((u) => u.approval_status === "approved");
@@ -159,6 +189,10 @@ function AdminPage() {
       activity,
       medai,
       resqr,
+      deliveries,
+      pushTokens,
+      security,
+      roles,
       pending,
       approved,
       rejected,
@@ -206,7 +240,11 @@ function AdminPage() {
     );
   }
 
-  const busyId = approval.isPending ? (approval.variables?.user.id ?? null) : null;
+  const busyId = approval.isPending
+    ? (approval.variables?.user.id ?? null)
+    : removal.isPending
+      ? (removal.variables?.id ?? null)
+      : null;
   const onSetStatus = (target: AdminUser, status: ApprovalStatus) =>
     approval.mutate({ user: target, status });
 
@@ -346,10 +384,22 @@ function AdminPage() {
                     users={stats.pending}
                     filter="pending"
                     busyId={busyId}
+                    roles={stats.roles}
                     onSetStatus={onSetStatus}
                     emptyLabel="No accounts awaiting approval"
                   />
                 </>
+              )}
+
+              {tab === "users" && (
+                <UsersTable
+                  users={stats.users}
+                  busyId={busyId}
+                  roles={stats.roles}
+                  onSetStatus={onSetStatus}
+                  onDelete={(target) => removal.mutate(target)}
+                  emptyLabel="No accounts registered yet"
+                />
               )}
 
               {tab === "pending" && (
@@ -357,6 +407,7 @@ function AdminPage() {
                   users={stats.pending}
                   filter="pending"
                   busyId={busyId}
+                  roles={stats.roles}
                   onSetStatus={onSetStatus}
                   emptyLabel="No accounts awaiting approval"
                 />
@@ -367,7 +418,9 @@ function AdminPage() {
                   users={stats.approved}
                   filter="approved"
                   busyId={busyId}
+                  roles={stats.roles}
                   onSetStatus={onSetStatus}
+                  onDelete={(target) => removal.mutate(target)}
                   emptyLabel="No approved accounts yet"
                 />
               )}
@@ -377,14 +430,13 @@ function AdminPage() {
                   users={stats.rejected}
                   filter="rejected"
                   busyId={busyId}
+                  roles={stats.roles}
                   onSetStatus={onSetStatus}
+                  onDelete={(target) => removal.mutate(target)}
                   emptyLabel="No rejected accounts"
                 />
               )}
 
-              {tab === "reports" && (
-                <EmergencyRecords rows={stats.emergencies} users={stats.users} title="every emergency" />
-              )}
               {tab === "sos" && (
                 <EmergencyRecords rows={stats.sos} users={stats.users} title="SOS sessions" />
               )}
@@ -392,9 +444,22 @@ function AdminPage() {
                 <EmergencyRecords
                   rows={stats.incidents}
                   users={stats.users}
-                  title="reported incidents"
+                  title="accident reports"
                 />
               )}
+
+              {tab === "live" && <LiveMonitor rows={stats.active} users={stats.users} />}
+              {tab === "email" && (
+                <DeliveryRecords
+                  rows={stats.deliveries.filter((row) => row.channel === "email")}
+                  users={stats.users}
+                  label="email alerts"
+                />
+              )}
+              {tab === "push" && (
+                <PushRecords tokens={stats.pushTokens} users={stats.users} />
+              )}
+              {tab === "audit" && <AuditRecords rows={stats.security} users={stats.users} />}
 
               {tab === "medai" && <MedAiRecords rows={stats.medai} users={stats.users} />}
               {tab === "scans" && (
@@ -448,6 +513,7 @@ function AdminPage() {
 
               {tab === "settings" && (
                 <section className="glass-panel space-y-5 rounded-3xl p-6">
+                  <SystemSettings />
                   <div>
                     <h2 className="text-sm font-semibold text-foreground">Approval policy</h2>
                     <p className="mt-2 text-sm text-muted-foreground">
