@@ -78,7 +78,7 @@ export function QuickActions() {
                 </span>
               </span>
               <ChevronRight
-                className="hidden size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:block"
+                className="size-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 sm:size-4"
                 aria-hidden="true"
               />
             </Link>
