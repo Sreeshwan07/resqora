@@ -213,9 +213,9 @@ export const supportNav: NavItem[] = [
 ];
 
 export const mobileNav: NavItem[] = [
-  primaryNav[0],
-  primaryNav[2],
-  primaryNav[3],
-  primaryNav[5],
+  { label: "Home", to: "/", icon: Home, description: "Emergency dashboard" },
+  { label: "SOS", to: "/emergency", icon: Siren, description: "Trigger assistance" },
+  resqAiNav,
+  { label: "RESQR ID", to: "/resqr-id", icon: QrCode, description: "Emergency QR" },
   primaryNav[4],
 ];
