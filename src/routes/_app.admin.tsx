@@ -286,6 +286,21 @@ function AdminPage() {
                       delta={stats.pending.length > 0 ? "Action needed" : "All clear"}
                     />
                     <StatCard
+                      icon={CheckCircle2}
+                      label="Approved users"
+                      value={String(stats.approved.length)}
+                    />
+                    <StatCard
+                      icon={ShieldX}
+                      label="Rejected users"
+                      value={String(stats.rejected.length)}
+                    />
+                    <StatCard
+                      icon={UserRound}
+                      label="Today's registrations"
+                      value={String(stats.today.length)}
+                    />
+                    <StatCard
                       icon={Siren}
                       label="SOS sessions"
                       value={String(stats.sos.length)}
