@@ -43,6 +43,13 @@ export const assistantNav: NavItem = {
   description: "Triage & first aid",
 };
 
+export const resqAiNav: NavItem = {
+  label: "RESQ AI",
+  to: "/resq-ai",
+  icon: Stethoscope,
+  description: "AI emergency medical assistant",
+};
+
 export const medAiNav: NavItem = {
   label: "AI Medical Assistant",
   to: "/medai",
@@ -192,6 +199,7 @@ export const navSections: NavSection[] = [
 ];
 
 export const supportNav: NavItem[] = [
+  resqAiNav,
   medAiNav,
   assistantNav,
   checkinsNav,
