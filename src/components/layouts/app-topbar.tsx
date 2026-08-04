@@ -10,17 +10,15 @@ import { ProfileMenu } from "@/components/layouts/profile-menu";
 import { StatusIndicator } from "@/components/system/status-indicator";
 import { primaryNav } from "@/lib/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { activeEmergencyQuery, notificationsQuery, profileQuery } from "@/lib/api";
+import { activeEmergencyQuery, notificationsQuery } from "@/lib/api";
 
 export function AppTopbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
-  const { data: profile } = useQuery(profileQuery(user?.id));
   const { data: notifications } = useQuery(notificationsQuery(user?.id));
   const { data: activeEmergency } = useQuery(activeEmergencyQuery(user?.id));
 
   const unread = (notifications ?? []).filter((item) => !item.read).length;
-  void profile;
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-xl">
