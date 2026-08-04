@@ -9,9 +9,11 @@ import {
 } from "@/components/landing/emergency-status-card";
 import { EmergencyConsole } from "@/components/landing/emergency-console";
 import { EmergencyContactsCard } from "@/components/landing/emergency-contacts-card";
-import { NearestServices } from "@/components/resqora/nearest-services";
+import { QuickActions } from "@/components/landing/quick-actions";
+import { CompactNearestServices } from "@/components/landing/compact-nearest-services";
+import { RecentActivityFeed } from "@/components/landing/recent-activity-feed";
+import { MobileNav } from "@/components/layouts/mobile-nav";
 import { LocationGate } from "@/components/resqora/location-gate";
-import { RecentActivityCard } from "@/components/resqora/recent-activity-card";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { useAuth } from "@/hooks/use-auth";
@@ -67,7 +69,7 @@ function Index() {
     <div className="min-h-dvh bg-background">
       <LandingNav />
       <main>
-        <div className="mx-auto w-full max-w-5xl space-y-4 px-4 py-5 sm:space-y-6 sm:px-6 sm:py-8">
+        <div className="mx-auto w-full max-w-5xl space-y-5 px-4 pb-28 pt-5 sm:space-y-7 sm:px-6 sm:py-8 lg:pb-10">
           <h1 className="sr-only">RESQORA — Every Second Matters. Every Life Connected.</h1>
 
           <EmergencyStatusCard
@@ -81,17 +83,20 @@ function Index() {
 
           <EmergencyConsole />
 
-          <NearestServices position={position} nearby={nearby} title="Nearest Emergency Services" />
+          <QuickActions />
+
+          <CompactNearestServices nearby={nearby} />
 
           <EmergencyContactsCard
             notified={Boolean(emergency && emergency.status !== "created")}
           />
 
-          <RecentActivityCard />
+          <RecentActivityFeed />
         </div>
       </main>
       <SiteFooter />
       <LocationGate />
+      <MobileNav />
     </div>
   );
 }

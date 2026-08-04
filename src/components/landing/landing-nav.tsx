@@ -7,6 +7,7 @@ const links = [
   { label: "Nearby", to: "/nearby" as const },
   { label: "History", to: "/history" as const },
   { label: "About", to: "/about" as const },
+  { label: "Profile", to: "/profile" as const },
 ];
 
 export function LandingNav() {
@@ -14,7 +15,7 @@ export function LandingNav() {
     <header className="sticky top-0 z-40 w-full border-b border-border/70 bg-card">
       <div className="mx-auto grid max-w-5xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 sm:px-6 sm:py-4">
         <Link to="/" aria-label="RESQORA home" className="min-w-0">
-          <Logo size="lg" tagline="Helping you. Anytime. Anywhere." />
+          <Logo size="lg" tagline="Emergency Response" />
         </Link>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <nav aria-label="Sections" className="hidden items-center gap-1 md:flex">

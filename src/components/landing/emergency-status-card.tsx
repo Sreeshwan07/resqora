@@ -53,13 +53,17 @@ export function EmergencyStatusCard({
         : "Getting your location…";
   // Locale time only renders after hydration so SSR markup can't mismatch.
   const hydrated = useHydrated();
+  const critical = status === "active" || status === "coordinating";
   return (
     <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35 }}
       aria-label="Live safety status"
-      className="soft-card rounded-3xl p-5 sm:p-7"
+      className={cn(
+        "soft-card rounded-3xl p-5 sm:p-7",
+        critical && "border-alert/50 bg-alert/5 ring-1 ring-alert/30",
+      )}
     >
       <dl className="grid gap-5 divide-border/70 sm:grid-cols-3 sm:gap-0 sm:divide-x">
         <div className="min-w-0 sm:pr-6">
