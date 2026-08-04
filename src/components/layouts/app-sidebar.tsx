@@ -3,7 +3,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, Lock, PanelLeftClose, PanelLeftOpen, ShieldCheck, Siren } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { adminNav, navSections, supportNav } from "@/lib/navigation";
+import { adminNav, navSections } from "@/lib/navigation";
 import { isUnrestrictedPath } from "@/lib/access";
 import { useAccess } from "@/hooks/use-access";
 import { cn } from "@/lib/utils";
