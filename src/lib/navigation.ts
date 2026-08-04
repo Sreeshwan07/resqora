@@ -43,6 +43,13 @@ export const assistantNav: NavItem = {
   description: "Triage & first aid",
 };
 
+export const resqAiNav: NavItem = {
+  label: "RESQ AI",
+  to: "/resq-ai",
+  icon: Stethoscope,
+  description: "AI emergency medical assistant",
+};
+
 export const medAiNav: NavItem = {
   label: "AI Medical Assistant",
   to: "/medai",
@@ -162,7 +169,12 @@ export const navSections: NavSection[] = [
       { label: "Home", to: "/dashboard", icon: Home, description: "Fast emergency actions" },
       { label: "Emergency SOS", to: "/emergency", icon: Siren, description: "Trigger assistance" },
       reportNav,
-      { label: "Nearby services", to: "/nearby", icon: MapPinned, description: "Responders around you" },
+      {
+        label: "Nearby services",
+        to: "/nearby",
+        icon: MapPinned,
+        description: "Responders around you",
+      },
       liveLocationNav,
       shareCenterNav,
       scanNav,
@@ -192,6 +204,7 @@ export const navSections: NavSection[] = [
 ];
 
 export const supportNav: NavItem[] = [
+  resqAiNav,
   medAiNav,
   assistantNav,
   checkinsNav,

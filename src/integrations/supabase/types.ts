@@ -453,6 +453,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          is_favourite: boolean
           language: string
           shared_medical_history: boolean
           specialist: string | null
@@ -464,6 +465,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          is_favourite?: boolean
           language?: string
           shared_medical_history?: boolean
           specialist?: string | null
@@ -475,6 +477,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          is_favourite?: boolean
           language?: string
           shared_medical_history?: boolean
           specialist?: string | null
