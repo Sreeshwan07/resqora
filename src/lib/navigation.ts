@@ -28,12 +28,12 @@ import {
 import type { NavSection, NavItem } from "@/types";
 
 export const primaryNav: NavItem[] = [
-  { label: "Home", to: "/dashboard", icon: Home, description: "Fast emergency actions" },
-  { label: "Emergency", to: "/emergency", icon: Siren, description: "Trigger assistance" },
+  { label: "Home", to: "/", icon: Home, description: "Main dashboard" },
+  { label: "Emergency SOS", to: "/emergency", icon: Siren, description: "Emergency activation" },
   { label: "Nearby", to: "/nearby", icon: MapPinned, description: "Responders around you" },
-  { label: "History", to: "/history", icon: History, description: "Past incidents" },
+  { label: "History", to: "/history", icon: History, description: "Previous SOS and reports" },
   { label: "Profile", to: "/profile", icon: UserRound, description: "Your safety identity" },
-  { label: "About", to: "/about", icon: Info, description: "How RESQORA works" },
+  { label: "About", to: "/about", icon: Info, description: "Platform information" },
   { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
 ];
 
@@ -170,55 +170,45 @@ export const emailDiagnosticsNav: NavItem = {
   description: "Alert delivery health",
 };
 
+/**
+ * The signed-in member menu. Deliberately short and role-neutral: nothing in
+ * here is an operator tool, and the admin entry is appended separately for the
+ * super-admin account only.
+ */
 export const navSections: NavSection[] = [
   {
     title: "Emergency",
     items: [
-      { label: "Home", to: "/dashboard", icon: Home, description: "Fast emergency actions" },
-      { label: "Emergency SOS", to: "/emergency", icon: Siren, description: "Trigger assistance" },
-      reportNav,
+      { label: "Home", to: "/", icon: Home, description: "Main dashboard" },
+      { label: "RESQ AI", to: "/resq-ai", icon: Stethoscope, description: "AI medical assistant" },
+      { label: "Emergency SOS", to: "/emergency", icon: Siren, description: "Emergency activation" },
+      { label: "Report accident", to: "/report", icon: Camera, description: "Report with AI analysis" },
       {
         label: "Nearby services",
         to: "/nearby",
         icon: MapPinned,
-        description: "Responders around you",
+        description: "Hospitals, police, fire, blood banks",
       },
-      liveLocationNav,
-      shareCenterNav,
-      scanNav,
     ],
   },
   {
-    title: "Records",
+    title: "My records",
     items: [
-      donorsNav,
-      { label: "Emergency history", to: "/history", icon: History, description: "Past incidents" },
-      contactsNav,
-      medicalIdNav,
-      resqrIdNav,
-      documentsNav,
+      { label: "RESQR ID", to: "/resqr-id", icon: QrCode, description: "Emergency QR & medical ID" },
+      { label: "Medical profile", to: "/medical-id", icon: IdCard, description: "Medical information" },
+      { label: "Emergency contacts", to: "/contacts", icon: Users, description: "Guardian management" },
+      { label: "Emergency history", to: "/history", icon: History, description: "Previous SOS and reports" },
     ],
   },
   {
     title: "Account",
     items: [
-      notificationsNav,
-      primaryNav[4],
+      { label: "My profile", to: "/profile", icon: UserRound, description: "Account details" },
       { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
-      emailDiagnosticsNav,
-      { label: "About", to: "/about", icon: Info, description: "How RESQORA works" },
+      { label: "About", to: "/about", icon: Info, description: "Platform information" },
       supportPageNav,
     ],
   },
-];
-
-export const supportNav: NavItem[] = [
-  resqAiNav,
-  medAiNav,
-  assistantNav,
-  checkinsNav,
-  notesNav,
-  activityNav,
 ];
 
 export const mobileNav: NavItem[] = [
