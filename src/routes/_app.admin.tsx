@@ -559,6 +559,279 @@ function userLabel(users: AdminUser[], userId: string) {
   return match?.full_name || match?.email || `${userId.slice(0, 8)}…`;
 }
 
+/** Live command view of every emergency that has not been resolved or cancelled. */
+function LiveMonitor({ rows, users }: { rows: AdminEmergency[]; users: AdminUser[] }) {
+  if (rows.length === 0) {
+    return (
+      <EmptyState
+        icon={MapPin}
+        title="No active emergencies"
+        description="Live SOS sessions appear here the moment a member triggers one."
+      />
+    );
+  }
+  return (
+    <div className="grid gap-4">
+      {rows.map((row) => (
+        <section key={row.id} className="glass-panel rounded-3xl p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Emergency {row.id.slice(0, 8).toUpperCase()}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {userLabel(users, row.user_id)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {row.address ??
+                  (row.latitude != null && row.longitude != null
+                    ? `${row.latitude.toFixed(4)}, ${row.longitude.toFixed(4)}`
+                    : "Waiting for GPS")}
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <StatusIndicator status="critical" label={statusLabel(row.status)} />
+              <span className="rounded-full bg-alert/10 px-2.5 py-1 text-[11px] font-semibold capitalize text-alert">
+                {row.severity} · {row.type}
+              </span>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {row.latitude != null && row.longitude != null && (
+              <Button asChild size="sm" variant="outline" className="rounded-xl">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${row.latitude},${row.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <MapPin className="size-4" />
+                  Live location
+                </a>
+              </Button>
+            )}
+            <Button asChild size="sm" variant="outline" className="rounded-xl">
+              <Link to="/history">
+                <Activity className="size-4" />
+                Emergency records
+              </Link>
+            </Button>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Started {new Date(row.started_at).toLocaleString()} · guardian links are issued
+            automatically when the member has a designated guardian.
+          </p>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function DeliveryRecords({
+  rows,
+  users,
+  label,
+}: {
+  rows: AdminDelivery[];
+  users: AdminUser[];
+  label: string;
+}) {
+  const columns: RecordColumn<AdminDelivery>[] = [
+    {
+      key: "user",
+      label: "User",
+      render: (row) => <span className="font-medium">{userLabel(users, row.user_id)}</span>,
+      text: (row) => userLabel(users, row.user_id),
+    },
+    {
+      key: "contact",
+      label: "Recipient",
+      render: (row) => (
+        <span>
+          {row.contact_name}
+          <span className="block text-xs text-muted-foreground">
+            {row.contact_email ?? row.contact_phone ?? "—"}
+          </span>
+        </span>
+      ),
+      text: (row) => `${row.contact_name} ${row.contact_email ?? ""} ${row.contact_phone ?? ""}`,
+    },
+    {
+      key: "kind",
+      label: "Type",
+      render: (row) => <span className="capitalize text-muted-foreground">{row.kind}</span>,
+      text: (row) => row.kind,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (row) => (
+        <StatusIndicator
+          status={row.status === "sent" ? "safe" : row.status === "failed" ? "critical" : "offline"}
+          label={row.error ? `${row.status} — ${row.error}` : row.status}
+        />
+      ),
+      text: (row) => `${row.status} ${row.error ?? ""}`,
+    },
+    {
+      key: "created",
+      label: "When",
+      render: (row) => (
+        <span className="text-muted-foreground">
+          {new Date(row.sent_at ?? row.created_at).toLocaleString()}
+        </span>
+      ),
+      text: (row) => new Date(row.sent_at ?? row.created_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <RecordsTable
+      rows={rows}
+      columns={columns}
+      searchPlaceholder="Search recipients, status or type"
+      emptyTitle={`No ${label} sent yet`}
+      emptyDescription="Delivery attempts are recorded here for every emergency alert."
+    />
+  );
+}
+
+function PushRecords({ tokens, users }: { tokens: AdminPushToken[]; users: AdminUser[] }) {
+  const columns: RecordColumn<AdminPushToken>[] = [
+    {
+      key: "user",
+      label: "User",
+      render: (row) => <span className="font-medium">{userLabel(users, row.user_id)}</span>,
+      text: (row) => userLabel(users, row.user_id),
+    },
+    {
+      key: "platform",
+      label: "Platform",
+      render: (row) => <span className="capitalize text-muted-foreground">{row.platform}</span>,
+      text: (row) => row.platform,
+    },
+    {
+      key: "device",
+      label: "Device",
+      render: (row) => (
+        <span className="line-clamp-2 text-muted-foreground">{row.user_agent ?? "—"}</span>
+      ),
+      text: (row) => row.user_agent ?? "",
+    },
+    {
+      key: "state",
+      label: "State",
+      render: (row) => (
+        <StatusIndicator status={row.active ? "safe" : "offline"} label={row.active ? "Active" : "Inactive"} />
+      ),
+      text: (row) => (row.active ? "active" : "inactive"),
+    },
+    {
+      key: "seen",
+      label: "Last seen",
+      render: (row) => (
+        <span className="text-muted-foreground">{new Date(row.last_seen_at).toLocaleString()}</span>
+      ),
+      text: (row) => new Date(row.last_seen_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard icon={Bell} label="Registered devices" value={String(tokens.length)} />
+        <StatCard
+          icon={ShieldCheck}
+          label="Active devices"
+          value={String(tokens.filter((t) => t.active).length)}
+        />
+        <StatCard
+          icon={Users}
+          label="Members reachable"
+          value={String(new Set(tokens.filter((t) => t.active).map((t) => t.user_id)).size)}
+        />
+      </div>
+      <RecordsTable
+        rows={tokens}
+        columns={columns}
+        searchPlaceholder="Search push devices"
+        emptyTitle="No push devices registered"
+        emptyDescription="Members appear here once they enable push notifications."
+      />
+    </>
+  );
+}
+
+function AuditRecords({ rows, users }: { rows: AdminSecurityEvent[]; users: AdminUser[] }) {
+  const columns: RecordColumn<AdminSecurityEvent>[] = [
+    {
+      key: "user",
+      label: "Actor",
+      render: (row) => (
+        <span className="font-medium">{row.user_id ? userLabel(users, row.user_id) : "System"}</span>
+      ),
+      text: (row) => (row.user_id ? userLabel(users, row.user_id) : "system"),
+    },
+    { key: "event", label: "Event", render: (row) => row.event, text: (row) => row.event },
+    {
+      key: "detail",
+      label: "Detail",
+      render: (row) => <span className="text-muted-foreground">{row.detail ?? "—"}</span>,
+      text: (row) => row.detail ?? "",
+    },
+    {
+      key: "created",
+      label: "When",
+      render: (row) => (
+        <span className="text-muted-foreground">{new Date(row.created_at).toLocaleString()}</span>
+      ),
+      text: (row) => new Date(row.created_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <RecordsTable
+      rows={rows}
+      columns={columns}
+      searchPlaceholder="Search audit trail"
+      emptyTitle="No security events recorded"
+      emptyDescription="Sign-ins, approvals, SOS activations and admin actions are logged here."
+    />
+  );
+}
+
+const INTEGRATIONS = [
+  { name: "Emergency numbers", detail: "108 ambulance · 100 police · 101 fire · 112 unified" },
+  { name: "EmailJS", detail: "Emergency and guardian email alerts" },
+  { name: "Firebase Cloud Messaging", detail: "Web push notifications" },
+  { name: "Google Maps Platform", detail: "Places, geocoding and navigation links" },
+  { name: "Lovable Cloud database", detail: "Accounts, emergencies, telemetry and logs" },
+  { name: "Gemini via Lovable AI", detail: "RESQ AI triage and accident vision analysis" },
+] as const;
+
+/** Read-only integration health board — credentials stay server-side and are never rendered. */
+function SystemSettings() {
+  return (
+    <div>
+      <h2 className="text-sm font-semibold text-foreground">Platform services</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Every integration below is configured with server-side credentials. Keys are never exposed
+        to the browser or to this console.
+      </p>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+        {INTEGRATIONS.map((item) => (
+          <li key={item.name} className="rounded-2xl border border-border bg-card/60 p-4">
+            <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
+              {item.name}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function EmergencyRecords({
   rows,
   users,
