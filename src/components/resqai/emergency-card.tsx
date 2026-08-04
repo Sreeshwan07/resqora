@@ -30,7 +30,12 @@ export function ResqEmergencyCard({
       </p>
       <div className="mt-3 grid gap-2 sm:grid-cols-2">
         {onActivateSos && (
-          <Button size="sm" variant="destructive" className="h-11 rounded-xl" onClick={onActivateSos}>
+          <Button
+            size="sm"
+            variant="destructive"
+            className="h-11 rounded-xl"
+            onClick={onActivateSos}
+          >
             <Siren className="size-4" /> Activate SOS
           </Button>
         )}

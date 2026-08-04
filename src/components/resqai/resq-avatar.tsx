@@ -16,7 +16,10 @@ export function ResqAvatar({
       style={{ width: size, height: size }}
     >
       {pulse && (
-        <span className="absolute inset-0 animate-ping rounded-full bg-primary/20" aria-hidden="true" />
+        <span
+          className="absolute inset-0 animate-ping rounded-full bg-primary/20"
+          aria-hidden="true"
+        />
       )}
       <img
         src={avatarUrl}

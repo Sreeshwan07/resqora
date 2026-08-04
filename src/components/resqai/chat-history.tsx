@@ -105,7 +105,9 @@ export function ResqChatHistory({
                     {conversation.title}
                   </span>
                   <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                    {urgency ? `${urgencyMeta[urgency].emoji} ${urgencyMeta[urgency].label} · ` : ""}
+                    {urgency
+                      ? `${urgencyMeta[urgency].emoji} ${urgencyMeta[urgency].label} · `
+                      : ""}
                     {languages[(conversation.language as "en" | "hi" | "te") ?? "en"]?.nativeLabel}
                     {" · "}
                     {new Date(conversation.updated_at).toLocaleDateString()}

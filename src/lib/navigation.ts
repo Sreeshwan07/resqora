@@ -169,7 +169,12 @@ export const navSections: NavSection[] = [
       { label: "Home", to: "/dashboard", icon: Home, description: "Fast emergency actions" },
       { label: "Emergency SOS", to: "/emergency", icon: Siren, description: "Trigger assistance" },
       reportNav,
-      { label: "Nearby services", to: "/nearby", icon: MapPinned, description: "Responders around you" },
+      {
+        label: "Nearby services",
+        to: "/nearby",
+        icon: MapPinned,
+        description: "Responders around you",
+      },
       liveLocationNav,
       shareCenterNav,
       scanNav,

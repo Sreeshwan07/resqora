@@ -56,7 +56,10 @@ export function ResqAiMessage({
   onShareLocation?: () => void;
   hospitalNavigateUrl?: string | null;
 }) {
-  const typed = useTypedText(message.content, message.role === "assistant" && Boolean(message.stream));
+  const typed = useTypedText(
+    message.content,
+    message.role === "assistant" && Boolean(message.stream),
+  );
 
   if (message.role === "user") {
     return (

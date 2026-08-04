@@ -290,7 +290,8 @@ function ResqAiPage() {
         },
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "RESQ AI could not answer right now.";
+      const message =
+        error instanceof Error ? error.message : "RESQ AI could not answer right now.";
       toast.error(message);
       setBubbles((prev) => prev.filter((bubble) => bubble.id !== userBubble.id));
       setInput(prompt);
@@ -531,7 +532,11 @@ function ResqAiPage() {
                   disabled={sending || (!input.trim() && !image)}
                   onClick={() => void send()}
                 >
-                  {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+                  {sending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Send className="size-4" />
+                  )}
                   Ask RESQ AI
                 </Button>
               </div>
