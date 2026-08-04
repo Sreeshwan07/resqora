@@ -30,13 +30,13 @@ export function ApprovalGate({ status }: { status: ApprovalStatus }) {
       </span>
 
       <h1 className="mt-5 font-display text-2xl font-semibold text-foreground">
-        {rejected ? "Access was not approved" : "Awaiting administrator approval"}
+        {rejected ? "Registration not approved" : "Waiting for Admin Approval"}
       </h1>
 
       {rejected ? (
         <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
-          An administrator has declined access for this account, so RESQORA&apos;s emergency
-          features stay locked. Contact support if you believe this was a mistake.
+          Your registration request was not approved. Please contact the administrator if you
+          believe this is an error.
         </p>
       ) : (
         <div className="mx-auto mt-4 max-w-md space-y-2 text-sm leading-relaxed text-muted-foreground">

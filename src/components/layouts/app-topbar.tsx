@@ -5,27 +5,20 @@ import { Bell, Menu, Search, X } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/system/theme-toggle";
+import { ProfileMenu } from "@/components/layouts/profile-menu";
 import { StatusIndicator } from "@/components/system/status-indicator";
 import { primaryNav } from "@/lib/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { activeEmergencyQuery, notificationsQuery, profileQuery } from "@/lib/api";
+import { activeEmergencyQuery, notificationsQuery } from "@/lib/api";
 
 export function AppTopbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user } = useAuth();
-  const { data: profile } = useQuery(profileQuery(user?.id));
   const { data: notifications } = useQuery(notificationsQuery(user?.id));
   const { data: activeEmergency } = useQuery(activeEmergencyQuery(user?.id));
 
   const unread = (notifications ?? []).filter((item) => !item.read).length;
-  const initials = (profile?.full_name ?? user?.email ?? "AE")
-    .split(/[\s@.]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/70 bg-background/80 backdrop-blur-xl">
@@ -85,13 +78,7 @@ export function AppTopbar() {
               )}
             </Link>
           </Button>
-          <Link to="/profile" aria-label="Your profile">
-            <Avatar className="size-9">
-              <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-                {initials || "AE"}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          <ProfileMenu />
         </div>
       </div>
       {menuOpen && (

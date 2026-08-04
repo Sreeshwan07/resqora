@@ -14,6 +14,7 @@ import {
   QrCode,
   Settings,
   ShieldAlert,
+  ShieldX,
   ShieldCheck,
   Siren,
   Stethoscope,
@@ -71,8 +72,9 @@ export const Route = createFileRoute("/_app/admin")({
 
 const MENU = [
   { id: "dashboard", label: "Dashboard", icon: Gauge },
-  { id: "pending", label: "Pending Users", icon: Clock },
+  { id: "pending", label: "Pending Approvals", icon: Clock },
   { id: "approved", label: "Approved Users", icon: UserCheck },
+  { id: "rejected", label: "Rejected Users", icon: ShieldX },
   { id: "reports", label: "Emergency Reports", icon: ShieldAlert },
   { id: "sos", label: "SOS Sessions", icon: Siren },
   { id: "incidents", label: "Reported Incidents", icon: Camera },
@@ -146,7 +148,12 @@ function AdminPage() {
       signupsByDay.set(day, (signupsByDay.get(day) ?? 0) + 1);
     }
 
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const today = users.filter((u) => new Date(u.created_at) >= startOfToday);
+
     return {
+      today,
       users,
       emergencies,
       activity,
@@ -279,6 +286,21 @@ function AdminPage() {
                       delta={stats.pending.length > 0 ? "Action needed" : "All clear"}
                     />
                     <StatCard
+                      icon={CheckCircle2}
+                      label="Approved users"
+                      value={String(stats.approved.length)}
+                    />
+                    <StatCard
+                      icon={ShieldX}
+                      label="Rejected users"
+                      value={String(stats.rejected.length)}
+                    />
+                    <StatCard
+                      icon={UserRound}
+                      label="Today's registrations"
+                      value={String(stats.today.length)}
+                    />
+                    <StatCard
                       icon={Siren}
                       label="SOS sessions"
                       value={String(stats.sos.length)}
@@ -342,10 +364,21 @@ function AdminPage() {
 
               {tab === "approved" && (
                 <UsersTable
-                  users={stats.users}
+                  users={stats.approved}
+                  filter="approved"
                   busyId={busyId}
                   onSetStatus={onSetStatus}
-                  emptyLabel="No user accounts yet"
+                  emptyLabel="No approved accounts yet"
+                />
+              )}
+
+              {tab === "rejected" && (
+                <UsersTable
+                  users={stats.rejected}
+                  filter="rejected"
+                  busyId={busyId}
+                  onSetStatus={onSetStatus}
+                  emptyLabel="No rejected accounts"
                 />
               )}
 
