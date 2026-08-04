@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Loader2, PhoneCall, Save, ShieldOff, UserRound } from "lucide-react";
+import { Copy, Loader2, PhoneCall, Save, ShieldCheck, ShieldOff, UserRound } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/system/page-header";
 import { MedicalIdCard } from "@/components/resqora/medical-id-card";
@@ -20,6 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
+import { useAccess } from "@/hooks/use-access";
 import { supabase } from "@/integrations/supabase/client";
 import { computeSafetyScore, contactsQuery, profileQuery } from "@/lib/api";
 import { copyText } from "@/lib/alerts";
@@ -62,6 +64,7 @@ type ContactDraft = {
 
 function ProfilePage() {
   const { user } = useAuth();
+  const access = useAccess();
   const queryClient = useQueryClient();
   const profile = useQuery(profileQuery(user?.id));
   const contacts = useQuery(contactsQuery(user?.id));
@@ -193,6 +196,31 @@ function ProfilePage() {
         title="Profile & medical ID"
         description="Keep this accurate — responders read it before they reach you."
       />
+
+      {access.isAdmin && (
+        <section className="glass-panel mb-4 rounded-3xl border border-primary/25 bg-primary/5 p-5">
+          <p className="flex items-center gap-2 text-sm font-semibold text-primary">
+            <ShieldCheck className="size-4" aria-hidden="true" />
+            Super Administrator
+          </p>
+          <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Email</dt>
+              <dd className="truncate font-medium text-foreground">{user?.email}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-wide text-muted-foreground">Role</dt>
+              <dd className="font-medium text-foreground">Super Administrator</dd>
+            </div>
+          </dl>
+          <Button asChild className="mt-4 rounded-2xl">
+            <Link to="/admin">
+              <ShieldCheck className="size-4" />
+              Open Admin Dashboard
+            </Link>
+          </Button>
+        </section>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="glass-panel rounded-3xl p-5 sm:p-6">

@@ -22,6 +22,9 @@ import {
   UserRound,
   Users,
 } from "lucide-react";
+import { Mail, MapPin, ScrollText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Link } from "@tanstack/react-router";
 import { PageHeader } from "@/components/system/page-header";
 import { StatCard } from "@/components/system/stat-card";
 import { StatCardSkeleton, PanelSkeleton } from "@/components/system/loading-skeletons";
@@ -38,12 +41,18 @@ import {
   adminDataQuery,
   isQrScanActivity,
   setApprovalStatus,
+  roleFor,
   type AdminActivity,
+  type AdminDelivery,
   type AdminEmergency,
   type AdminMedAiLog,
+  type AdminPushToken,
   type AdminResqrId,
+  type AdminRole,
+  type AdminSecurityEvent,
   type AdminUser,
 } from "@/lib/admin";
+import { deleteUserAccount } from "@/lib/admin.functions";
 import { SUPER_ADMIN_EMAIL, type ApprovalStatus } from "@/lib/access";
 import { formatDuration, statusLabel } from "@/lib/emergency";
 import { logSecurityEvent } from "@/lib/audit";
@@ -72,16 +81,20 @@ export const Route = createFileRoute("/_app/admin")({
 
 const MENU = [
   { id: "dashboard", label: "Dashboard", icon: Gauge },
+  { id: "users", label: "User Management", icon: Users },
   { id: "pending", label: "Pending Approvals", icon: Clock },
   { id: "approved", label: "Approved Users", icon: UserCheck },
   { id: "rejected", label: "Rejected Users", icon: ShieldX },
-  { id: "reports", label: "Emergency Reports", icon: ShieldAlert },
-  { id: "sos", label: "SOS Sessions", icon: Siren },
-  { id: "incidents", label: "Reported Incidents", icon: Camera },
-  { id: "medai", label: "Medical AI Logs", icon: Stethoscope },
-  { id: "scans", label: "QR Scans", icon: QrCode },
+  { id: "sos", label: "Active SOS Sessions", icon: Siren },
+  { id: "incidents", label: "Accident Reports", icon: Camera },
+  { id: "scans", label: "RESQR ID Management", icon: QrCode },
+  { id: "medai", label: "AI Consultation Logs", icon: Stethoscope },
+  { id: "live", label: "Live Emergency Monitor", icon: MapPin },
+  { id: "email", label: "Email Notification Logs", icon: Mail },
+  { id: "push", label: "Push Notification Logs", icon: Bell },
   { id: "analytics", label: "Analytics", icon: BarChart3 },
-  { id: "settings", label: "Settings", icon: Settings },
+  { id: "audit", label: "Audit Logs", icon: ScrollText },
+  { id: "settings", label: "System Settings", icon: Settings },
 ] as const;
 
 type MenuId = (typeof MENU)[number]["id"];
@@ -112,12 +125,29 @@ function AdminPage() {
     onError: (error: Error) => toast.error(error.message),
   });
 
+  const removal = useMutation({
+    mutationFn: async (target: AdminUser) => {
+      await deleteUserAccount({ data: { userId: target.id } });
+      return target;
+    },
+    onSuccess: (target) => {
+      toast.success(`${target.full_name || target.email} was deleted`);
+      void logSecurityEvent("Admin action", `Account deleted: ${target.email ?? target.id}`);
+      void queryClient.invalidateQueries({ queryKey: ["admin-data"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
+
   const stats = useMemo(() => {
     const users = data.data?.users ?? [];
     const emergencies = data.data?.emergencies ?? [];
     const activity = data.data?.activity ?? [];
     const medai = data.data?.medai ?? [];
     const resqr = data.data?.resqr ?? [];
+    const deliveries = data.data?.deliveries ?? [];
+    const pushTokens = data.data?.pushTokens ?? [];
+    const security = data.data?.security ?? [];
+    const roles = data.data?.roles ?? [];
 
     const pending = users.filter((u) => u.approval_status === "pending");
     const approved = users.filter((u) => u.approval_status === "approved");
@@ -159,6 +189,10 @@ function AdminPage() {
       activity,
       medai,
       resqr,
+      deliveries,
+      pushTokens,
+      security,
+      roles,
       pending,
       approved,
       rejected,
@@ -206,7 +240,11 @@ function AdminPage() {
     );
   }
 
-  const busyId = approval.isPending ? (approval.variables?.user.id ?? null) : null;
+  const busyId = approval.isPending
+    ? (approval.variables?.user.id ?? null)
+    : removal.isPending
+      ? (removal.variables?.id ?? null)
+      : null;
   const onSetStatus = (target: AdminUser, status: ApprovalStatus) =>
     approval.mutate({ user: target, status });
 
@@ -346,10 +384,22 @@ function AdminPage() {
                     users={stats.pending}
                     filter="pending"
                     busyId={busyId}
+                    roles={stats.roles}
                     onSetStatus={onSetStatus}
                     emptyLabel="No accounts awaiting approval"
                   />
                 </>
+              )}
+
+              {tab === "users" && (
+                <UsersTable
+                  users={stats.users}
+                  busyId={busyId}
+                  roles={stats.roles}
+                  onSetStatus={onSetStatus}
+                  onDelete={(target) => removal.mutate(target)}
+                  emptyLabel="No accounts registered yet"
+                />
               )}
 
               {tab === "pending" && (
@@ -357,6 +407,7 @@ function AdminPage() {
                   users={stats.pending}
                   filter="pending"
                   busyId={busyId}
+                  roles={stats.roles}
                   onSetStatus={onSetStatus}
                   emptyLabel="No accounts awaiting approval"
                 />
@@ -367,7 +418,9 @@ function AdminPage() {
                   users={stats.approved}
                   filter="approved"
                   busyId={busyId}
+                  roles={stats.roles}
                   onSetStatus={onSetStatus}
+                  onDelete={(target) => removal.mutate(target)}
                   emptyLabel="No approved accounts yet"
                 />
               )}
@@ -377,14 +430,13 @@ function AdminPage() {
                   users={stats.rejected}
                   filter="rejected"
                   busyId={busyId}
+                  roles={stats.roles}
                   onSetStatus={onSetStatus}
+                  onDelete={(target) => removal.mutate(target)}
                   emptyLabel="No rejected accounts"
                 />
               )}
 
-              {tab === "reports" && (
-                <EmergencyRecords rows={stats.emergencies} users={stats.users} title="every emergency" />
-              )}
               {tab === "sos" && (
                 <EmergencyRecords rows={stats.sos} users={stats.users} title="SOS sessions" />
               )}
@@ -392,9 +444,22 @@ function AdminPage() {
                 <EmergencyRecords
                   rows={stats.incidents}
                   users={stats.users}
-                  title="reported incidents"
+                  title="accident reports"
                 />
               )}
+
+              {tab === "live" && <LiveMonitor rows={stats.active} users={stats.users} />}
+              {tab === "email" && (
+                <DeliveryRecords
+                  rows={stats.deliveries.filter((row) => row.channel === "email")}
+                  users={stats.users}
+                  label="email alerts"
+                />
+              )}
+              {tab === "push" && (
+                <PushRecords tokens={stats.pushTokens} users={stats.users} />
+              )}
+              {tab === "audit" && <AuditRecords rows={stats.security} users={stats.users} />}
 
               {tab === "medai" && <MedAiRecords rows={stats.medai} users={stats.users} />}
               {tab === "scans" && (
@@ -448,6 +513,7 @@ function AdminPage() {
 
               {tab === "settings" && (
                 <section className="glass-panel space-y-5 rounded-3xl p-6">
+                  <SystemSettings />
                   <div>
                     <h2 className="text-sm font-semibold text-foreground">Approval policy</h2>
                     <p className="mt-2 text-sm text-muted-foreground">
@@ -491,6 +557,279 @@ function AdminPage() {
 function userLabel(users: AdminUser[], userId: string) {
   const match = users.find((u) => u.id === userId);
   return match?.full_name || match?.email || `${userId.slice(0, 8)}…`;
+}
+
+/** Live command view of every emergency that has not been resolved or cancelled. */
+function LiveMonitor({ rows, users }: { rows: AdminEmergency[]; users: AdminUser[] }) {
+  if (rows.length === 0) {
+    return (
+      <EmptyState
+        icon={MapPin}
+        title="No active emergencies"
+        description="Live SOS sessions appear here the moment a member triggers one."
+      />
+    );
+  }
+  return (
+    <div className="grid gap-4">
+      {rows.map((row) => (
+        <section key={row.id} className="glass-panel rounded-3xl p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Emergency {row.id.slice(0, 8).toUpperCase()}
+              </p>
+              <p className="mt-1 text-sm font-semibold text-foreground">
+                {userLabel(users, row.user_id)}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {row.address ??
+                  (row.latitude != null && row.longitude != null
+                    ? `${row.latitude.toFixed(4)}, ${row.longitude.toFixed(4)}`
+                    : "Waiting for GPS")}
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <StatusIndicator status="critical" label={statusLabel(row.status)} />
+              <span className="rounded-full bg-alert/10 px-2.5 py-1 text-[11px] font-semibold capitalize text-alert">
+                {row.severity} · {row.type}
+              </span>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {row.latitude != null && row.longitude != null && (
+              <Button asChild size="sm" variant="outline" className="rounded-xl">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${row.latitude},${row.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <MapPin className="size-4" />
+                  Live location
+                </a>
+              </Button>
+            )}
+            <Button asChild size="sm" variant="outline" className="rounded-xl">
+              <Link to="/history">
+                <Activity className="size-4" />
+                Emergency records
+              </Link>
+            </Button>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Started {new Date(row.started_at).toLocaleString()} · guardian links are issued
+            automatically when the member has a designated guardian.
+          </p>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function DeliveryRecords({
+  rows,
+  users,
+  label,
+}: {
+  rows: AdminDelivery[];
+  users: AdminUser[];
+  label: string;
+}) {
+  const columns: RecordColumn<AdminDelivery>[] = [
+    {
+      key: "user",
+      label: "User",
+      render: (row) => <span className="font-medium">{userLabel(users, row.user_id)}</span>,
+      text: (row) => userLabel(users, row.user_id),
+    },
+    {
+      key: "contact",
+      label: "Recipient",
+      render: (row) => (
+        <span>
+          {row.contact_name}
+          <span className="block text-xs text-muted-foreground">
+            {row.contact_email ?? row.contact_phone ?? "—"}
+          </span>
+        </span>
+      ),
+      text: (row) => `${row.contact_name} ${row.contact_email ?? ""} ${row.contact_phone ?? ""}`,
+    },
+    {
+      key: "kind",
+      label: "Type",
+      render: (row) => <span className="capitalize text-muted-foreground">{row.kind}</span>,
+      text: (row) => row.kind,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (row) => (
+        <StatusIndicator
+          status={row.status === "sent" ? "safe" : row.status === "failed" ? "critical" : "offline"}
+          label={row.error ? `${row.status} — ${row.error}` : row.status}
+        />
+      ),
+      text: (row) => `${row.status} ${row.error ?? ""}`,
+    },
+    {
+      key: "created",
+      label: "When",
+      render: (row) => (
+        <span className="text-muted-foreground">
+          {new Date(row.sent_at ?? row.created_at).toLocaleString()}
+        </span>
+      ),
+      text: (row) => new Date(row.sent_at ?? row.created_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <RecordsTable
+      rows={rows}
+      columns={columns}
+      searchPlaceholder="Search recipients, status or type"
+      emptyTitle={`No ${label} sent yet`}
+      emptyDescription="Delivery attempts are recorded here for every emergency alert."
+    />
+  );
+}
+
+function PushRecords({ tokens, users }: { tokens: AdminPushToken[]; users: AdminUser[] }) {
+  const columns: RecordColumn<AdminPushToken>[] = [
+    {
+      key: "user",
+      label: "User",
+      render: (row) => <span className="font-medium">{userLabel(users, row.user_id)}</span>,
+      text: (row) => userLabel(users, row.user_id),
+    },
+    {
+      key: "platform",
+      label: "Platform",
+      render: (row) => <span className="capitalize text-muted-foreground">{row.platform}</span>,
+      text: (row) => row.platform,
+    },
+    {
+      key: "device",
+      label: "Device",
+      render: (row) => (
+        <span className="line-clamp-2 text-muted-foreground">{row.user_agent ?? "—"}</span>
+      ),
+      text: (row) => row.user_agent ?? "",
+    },
+    {
+      key: "state",
+      label: "State",
+      render: (row) => (
+        <StatusIndicator status={row.active ? "safe" : "offline"} label={row.active ? "Active" : "Inactive"} />
+      ),
+      text: (row) => (row.active ? "active" : "inactive"),
+    },
+    {
+      key: "seen",
+      label: "Last seen",
+      render: (row) => (
+        <span className="text-muted-foreground">{new Date(row.last_seen_at).toLocaleString()}</span>
+      ),
+      text: (row) => new Date(row.last_seen_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard icon={Bell} label="Registered devices" value={String(tokens.length)} />
+        <StatCard
+          icon={ShieldCheck}
+          label="Active devices"
+          value={String(tokens.filter((t) => t.active).length)}
+        />
+        <StatCard
+          icon={Users}
+          label="Members reachable"
+          value={String(new Set(tokens.filter((t) => t.active).map((t) => t.user_id)).size)}
+        />
+      </div>
+      <RecordsTable
+        rows={tokens}
+        columns={columns}
+        searchPlaceholder="Search push devices"
+        emptyTitle="No push devices registered"
+        emptyDescription="Members appear here once they enable push notifications."
+      />
+    </>
+  );
+}
+
+function AuditRecords({ rows, users }: { rows: AdminSecurityEvent[]; users: AdminUser[] }) {
+  const columns: RecordColumn<AdminSecurityEvent>[] = [
+    {
+      key: "user",
+      label: "Actor",
+      render: (row) => (
+        <span className="font-medium">{row.user_id ? userLabel(users, row.user_id) : "System"}</span>
+      ),
+      text: (row) => (row.user_id ? userLabel(users, row.user_id) : "system"),
+    },
+    { key: "event", label: "Event", render: (row) => row.event, text: (row) => row.event },
+    {
+      key: "detail",
+      label: "Detail",
+      render: (row) => <span className="text-muted-foreground">{row.detail ?? "—"}</span>,
+      text: (row) => row.detail ?? "",
+    },
+    {
+      key: "created",
+      label: "When",
+      render: (row) => (
+        <span className="text-muted-foreground">{new Date(row.created_at).toLocaleString()}</span>
+      ),
+      text: (row) => new Date(row.created_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <RecordsTable
+      rows={rows}
+      columns={columns}
+      searchPlaceholder="Search audit trail"
+      emptyTitle="No security events recorded"
+      emptyDescription="Sign-ins, approvals, SOS activations and admin actions are logged here."
+    />
+  );
+}
+
+const INTEGRATIONS = [
+  { name: "Emergency numbers", detail: "108 ambulance · 100 police · 101 fire · 112 unified" },
+  { name: "EmailJS", detail: "Emergency and guardian email alerts" },
+  { name: "Firebase Cloud Messaging", detail: "Web push notifications" },
+  { name: "Google Maps Platform", detail: "Places, geocoding and navigation links" },
+  { name: "Lovable Cloud database", detail: "Accounts, emergencies, telemetry and logs" },
+  { name: "Gemini via Lovable AI", detail: "RESQ AI triage and accident vision analysis" },
+] as const;
+
+/** Read-only integration health board — credentials stay server-side and are never rendered. */
+function SystemSettings() {
+  return (
+    <div>
+      <h2 className="text-sm font-semibold text-foreground">Platform services</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Every integration below is configured with server-side credentials. Keys are never exposed
+        to the browser or to this console.
+      </p>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+        {INTEGRATIONS.map((item) => (
+          <li key={item.name} className="rounded-2xl border border-border bg-card/60 p-4">
+            <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+              <CheckCircle2 className="size-4 text-success" aria-hidden="true" />
+              {item.name}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{item.detail}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 function EmergencyRecords({
