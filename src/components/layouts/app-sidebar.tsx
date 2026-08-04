@@ -146,33 +146,6 @@ export function AppSidebar({
             {!collapsed && <span className="truncate">Admin dashboard</span>}
           </Link>
         )}
-        {!collapsed && (
-          <ul className="space-y-1">
-            {supportNav.map((item) => (
-              <li key={item.label}>
-                {isLocked(item.to) ? (
-                  <span
-                    aria-disabled="true"
-                    title={`${item.label} — awaiting administrator approval`}
-                    className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground/50"
-                  >
-                    <item.icon className="size-4 shrink-0" aria-hidden="true" />
-                    <span className="truncate">{item.label}</span>
-                    <Lock className="ml-auto size-3.5 shrink-0" aria-hidden="true" />
-                  </span>
-                ) : (
-                <Link
-                  to={item.to}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                >
-                  <item.icon className="size-4 shrink-0" aria-hidden="true" />
-                  <span className="truncate">{item.label}</span>
-                </Link>
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
         {access.approved ? (
           <Button asChild variant="emergency" className={cn("w-full", collapsed && "px-0")}>
             <Link to="/emergency">
