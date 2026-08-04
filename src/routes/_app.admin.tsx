@@ -1,29 +1,67 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "motion/react";
-import { Activity, Clock, MapPinned, ShieldAlert, Users } from "lucide-react";
+import { toast } from "sonner";
+import {
+  Activity,
+  BarChart3,
+  Bell,
+  Camera,
+  CheckCircle2,
+  Clock,
+  Gauge,
+  QrCode,
+  Settings,
+  ShieldAlert,
+  ShieldCheck,
+  Siren,
+  Stethoscope,
+  UserCheck,
+  UserRound,
+  Users,
+} from "lucide-react";
 import { PageHeader } from "@/components/system/page-header";
 import { StatCard } from "@/components/system/stat-card";
 import { StatCardSkeleton, PanelSkeleton } from "@/components/system/loading-skeletons";
 import { StatusIndicator } from "@/components/system/status-indicator";
 import { EmptyState } from "@/components/system/empty-state";
+import { UsersTable } from "@/components/admin/users-table";
+import { RecordsTable, type RecordColumn } from "@/components/admin/records-table";
+import { CountBarChart, SharePieChart } from "@/components/admin/admin-charts";
+import { ApprovalBadge } from "@/components/admin/status-badge";
 import { useAuth } from "@/hooks/use-auth";
-import { adminOverviewQuery, isAdminQuery } from "@/lib/api";
+import { useAccess } from "@/hooks/use-access";
+import { notificationsQuery } from "@/lib/api";
+import {
+  adminDataQuery,
+  isQrScanActivity,
+  setApprovalStatus,
+  type AdminActivity,
+  type AdminEmergency,
+  type AdminMedAiLog,
+  type AdminResqrId,
+  type AdminUser,
+} from "@/lib/admin";
+import { SUPER_ADMIN_EMAIL, type ApprovalStatus } from "@/lib/access";
 import { formatDuration, statusLabel } from "@/lib/emergency";
+import { logSecurityEvent } from "@/lib/audit";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/admin")({
   head: () => ({
     meta: [
-      { title: "Admin control centre — RESQORA" },
+      { title: "Admin dashboard — RESQORA" },
       {
         name: "description",
         content:
-          "Platform analytics for RESQORA operators: user growth, live emergencies, response times and an incident density heatmap.",
+          "RESQORA operator console: approve or reject new accounts, review SOS sessions, accident reports, medical AI logs, QR scans and platform analytics.",
       },
-      { property: "og:title", content: "RESQORA Admin Control Centre" },
-      { property: "og:description", content: "User, emergency and response analytics for operators." },
+      { property: "og:title", content: "RESQORA Admin Dashboard" },
+      {
+        property: "og:description",
+        content: "Account approvals, emergency reports and platform analytics for RESQORA operators.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -31,41 +69,109 @@ export const Route = createFileRoute("/_app/admin")({
   component: AdminPage,
 });
 
+const MENU = [
+  { id: "dashboard", label: "Dashboard", icon: Gauge },
+  { id: "pending", label: "Pending Users", icon: Clock },
+  { id: "approved", label: "Approved Users", icon: UserCheck },
+  { id: "reports", label: "Emergency Reports", icon: ShieldAlert },
+  { id: "sos", label: "SOS Sessions", icon: Siren },
+  { id: "incidents", label: "Reported Incidents", icon: Camera },
+  { id: "medai", label: "Medical AI Logs", icon: Stethoscope },
+  { id: "scans", label: "QR Scans", icon: QrCode },
+  { id: "analytics", label: "Analytics", icon: BarChart3 },
+  { id: "settings", label: "Settings", icon: Settings },
+] as const;
+
+type MenuId = (typeof MENU)[number]["id"];
+
 function AdminPage() {
   const { user } = useAuth();
-  const admin = useQuery(isAdminQuery(user?.id));
-  const overview = useQuery({ ...adminOverviewQuery(), enabled: admin.data === true });
+  const access = useAccess();
+  const queryClient = useQueryClient();
+  const [tab, setTab] = useState<MenuId>("dashboard");
+
+  const data = useQuery({ ...adminDataQuery(), enabled: access.isAdmin });
+  const notifications = useQuery({ ...notificationsQuery(user?.id), enabled: access.isAdmin });
+
+  const approval = useMutation({
+    mutationFn: async ({ user: target, status }: { user: AdminUser; status: ApprovalStatus }) => {
+      await setApprovalStatus(target.id, status);
+      return { target, status };
+    },
+    onSuccess: ({ target, status }) => {
+      toast.success(
+        status === "approved"
+          ? `${target.full_name || target.email} now has full access`
+          : `${target.full_name || target.email} was rejected`,
+      );
+      void logSecurityEvent("Admin action", `Account ${status}: ${target.email ?? target.id}`);
+      void queryClient.invalidateQueries({ queryKey: ["admin-data"] });
+    },
+    onError: (error: Error) => toast.error(error.message),
+  });
 
   const stats = useMemo(() => {
-    const profiles = overview.data?.profiles ?? [];
-    const emergencies = overview.data?.emergencies ?? [];
+    const users = data.data?.users ?? [];
+    const emergencies = data.data?.emergencies ?? [];
+    const activity = data.data?.activity ?? [];
+    const medai = data.data?.medai ?? [];
+    const resqr = data.data?.resqr ?? [];
+
+    const pending = users.filter((u) => u.approval_status === "pending");
+    const approved = users.filter((u) => u.approval_status === "approved");
+    const rejected = users.filter((u) => u.approval_status === "rejected");
+    const sos = emergencies.filter((e) => e.type === "sos");
+    const incidents = emergencies.filter((e) => e.type !== "sos");
     const active = emergencies.filter((e) => e.status !== "resolved" && e.status !== "cancelled");
     const resolved = emergencies.filter((e) => e.status === "resolved");
+    const scans = activity.filter(isQrScanActivity);
     const avg =
       resolved.length > 0
-        ? Math.round(resolved.reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0) / resolved.length)
+        ? Math.round(
+            resolved.reduce((sum, e) => sum + (e.duration_seconds ?? 0), 0) / resolved.length,
+          )
         : null;
 
     const byType = new Map<string, number>();
     for (const item of emergencies) byType.set(item.type, (byType.get(item.type) ?? 0) + 1);
-    const byCity = new Map<string, number>();
-    for (const item of profiles) {
-      const city = item.current_city?.trim();
-      if (city) byCity.set(city, (byCity.get(city) ?? 0) + 1);
+    const bySeverity = new Map<string, number>();
+    for (const item of emergencies) bySeverity.set(item.severity, (bySeverity.get(item.severity) ?? 0) + 1);
+
+    const signupsByDay = new Map<string, number>();
+    for (const item of users) {
+      const day = new Date(item.created_at).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+      });
+      signupsByDay.set(day, (signupsByDay.get(day) ?? 0) + 1);
     }
 
     return {
-      profiles,
+      users,
       emergencies,
+      activity,
+      medai,
+      resqr,
+      pending,
+      approved,
+      rejected,
+      sos,
+      incidents,
       active,
+      scans,
       avg,
-      onboarded: profiles.filter((p) => p.onboarding_completed).length,
-      types: [...byType.entries()].sort((a, b) => b[1] - a[1]),
-      cities: [...byCity.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6),
+      types: [...byType.entries()].map(([name, value]) => ({ name, value })),
+      severities: [...bySeverity.entries()].map(([name, value]) => ({ name, value })),
+      signups: [...signupsByDay.entries()].slice(0, 14).reverse().map(([name, value]) => ({ name, value })),
     };
-  }, [overview.data]);
+  }, [data.data]);
 
-  if (admin.isLoading) {
+  const registrationAlerts = useMemo(
+    () => (notifications.data ?? []).filter((item) => item.title === "New User Registration" || item.title === "New user registration"),
+    [notifications.data],
+  );
+
+  if (access.loading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -75,177 +181,457 @@ function AdminPage() {
     );
   }
 
-  if (!admin.data) {
+  // Only the super-admin account holds the admin role, so this is the whole gate.
+  if (!access.isAdmin) {
     return (
       <>
         <PageHeader
           icon={ShieldAlert}
-          title="Admin control centre"
+          title="Admin dashboard"
           description="Restricted to RESQORA operators."
         />
         <EmptyState
           icon={ShieldAlert}
           title="Operator access required"
-          description="Your account doesn't have the admin role. Ask an RESQORA operator to grant access."
+          description={`This console is limited to the RESQORA administrator account (${SUPER_ADMIN_EMAIL}).`}
         />
       </>
     );
   }
 
-  const maxType = Math.max(1, ...stats.types.map(([, count]) => count));
+  const busyId = approval.isPending ? (approval.variables?.user.id ?? null) : null;
+  const onSetStatus = (target: AdminUser, status: ApprovalStatus) =>
+    approval.mutate({ user: target, status });
 
   return (
     <>
       <PageHeader
-        icon={ShieldAlert}
-        title="Admin control centre"
-        description="Platform-wide user, emergency and response analytics."
+        icon={ShieldCheck}
+        title="Admin dashboard"
+        description="Account approvals, emergency reports and live platform analytics."
+        actions={
+          <span className="rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
+            {stats.pending.length} awaiting approval
+          </span>
+        }
       />
 
-      {overview.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <StatCardSkeleton key={i} />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <StatCard
-            icon={Users}
-            label="Registered users"
-            value={String(stats.profiles.length)}
-            delta={`${stats.onboarded} onboarded`}
-          />
-          <StatCard icon={Activity} label="Total emergencies" value={String(stats.emergencies.length)} />
-          <StatCard
-            icon={ShieldAlert}
-            label="Active right now"
-            value={String(stats.active.length)}
-            delta={stats.active.length > 0 ? "Live" : "Clear"}
-          />
-          <StatCard
-            icon={Clock}
-            label="Avg. resolution"
-            value={stats.avg ? formatDuration(stats.avg) : "—"}
-          />
-        </div>
-      )}
+      <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)]">
+        <nav aria-label="Admin sections" className="glass-panel h-fit rounded-3xl p-2">
+          <ul className="flex gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+            {MENU.map((item) => (
+              <li key={item.id} className="shrink-0 lg:w-full">
+                <button
+                  type="button"
+                  onClick={() => setTab(item.id)}
+                  aria-current={tab === item.id ? "page" : undefined}
+                  className={cn(
+                    "flex w-full items-center gap-2.5 whitespace-nowrap rounded-2xl px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                    tab === item.id
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  <item.icon className="size-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{item.label}</span>
+                  {item.id === "pending" && stats.pending.length > 0 && (
+                    <span className="ml-auto rounded-full bg-warning/15 px-1.5 text-[10px] font-bold text-warning">
+                      {stats.pending.length}
+                    </span>
+                  )}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="glass-panel rounded-2xl p-5">
-          <h2 className="text-sm font-semibold text-foreground">Emergencies by type</h2>
-          {stats.types.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">No emergencies recorded yet.</p>
+        <div className="min-w-0 space-y-6">
+          {data.isLoading ? (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <StatCardSkeleton key={i} />
+                ))}
+              </div>
+              <PanelSkeleton rows={4} />
+            </>
+          ) : data.isError ? (
+            <EmptyState
+              icon={ShieldAlert}
+              title="Couldn't load platform data"
+              description={(data.error as Error).message}
+            />
           ) : (
-            <ul className="mt-4 space-y-3">
-              {stats.types.map(([type, count]) => (
-                <li key={type}>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="capitalize text-foreground">{type}</span>
-                    <span className="text-muted-foreground">{count}</span>
-                  </div>
-                  <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${(count / maxType) * 100}%` }}
-                      transition={{ duration: 0.5 }}
-                      className="h-full rounded-full bg-primary"
+            <>
+              {tab === "dashboard" && (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard
+                      icon={Users}
+                      label="Total users"
+                      value={String(stats.users.length)}
+                      delta={`${stats.approved.length} approved`}
+                    />
+                    <StatCard
+                      icon={Clock}
+                      label="Pending approval"
+                      value={String(stats.pending.length)}
+                      delta={stats.pending.length > 0 ? "Action needed" : "All clear"}
+                    />
+                    <StatCard
+                      icon={Siren}
+                      label="SOS sessions"
+                      value={String(stats.sos.length)}
+                      delta={stats.active.length > 0 ? `${stats.active.length} live` : "None live"}
+                    />
+                    <StatCard
+                      icon={Clock}
+                      label="Avg. resolution"
+                      value={stats.avg ? formatDuration(stats.avg) : "—"}
                     />
                   </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
 
-        <section className="glass-panel rounded-2xl p-5">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <MapPinned className="size-4 text-primary" aria-hidden="true" />
-            Incident density heatmap
-          </h2>
-          <div className="relative mt-4 aspect-[4/3] overflow-hidden rounded-2xl border border-border bg-[linear-gradient(hsl(var(--border))_1px,transparent_1px),linear-gradient(90deg,hsl(var(--border))_1px,transparent_1px)] bg-[size:36px_36px]">
-            {stats.emergencies
-              .filter((e) => e.latitude != null && e.longitude != null)
-              .slice(0, 40)
-              .map((e, index) => (
-                <motion.span
-                  key={e.id}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.02 }}
-                  className={cn(
-                    "absolute size-10 -translate-x-1/2 -translate-y-1/2 rounded-full blur-md",
-                    e.status === "resolved" ? "bg-info/40" : "bg-alert/50",
-                  )}
-                  style={{
-                    left: `${((((e.longitude as number) + 180) % 360) / 360) * 100}%`,
-                    top: `${((90 - (e.latitude as number)) / 180) * 100}%`,
-                  }}
+                  <section className="glass-panel rounded-3xl p-5">
+                    <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <Bell className="size-4 text-primary" aria-hidden="true" />
+                      Registration notifications
+                    </h2>
+                    {registrationAlerts.length === 0 ? (
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        No new registrations since your last review.
+                      </p>
+                    ) : (
+                      <ul className="mt-4 space-y-3">
+                        {registrationAlerts.slice(0, 6).map((item) => (
+                          <li
+                            key={item.id}
+                            className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/60 p-4"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-foreground">New User Registration</p>
+                              <p className="mt-0.5 truncate text-sm text-muted-foreground">{item.body}</p>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(item.created_at).toLocaleString()}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </section>
+
+                  <UsersTable
+                    users={stats.pending}
+                    filter="pending"
+                    busyId={busyId}
+                    onSetStatus={onSetStatus}
+                    emptyLabel="No accounts awaiting approval"
+                  />
+                </>
+              )}
+
+              {tab === "pending" && (
+                <UsersTable
+                  users={stats.pending}
+                  filter="pending"
+                  busyId={busyId}
+                  onSetStatus={onSetStatus}
+                  emptyLabel="No accounts awaiting approval"
                 />
-              ))}
-            <p className="absolute bottom-3 left-4 text-xs text-muted-foreground">
-              Approximate global distribution of reported incidents
-            </p>
-          </div>
-          {stats.cities.length > 0 && (
-            <ul className="mt-4 flex flex-wrap gap-2">
-              {stats.cities.map(([city, count]) => (
-                <li
-                  key={city}
-                  className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground"
-                >
-                  {city} · {count}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
+              )}
 
-      <section className="glass-panel rounded-2xl p-5">
-        <h2 className="text-sm font-semibold text-foreground">Latest incidents</h2>
-        {overview.isLoading ? (
-          <div className="mt-4">
-            <PanelSkeleton rows={3} />
-          </div>
-        ) : stats.emergencies.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">No incidents on the platform yet.</p>
-        ) : (
-          <ul className="mt-4 space-y-3">
-            {[...stats.emergencies]
-              .sort((a, b) => +new Date(b.started_at) - +new Date(a.started_at))
-              .slice(0, 8)
-              .map((item) => (
-                <li
-                  key={item.id}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/60 p-4"
-                >
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold capitalize text-foreground">
-                      {item.type} · severity {item.severity}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {new Date(item.started_at).toLocaleString()} ·{" "}
-                      {item.latitude != null && item.longitude != null
-                        ? `${item.latitude.toFixed(3)}, ${item.longitude.toFixed(3)}`
-                        : "No GPS"}
+              {tab === "approved" && (
+                <UsersTable
+                  users={stats.users}
+                  busyId={busyId}
+                  onSetStatus={onSetStatus}
+                  emptyLabel="No user accounts yet"
+                />
+              )}
+
+              {tab === "reports" && (
+                <EmergencyRecords rows={stats.emergencies} users={stats.users} title="every emergency" />
+              )}
+              {tab === "sos" && (
+                <EmergencyRecords rows={stats.sos} users={stats.users} title="SOS sessions" />
+              )}
+              {tab === "incidents" && (
+                <EmergencyRecords
+                  rows={stats.incidents}
+                  users={stats.users}
+                  title="reported incidents"
+                />
+              )}
+
+              {tab === "medai" && <MedAiRecords rows={stats.medai} users={stats.users} />}
+              {tab === "scans" && (
+                <ScanRecords activity={stats.scans} resqr={stats.resqr} users={stats.users} />
+              )}
+
+              {tab === "analytics" && (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard icon={Users} label="Total users" value={String(stats.users.length)} />
+                    <StatCard icon={Clock} label="Pending users" value={String(stats.pending.length)} />
+                    <StatCard
+                      icon={CheckCircle2}
+                      label="Approved users"
+                      value={String(stats.approved.length)}
+                    />
+                    <StatCard
+                      icon={ShieldAlert}
+                      label="Rejected users"
+                      value={String(stats.rejected.length)}
+                    />
+                    <StatCard icon={Siren} label="SOS count" value={String(stats.sos.length)} />
+                    <StatCard
+                      icon={Camera}
+                      label="Incident reports"
+                      value={String(stats.incidents.length)}
+                    />
+                    <StatCard icon={QrCode} label="QR scans" value={String(stats.scans.length)} />
+                    <StatCard
+                      icon={Stethoscope}
+                      label="AI consultations"
+                      value={String(stats.medai.length)}
+                    />
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    <SharePieChart
+                      title="Account approval mix"
+                      data={[
+                        { name: "Approved", value: stats.approved.length },
+                        { name: "Pending", value: stats.pending.length },
+                        { name: "Rejected", value: stats.rejected.length },
+                      ]}
+                    />
+                    <CountBarChart title="Emergencies by type" data={stats.types} />
+                    <CountBarChart title="Emergencies by severity" data={stats.severities} />
+                    <CountBarChart title="Registrations per day" data={stats.signups} />
+                  </div>
+                </>
+              )}
+
+              {tab === "settings" && (
+                <section className="glass-panel space-y-5 rounded-3xl p-6">
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">Approval policy</h2>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Every new RESQORA account is created as <strong>pending</strong>. Pending
+                      accounts can only reach their profile, the About page and support — emergency
+                      SOS, accident reporting, RESQ AI, RESQR ID, medical profile, guardian, nearby
+                      services, history and contacts stay locked until you approve them.
                     </p>
                   </div>
-                  <StatusIndicator
-                    status={
-                      item.status === "resolved"
-                        ? "safe"
-                        : item.status === "cancelled"
-                          ? "offline"
-                          : "critical"
-                    }
-                    label={statusLabel(item.status)}
-                  />
-                </li>
-              ))}
-          </ul>
-        )}
-      </section>
+                  <div className="rounded-2xl border border-border bg-card/60 p-4">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Super administrator
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">{SUPER_ADMIN_EMAIL}</p>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      This address receives the admin role automatically on sign-up. Every other
+                      account is a normal user, and admin routes are enforced by database policies —
+                      not just by hiding menu items.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-card/60 p-4">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Signed in as
+                    </p>
+                    <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-foreground">
+                      <UserRound className="size-4" aria-hidden="true" />
+                      {user?.email}
+                      <ApprovalBadge status="approved" />
+                    </p>
+                  </div>
+                </section>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function userLabel(users: AdminUser[], userId: string) {
+  const match = users.find((u) => u.id === userId);
+  return match?.full_name || match?.email || `${userId.slice(0, 8)}…`;
+}
+
+function EmergencyRecords({
+  rows,
+  users,
+  title,
+}: {
+  rows: AdminEmergency[];
+  users: AdminUser[];
+  title: string;
+}) {
+  const columns: RecordColumn<AdminEmergency>[] = [
+    {
+      key: "user",
+      label: "User",
+      render: (row) => <span className="font-medium">{userLabel(users, row.user_id)}</span>,
+      text: (row) => userLabel(users, row.user_id),
+    },
+    {
+      key: "type",
+      label: "Type / severity",
+      render: (row) => (
+        <span className="capitalize">
+          {row.type} · {row.severity}
+        </span>
+      ),
+      text: (row) => `${row.type} ${row.severity}`,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (row) => (
+        <StatusIndicator
+          status={
+            row.status === "resolved" ? "safe" : row.status === "cancelled" ? "offline" : "critical"
+          }
+          label={statusLabel(row.status)}
+        />
+      ),
+      text: (row) => row.status,
+    },
+    {
+      key: "location",
+      label: "Location",
+      render: (row) => (
+        <span className="text-muted-foreground">
+          {row.address ??
+            (row.latitude != null && row.longitude != null
+              ? `${row.latitude.toFixed(3)}, ${row.longitude.toFixed(3)}`
+              : "No GPS")}
+        </span>
+      ),
+      text: (row) => row.address ?? "",
+    },
+    {
+      key: "started",
+      label: "Started",
+      render: (row) => (
+        <span className="text-muted-foreground">{new Date(row.started_at).toLocaleString()}</span>
+      ),
+      text: (row) => new Date(row.started_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <RecordsTable
+      rows={rows}
+      columns={columns}
+      searchPlaceholder="Search by user, type, status or address"
+      emptyTitle={`No ${title} recorded`}
+      emptyDescription="Records appear here as soon as members use RESQORA."
+    />
+  );
+}
+
+function MedAiRecords({ rows, users }: { rows: AdminMedAiLog[]; users: AdminUser[] }) {
+  const columns: RecordColumn<AdminMedAiLog>[] = [
+    {
+      key: "user",
+      label: "User",
+      render: (row) => <span className="font-medium">{userLabel(users, row.user_id)}</span>,
+      text: (row) => userLabel(users, row.user_id),
+    },
+    { key: "title", label: "Consultation", render: (row) => row.title, text: (row) => row.title },
+    {
+      key: "urgency",
+      label: "Urgency / specialist",
+      render: (row) => (
+        <span className="capitalize text-muted-foreground">
+          {row.urgency ?? "—"} · {row.specialist ?? "—"}
+        </span>
+      ),
+      text: (row) => `${row.urgency ?? ""} ${row.specialist ?? ""}`,
+    },
+    {
+      key: "language",
+      label: "Language",
+      render: (row) => <span className="uppercase text-muted-foreground">{row.language}</span>,
+      text: (row) => row.language,
+    },
+    {
+      key: "created",
+      label: "When",
+      render: (row) => (
+        <span className="text-muted-foreground">{new Date(row.created_at).toLocaleString()}</span>
+      ),
+      text: (row) => new Date(row.created_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <RecordsTable
+      rows={rows}
+      columns={columns}
+      searchPlaceholder="Search AI consultations"
+      emptyTitle="No medical AI consultations yet"
+      emptyDescription="RESQ AI and MedAI sessions are listed here as members use them."
+    />
+  );
+}
+
+function ScanRecords({
+  activity,
+  resqr,
+  users,
+}: {
+  activity: AdminActivity[];
+  resqr: AdminResqrId[];
+  users: AdminUser[];
+}) {
+  const columns: RecordColumn<AdminActivity>[] = [
+    {
+      key: "user",
+      label: "User",
+      render: (row) => <span className="font-medium">{userLabel(users, row.user_id)}</span>,
+      text: (row) => userLabel(users, row.user_id),
+    },
+    { key: "action", label: "Event", render: (row) => row.action, text: (row) => row.action },
+    {
+      key: "detail",
+      label: "Detail",
+      render: (row) => <span className="text-muted-foreground">{row.detail ?? "—"}</span>,
+      text: (row) => row.detail ?? "",
+    },
+    {
+      key: "created",
+      label: "When",
+      render: (row) => (
+        <span className="text-muted-foreground">{new Date(row.created_at).toLocaleString()}</span>
+      ),
+      text: (row) => new Date(row.created_at).toLocaleString(),
+    },
+  ];
+
+  return (
+    <>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <StatCard icon={QrCode} label="Scan events" value={String(activity.length)} />
+        <StatCard icon={Activity} label="Issued RESQR IDs" value={String(resqr.length)} />
+        <StatCard
+          icon={ShieldCheck}
+          label="Active RESQR IDs"
+          value={String(resqr.filter((item) => item.active).length)}
+        />
+      </div>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+        <RecordsTable
+          rows={activity}
+          columns={columns}
+          searchPlaceholder="Search QR scan events"
+          emptyTitle="No QR scans recorded"
+          emptyDescription="RESQR ID scans made by signed-in members appear here."
+        />
+      </motion.div>
     </>
   );
 }

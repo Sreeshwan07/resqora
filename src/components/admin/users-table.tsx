@@ -1,0 +1,200 @@
+import { useMemo, useState } from "react";
+import { Check, Eye, Search, UserRound, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ApprovalBadge } from "@/components/admin/status-badge";
+import { EmptyState } from "@/components/system/empty-state";
+import type { AdminUser } from "@/lib/admin";
+import type { ApprovalStatus } from "@/lib/access";
+
+type Filter = "all" | ApprovalStatus;
+
+export function UsersTable({
+  users,
+  filter: fixedFilter,
+  busyId,
+  onSetStatus,
+  emptyLabel,
+}: {
+  users: AdminUser[];
+  /** When set the status filter is locked to this value (Pending / Approved views). */
+  filter?: ApprovalStatus;
+  busyId: string | null;
+  onSetStatus: (user: AdminUser, status: ApprovalStatus) => void;
+  emptyLabel: string;
+}) {
+  const [term, setTerm] = useState("");
+  const [filter, setFilter] = useState<Filter>(fixedFilter ?? "all");
+  const [viewing, setViewing] = useState<AdminUser | null>(null);
+
+  const effectiveFilter: Filter = fixedFilter ?? filter;
+
+  const rows = useMemo(() => {
+    const needle = term.trim().toLowerCase();
+    return users.filter((user) => {
+      if (effectiveFilter !== "all" && user.approval_status !== effectiveFilter) return false;
+      if (!needle) return true;
+      return [user.full_name, user.email, user.phone, user.current_city]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(needle));
+    });
+  }, [users, term, effectiveFilter]);
+
+  return (
+    <section className="glass-panel rounded-3xl p-5">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="relative min-w-0 flex-1">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            value={term}
+            onChange={(event) => setTerm(event.target.value)}
+            placeholder="Search name, email, phone or city"
+            aria-label="Search users"
+            className="rounded-2xl pl-9"
+          />
+        </div>
+        {!fixedFilter && (
+          <div className="flex gap-1 rounded-2xl bg-muted p-1">
+            {(["all", "pending", "approved", "rejected"] as Filter[]).map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => setFilter(option)}
+                className={`rounded-xl px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
+                  filter === option
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        )}
+        <span className="text-xs text-muted-foreground">{rows.length} shown</span>
+      </div>
+
+      {rows.length === 0 ? (
+        <div className="mt-5">
+          <EmptyState icon={UserRound} title={emptyLabel} description="Nothing matches this view yet." />
+        </div>
+      ) : (
+        <ul className="mt-5 space-y-3">
+          {rows.map((user) => (
+            <li
+              key={user.id}
+              className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card/60 p-4"
+            >
+              {user.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt={`${user.full_name || "User"} profile photo`}
+                  className="size-11 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                  {(user.full_name || user.email || "?").slice(0, 1).toUpperCase()}
+                </span>
+              )}
+
+              <div className="min-w-[180px] flex-1">
+                <p className="truncate text-sm font-semibold text-foreground">
+                  {user.full_name || "Unnamed user"}
+                </p>
+                <p className="truncate text-xs text-muted-foreground">{user.email ?? "No email"}</p>
+                <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  {user.phone || "No phone"} · registered{" "}
+                  {new Date(user.created_at).toLocaleDateString()}
+                </p>
+              </div>
+
+              <ApprovalBadge status={user.approval_status} />
+
+              <div className="flex flex-wrap gap-2">
+                {user.approval_status !== "approved" && (
+                  <Button
+                    size="sm"
+                    className="rounded-xl"
+                    disabled={busyId === user.id}
+                    onClick={() => onSetStatus(user, "approved")}
+                  >
+                    <Check className="size-4" />
+                    Approve
+                  </Button>
+                )}
+                {user.approval_status !== "rejected" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    disabled={busyId === user.id}
+                    onClick={() => onSetStatus(user, "rejected")}
+                  >
+                    <X className="size-4" />
+                    Reject
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-xl"
+                  onClick={() => setViewing(user)}
+                >
+                  <Eye className="size-4" />
+                  View profile
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Dialog open={Boolean(viewing)} onOpenChange={(open) => !open && setViewing(null)}>
+        <DialogContent className="rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>{viewing?.full_name || "Unnamed user"}</DialogTitle>
+            <DialogDescription>{viewing?.email ?? "No email on record"}</DialogDescription>
+          </DialogHeader>
+          {viewing && (
+            <dl className="grid gap-3 text-sm sm:grid-cols-2">
+              <Field label="Phone" value={viewing.phone} />
+              <Field label="City" value={viewing.current_city} />
+              <Field label="Blood group" value={viewing.blood_group} />
+              <Field label="Onboarding" value={viewing.onboarding_completed ? "Complete" : "Incomplete"} />
+              <Field label="Registered" value={new Date(viewing.created_at).toLocaleString()} />
+              <Field
+                label="Approved at"
+                value={viewing.approved_at ? new Date(viewing.approved_at).toLocaleString() : null}
+              />
+              <div className="sm:col-span-2">
+                <dt className="text-xs uppercase tracking-wide text-muted-foreground">Status</dt>
+                <dd className="mt-1">
+                  <ApprovalBadge status={viewing.approval_status} />
+                </dd>
+              </div>
+            </dl>
+          )}
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
+
+function Field({ label, value }: { label: string; value: string | null }) {
+  return (
+    <div>
+      <dt className="text-xs uppercase tracking-wide text-muted-foreground">{label}</dt>
+      <dd className="mt-1 truncate text-foreground">{value || "—"}</dd>
+    </div>
+  );
+}

@@ -1,9 +1,13 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { Lock } from "lucide-react";
 import { mobileNav } from "@/lib/navigation";
+import { isUnrestrictedPath } from "@/lib/access";
+import { useAccess } from "@/hooks/use-access";
 import { cn } from "@/lib/utils";
 
 export function MobileNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const access = useAccess();
 
   return (
     <nav
@@ -14,6 +18,25 @@ export function MobileNav() {
         {mobileNav.map((item) => {
           const active = pathname === item.to;
           const isEmergency = item.to === "/emergency";
+          const locked = !access.approved && !isUnrestrictedPath(item.to);
+          if (locked) {
+            return (
+              <li key={item.to} className="flex-1">
+                <span
+                  aria-disabled="true"
+                  title={`${item.label} — awaiting administrator approval`}
+                  className={cn(
+                    "relative flex min-h-14 min-w-11 cursor-not-allowed flex-col items-center justify-center gap-1 rounded-xl py-2 text-[11px] font-medium text-muted-foreground/50",
+                    isEmergency && "mx-auto -mt-5 rounded-2xl bg-muted text-muted-foreground",
+                  )}
+                >
+                  <item.icon className={cn("size-5", isEmergency && "size-6")} aria-hidden="true" />
+                  <span>{item.label}</span>
+                  <Lock className="absolute right-1 top-1 size-3" aria-hidden="true" />
+                </span>
+              </li>
+            );
+          }
           if (isEmergency) {
             return (
               <li key={item.to} className="flex-1">
