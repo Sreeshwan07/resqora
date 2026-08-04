@@ -59,6 +59,42 @@ export type AdminResqrId = {
   updated_at: string;
 };
 
+export type AdminDelivery = {
+  id: string;
+  user_id: string;
+  emergency_id: string;
+  contact_name: string;
+  contact_email: string | null;
+  contact_phone: string | null;
+  channel: string;
+  kind: string;
+  status: string;
+  error: string | null;
+  sent_at: string | null;
+  created_at: string;
+};
+
+export type AdminPushToken = {
+  id: string;
+  user_id: string;
+  platform: string;
+  user_agent: string | null;
+  active: boolean;
+  last_seen_at: string;
+  created_at: string;
+};
+
+export type AdminSecurityEvent = {
+  id: string;
+  user_id: string | null;
+  event: string;
+  detail: string | null;
+  user_agent: string | null;
+  created_at: string;
+};
+
+export type AdminRole = { user_id: string; role: string };
+
 /** Every record the admin dashboard renders. Read under the admin RLS policies — never mock data. */
 export const adminDataQuery = () =>
   queryOptions({
@@ -95,7 +131,27 @@ export const adminDataQuery = () =>
           .order("created_at", { ascending: false })
           .limit(300),
       ]);
-      for (const result of [users, emergencies, activity, medai, resqr]) {
+      const [deliveries, pushTokens, security, roles] = await Promise.all([
+        supabase
+          .from("emergency_alert_deliveries")
+          .select(
+            "id, user_id, emergency_id, contact_name, contact_email, contact_phone, channel, kind, status, error, sent_at, created_at",
+          )
+          .order("created_at", { ascending: false })
+          .limit(400),
+        supabase
+          .from("push_tokens")
+          .select("id, user_id, platform, user_agent, active, last_seen_at, created_at")
+          .order("last_seen_at", { ascending: false })
+          .limit(300),
+        supabase
+          .from("security_events")
+          .select("id, user_id, event, detail, user_agent, created_at")
+          .order("created_at", { ascending: false })
+          .limit(400),
+        supabase.from("user_roles").select("user_id, role"),
+      ]);
+      for (const result of [users, emergencies, activity, medai, resqr, deliveries, pushTokens, security, roles]) {
         if (result.error) throw new Error(result.error.message);
       }
       return {
@@ -104,9 +160,21 @@ export const adminDataQuery = () =>
         activity: (activity.data ?? []) as AdminActivity[],
         medai: (medai.data ?? []) as AdminMedAiLog[],
         resqr: (resqr.data ?? []) as AdminResqrId[],
+        deliveries: (deliveries.data ?? []) as AdminDelivery[],
+        pushTokens: (pushTokens.data ?? []) as AdminPushToken[],
+        security: (security.data ?? []) as AdminSecurityEvent[],
+        roles: (roles.data ?? []) as AdminRole[],
       };
     },
   });
+
+/** Highest role held by each account, used for the Role column in User Management. */
+export function roleFor(roles: AdminRole[], userId: string) {
+  const held = roles.filter((row) => row.user_id === userId).map((row) => row.role);
+  if (held.includes("admin")) return "Super admin";
+  if (held.includes("guardian")) return "Guardian";
+  return "User";
+}
 
 /**
  * Approves or rejects an account. The database trigger stamps approved_by /
