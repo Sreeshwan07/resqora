@@ -9,6 +9,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ApprovalBadge } from "@/components/admin/status-badge";
 import { EmptyState } from "@/components/system/empty-state";
 import type { AdminUser } from "@/lib/admin";
@@ -33,6 +43,9 @@ export function UsersTable({
   const [term, setTerm] = useState("");
   const [filter, setFilter] = useState<Filter>(fixedFilter ?? "all");
   const [viewing, setViewing] = useState<AdminUser | null>(null);
+  const [confirming, setConfirming] = useState<{ user: AdminUser; status: ApprovalStatus } | null>(
+    null,
+  );
 
   const effectiveFilter: Filter = fixedFilter ?? filter;
 
@@ -126,7 +139,7 @@ export function UsersTable({
                     size="sm"
                     className="rounded-xl"
                     disabled={busyId === user.id}
-                    onClick={() => onSetStatus(user, "approved")}
+                    onClick={() => setConfirming({ user, status: "approved" })}
                   >
                     <Check className="size-4" />
                     Approve
@@ -138,7 +151,7 @@ export function UsersTable({
                     variant="outline"
                     className="rounded-xl"
                     disabled={busyId === user.id}
-                    onClick={() => onSetStatus(user, "rejected")}
+                    onClick={() => setConfirming({ user, status: "rejected" })}
                   >
                     <X className="size-4" />
                     Reject
@@ -158,6 +171,33 @@ export function UsersTable({
           ))}
         </ul>
       )}
+
+      <AlertDialog open={Boolean(confirming)} onOpenChange={(open) => !open && setConfirming(null)}>
+        <AlertDialogContent className="rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirming?.status === "approved" ? "Approve this account?" : "Reject this account?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirming?.status === "approved"
+                ? `${confirming?.user.full_name || confirming?.user.email} will immediately unlock SOS, accident reporting, RESQ AI, RESQR ID, medical profile, contacts, guardian, history and nearby services.`
+                : `${confirming?.user.full_name || confirming?.user.email} will keep basic access only and will see the rejection notice on sign-in.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-2xl"
+              onClick={() => {
+                if (confirming) onSetStatus(confirming.user, confirming.status);
+                setConfirming(null);
+              }}
+            >
+              {confirming?.status === "approved" ? "Approve" : "Reject"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={Boolean(viewing)} onOpenChange={(open) => !open && setViewing(null)}>
         <DialogContent className="rounded-3xl">
