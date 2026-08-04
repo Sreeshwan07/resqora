@@ -34,6 +34,7 @@ import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
 import { Route as AppProfileRouteImport } from './routes/_app.profile'
 import { Route as AppReportRouteImport } from './routes/_app.report'
+import { Route as AppResqAiRouteImport } from './routes/_app.resq-ai'
 import { Route as AppResqrIdRouteImport } from './routes/_app.resqr-id'
 import { Route as AppScanRouteImport } from './routes/_app.scan'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
@@ -168,6 +169,11 @@ const AppReportRoute = AppReportRouteImport.update({
   path: '/report',
   getParentRoute: () => AppRoute,
 } as any)
+const AppResqAiRoute = AppResqAiRouteImport.update({
+  id: '/resq-ai',
+  path: '/resq-ai',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppResqrIdRoute = AppResqrIdRouteImport.update({
   id: '/resqr-id',
   path: '/resqr-id',
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
+  '/resq-ai': typeof AppResqAiRoute
   '/resqr-id': typeof AppResqrIdRoute
   '/scan': typeof AppScanRoute
   '/settings': typeof AppSettingsRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AppNotificationsRoute
   '/profile': typeof AppProfileRoute
   '/report': typeof AppReportRoute
+  '/resq-ai': typeof AppResqAiRoute
   '/resqr-id': typeof AppResqrIdRoute
   '/scan': typeof AppScanRoute
   '/settings': typeof AppSettingsRoute
@@ -312,6 +320,7 @@ export interface FileRoutesById {
   '/_app/notifications': typeof AppNotificationsRoute
   '/_app/profile': typeof AppProfileRoute
   '/_app/report': typeof AppReportRoute
+  '/_app/resq-ai': typeof AppResqAiRoute
   '/_app/resqr-id': typeof AppResqrIdRoute
   '/_app/scan': typeof AppScanRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -349,6 +358,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/report'
+    | '/resq-ai'
     | '/resqr-id'
     | '/scan'
     | '/settings'
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/profile'
     | '/report'
+    | '/resq-ai'
     | '/resqr-id'
     | '/scan'
     | '/settings'
@@ -420,6 +431,7 @@ export interface FileRouteTypes {
     | '/_app/notifications'
     | '/_app/profile'
     | '/_app/report'
+    | '/_app/resq-ai'
     | '/_app/resqr-id'
     | '/_app/scan'
     | '/_app/settings'
@@ -622,6 +634,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppReportRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/resq-ai': {
+      id: '/_app/resq-ai'
+      path: '/resq-ai'
+      fullPath: '/resq-ai'
+      preLoaderRoute: typeof AppResqAiRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/resqr-id': {
       id: '/_app/resqr-id'
       path: '/resqr-id'
@@ -708,6 +727,7 @@ interface AppRouteChildren {
   AppNotificationsRoute: typeof AppNotificationsRoute
   AppProfileRoute: typeof AppProfileRoute
   AppReportRoute: typeof AppReportRoute
+  AppResqAiRoute: typeof AppResqAiRoute
   AppResqrIdRoute: typeof AppResqrIdRoute
   AppScanRoute: typeof AppScanRoute
   AppSettingsRoute: typeof AppSettingsRoute
@@ -734,6 +754,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppNotificationsRoute: AppNotificationsRoute,
   AppProfileRoute: AppProfileRoute,
   AppReportRoute: AppReportRoute,
+  AppResqAiRoute: AppResqAiRoute,
   AppResqrIdRoute: AppResqrIdRoute,
   AppScanRoute: AppScanRoute,
   AppSettingsRoute: AppSettingsRoute,
