@@ -565,6 +565,9 @@ export type Database = {
       profiles: {
         Row: {
           allergies: string | null
+          approval_status: Database["public"]["Enums"]["approval_status"]
+          approved_at: string | null
+          approved_by: string | null
           avatar_url: string | null
           blood_group: string | null
           crash_detection: boolean
@@ -594,6 +597,9 @@ export type Database = {
         }
         Insert: {
           allergies?: string | null
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           blood_group?: string | null
           crash_detection?: boolean
@@ -623,6 +629,9 @@ export type Database = {
         }
         Update: {
           allergies?: string | null
+          approval_status?: Database["public"]["Enums"]["approval_status"]
+          approved_at?: string | null
+          approved_by?: string | null
           avatar_url?: string | null
           blood_group?: string | null
           crash_detection?: boolean
@@ -914,6 +923,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "guardian"
+      approval_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1042,6 +1052,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "guardian"],
+      approval_status: ["pending", "approved", "rejected"],
     },
   },
 } as const

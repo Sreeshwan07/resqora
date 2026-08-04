@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { ChevronDown, PanelLeftClose, PanelLeftOpen, Siren } from "lucide-react";
+import { ChevronDown, Lock, PanelLeftClose, PanelLeftOpen, ShieldCheck, Siren } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
-import { navSections, supportNav } from "@/lib/navigation";
+import { adminNav, navSections, supportNav } from "@/lib/navigation";
+import { isUnrestrictedPath } from "@/lib/access";
+import { useAccess } from "@/hooks/use-access";
 import { cn } from "@/lib/utils";
 
 export function AppSidebar({
@@ -14,7 +16,9 @@ export function AppSidebar({
   onToggle: () => void;
 }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const access = useAccess();
   const [openSections, setOpenSections] = useState<string[]>(navSections.map((s) => s.title));
+  const isLocked = (to: string) => !access.approved && !isUnrestrictedPath(to);
 
   const toggleSection = (title: string) =>
     setOpenSections((prev) =>
@@ -79,6 +83,29 @@ export function AppSidebar({
                 <ul className="mt-1 space-y-1">
                   {section.items.map((item) => {
                     const active = pathname === item.to;
+                    const locked = isLocked(item.to);
+                    if (locked) {
+                      return (
+                        <li key={item.to}>
+                          <span
+                            aria-disabled="true"
+                            title={`${item.label} — awaiting administrator approval`}
+                            className={cn(
+                              "flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground/50",
+                              collapsed && "justify-center px-0",
+                            )}
+                          >
+                            <item.icon className="size-5 shrink-0" aria-hidden="true" />
+                            {!collapsed && (
+                              <>
+                                <span className="truncate">{item.label}</span>
+                                <Lock className="ml-auto size-3.5 shrink-0" aria-hidden="true" />
+                              </>
+                            )}
+                          </span>
+                        </li>
+                      );
+                    }
                     return (
                       <li key={item.to}>
                         <Link
@@ -106,10 +133,34 @@ export function AppSidebar({
       </nav>
 
       <div className="space-y-3">
+        {access.isAdmin && (
+          <Link
+            to={adminNav.to}
+            className={cn(
+              "flex items-center gap-3 rounded-xl bg-primary/10 px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/15",
+              collapsed && "justify-center px-0",
+            )}
+            title={collapsed ? "Admin dashboard" : undefined}
+          >
+            <ShieldCheck className="size-5 shrink-0" aria-hidden="true" />
+            {!collapsed && <span className="truncate">Admin dashboard</span>}
+          </Link>
+        )}
         {!collapsed && (
           <ul className="space-y-1">
             {supportNav.map((item) => (
               <li key={item.label}>
+                {isLocked(item.to) ? (
+                  <span
+                    aria-disabled="true"
+                    title={`${item.label} — awaiting administrator approval`}
+                    className="flex cursor-not-allowed items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground/50"
+                  >
+                    <item.icon className="size-4 shrink-0" aria-hidden="true" />
+                    <span className="truncate">{item.label}</span>
+                    <Lock className="ml-auto size-3.5 shrink-0" aria-hidden="true" />
+                  </span>
+                ) : (
                 <Link
                   to={item.to}
                   className="flex items-center gap-3 rounded-xl px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
@@ -117,16 +168,29 @@ export function AppSidebar({
                   <item.icon className="size-4 shrink-0" aria-hidden="true" />
                   <span className="truncate">{item.label}</span>
                 </Link>
+                )}
               </li>
             ))}
           </ul>
         )}
-        <Button asChild variant="emergency" className={cn("w-full", collapsed && "px-0")}>
-          <Link to="/emergency">
-            <Siren className="size-4" />
-            {!collapsed && <span>Emergency</span>}
-          </Link>
-        </Button>
+        {access.approved ? (
+          <Button asChild variant="emergency" className={cn("w-full", collapsed && "px-0")}>
+            <Link to="/emergency">
+              <Siren className="size-4" />
+              {!collapsed && <span>Emergency</span>}
+            </Link>
+          </Button>
+        ) : (
+          <Button
+            variant="emergency"
+            disabled
+            className={cn("w-full opacity-60", collapsed && "px-0")}
+            title="Emergency SOS unlocks once an administrator approves your account"
+          >
+            <Lock className="size-4" />
+            {!collapsed && <span>Locked</span>}
+          </Button>
+        )}
       </div>
     </aside>
   );

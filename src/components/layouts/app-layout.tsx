@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/layouts/app-sidebar";
 import { AppTopbar } from "@/components/layouts/app-topbar";
 import { MobileNav } from "@/components/layouts/mobile-nav";
+import { ApprovalGate } from "@/components/system/approval-gate";
 import { GlobalSosButton } from "@/components/resqora/global-sos";
 import { LiveEmergencyWidget } from "@/components/resqora/live-emergency-widget";
 import { LiveLocationCard } from "@/components/resqora/live-location-card";
@@ -13,8 +14,10 @@ import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { PushRegistrar } from "@/components/pwa/push-registrar";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useAuth } from "@/hooks/use-auth";
+import { useAccess } from "@/hooks/use-access";
 import { useSosTheme } from "@/hooks/use-sos-theme";
 import { contactsQuery, profileQuery } from "@/lib/api";
+import { isUnrestrictedPath } from "@/lib/access";
 import { saveOfflineSnapshot } from "@/lib/offline-cache";
 import { ensureNotificationPermission } from "@/lib/emergency-notifications";
 
@@ -24,10 +27,13 @@ export function AppLayout({ children }: { children: ReactNode }) {
   useSosTheme();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
+  const access = useAccess();
   const profile = useQuery(profileQuery(user?.id));
   const contacts = useQuery(contactsQuery(user?.id));
+  // Not-yet-approved accounts see the approval notice instead of protected features.
+  const locked = !access.loading && !access.approved && !isUnrestrictedPath(pathname);
   // /live renders its own detailed live-location panel — avoid showing it twice.
-  const showLocationCard = !pathname.startsWith("/live");
+  const showLocationCard = !pathname.startsWith("/live") && !locked && access.approved;
 
   // Ask for notification permission once, then keep an offline copy of the
   // medical ID + trusted contacts so they work with no connectivity.
@@ -61,14 +67,18 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 resolvingAddress={resolvingAddress}
               />
             )}
-            {children}
+            {locked ? <ApprovalGate status={access.status} /> : children}
           </motion.div>
         </main>
       </div>
       <MobileNav />
-      <LocationGate />
-      <GlobalSosButton />
-      <LiveEmergencyWidget />
+      {access.approved && (
+        <>
+          <LocationGate />
+          <GlobalSosButton />
+          <LiveEmergencyWidget />
+        </>
+      )}
       <InstallPrompt />
       <PushRegistrar />
     </div>

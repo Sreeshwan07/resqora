@@ -14,9 +14,11 @@ import { CompactNearestServices } from "@/components/landing/compact-nearest-ser
 import { RecentActivityFeed } from "@/components/landing/recent-activity-feed";
 import { MobileNav } from "@/components/layouts/mobile-nav";
 import { LocationGate } from "@/components/resqora/location-gate";
+import { ApprovalGate } from "@/components/system/approval-gate";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { useAuth } from "@/hooks/use-auth";
+import { useAccess } from "@/hooks/use-access";
 import { useSosTheme } from "@/hooks/use-sos-theme";
 import { activeEmergencyQuery } from "@/lib/api";
 
@@ -44,6 +46,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { user } = useAuth();
+  const access = useAccess();
   useSosTheme();
   const { position, address, denied, resolvingAddress } = useLivePosition();
   const active = useQuery(activeEmergencyQuery(user?.id));
@@ -65,6 +68,8 @@ function Index() {
         ? "coordinating"
         : "active";
 
+  const locked = !access.loading && !access.approved;
+
   return (
     <div className="min-h-dvh bg-background">
       <LandingNav />
@@ -72,30 +77,36 @@ function Index() {
         <div className="mx-auto w-full max-w-5xl space-y-5 px-4 pb-28 pt-5 sm:space-y-7 sm:px-6 sm:py-8 lg:pb-10">
           <h1 className="sr-only">RESQORA — Every Second Matters. Every Life Connected.</h1>
 
-          <EmergencyStatusCard
-            status={status}
-            now={now}
-            position={position}
-            address={address}
-            resolvingAddress={resolvingAddress}
-            denied={denied}
-          />
+          {locked ? (
+            <ApprovalGate status={access.status} />
+          ) : (
+            <>
+              <EmergencyStatusCard
+                status={status}
+                now={now}
+                position={position}
+                address={address}
+                resolvingAddress={resolvingAddress}
+                denied={denied}
+              />
 
-          <EmergencyConsole />
+              <EmergencyConsole />
 
-          <QuickActions />
+              <QuickActions />
 
-          <CompactNearestServices nearby={nearby} />
+              <CompactNearestServices nearby={nearby} />
 
-          <EmergencyContactsCard
-            notified={Boolean(emergency && emergency.status !== "created")}
-          />
+              <EmergencyContactsCard
+                notified={Boolean(emergency && emergency.status !== "created")}
+              />
 
-          <RecentActivityFeed />
+              <RecentActivityFeed />
+            </>
+          )}
         </div>
       </main>
       <SiteFooter />
-      <LocationGate />
+      {!locked && <LocationGate />}
       <MobileNav />
     </div>
   );

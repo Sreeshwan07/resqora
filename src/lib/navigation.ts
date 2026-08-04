@@ -23,6 +23,7 @@ import {
   Stethoscope,
   QrCode,
   ScanLine,
+  LifeBuoy,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -75,7 +76,14 @@ export const adminNav: NavItem = {
   label: "Admin",
   to: "/admin",
   icon: Gauge,
-  description: "Platform analytics",
+  description: "Approvals, reports & analytics",
+};
+
+export const supportPageNav: NavItem = {
+  label: "Contact support",
+  to: "/support",
+  icon: LifeBuoy,
+  description: "Approval help & account questions",
 };
 
 export const checkinsNav: NavItem = {
@@ -199,6 +207,7 @@ export const navSections: NavSection[] = [
       { label: "Settings", to: "/settings", icon: Settings, description: "Preferences" },
       emailDiagnosticsNav,
       { label: "About", to: "/about", icon: Info, description: "How RESQORA works" },
+      supportPageNav,
     ],
   },
 ];

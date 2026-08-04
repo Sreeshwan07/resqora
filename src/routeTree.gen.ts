@@ -39,6 +39,7 @@ import { Route as AppResqrIdRouteImport } from './routes/_app.resqr-id'
 import { Route as AppScanRouteImport } from './routes/_app.scan'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppShareCenterRouteImport } from './routes/_app.share-center'
+import { Route as AppSupportRouteImport } from './routes/_app.support'
 import { Route as MTokenRouteImport } from './routes/m.$token'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 import { Route as STokenRouteImport } from './routes/s.$token'
@@ -194,6 +195,11 @@ const AppShareCenterRoute = AppShareCenterRouteImport.update({
   path: '/share-center',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSupportRoute = AppSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AppRoute,
+} as any)
 const MTokenRoute = MTokenRouteImport.update({
   id: '/m/$token',
   path: '/m/$token',
@@ -251,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/scan': typeof AppScanRoute
   '/settings': typeof AppSettingsRoute
   '/share-center': typeof AppShareCenterRoute
+  '/support': typeof AppSupportRoute
   '/m/$token': typeof MTokenRoute
   '/r/$code': typeof RCodeRoute
   '/s/$token': typeof STokenRoute
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/scan': typeof AppScanRoute
   '/settings': typeof AppSettingsRoute
   '/share-center': typeof AppShareCenterRoute
+  '/support': typeof AppSupportRoute
   '/m/$token': typeof MTokenRoute
   '/r/$code': typeof RCodeRoute
   '/s/$token': typeof STokenRoute
@@ -325,6 +333,7 @@ export interface FileRoutesById {
   '/_app/scan': typeof AppScanRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/share-center': typeof AppShareCenterRoute
+  '/_app/support': typeof AppSupportRoute
   '/m/$token': typeof MTokenRoute
   '/r/$code': typeof RCodeRoute
   '/s/$token': typeof STokenRoute
@@ -363,6 +372,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/share-center'
+    | '/support'
     | '/m/$token'
     | '/r/$code'
     | '/s/$token'
@@ -399,6 +409,7 @@ export interface FileRouteTypes {
     | '/scan'
     | '/settings'
     | '/share-center'
+    | '/support'
     | '/m/$token'
     | '/r/$code'
     | '/s/$token'
@@ -436,6 +447,7 @@ export interface FileRouteTypes {
     | '/_app/scan'
     | '/_app/settings'
     | '/_app/share-center'
+    | '/_app/support'
     | '/m/$token'
     | '/r/$code'
     | '/s/$token'
@@ -669,6 +681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppShareCenterRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/support': {
+      id: '/_app/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof AppSupportRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/m/$token': {
       id: '/m/$token'
       path: '/m/$token'
@@ -732,6 +751,7 @@ interface AppRouteChildren {
   AppScanRoute: typeof AppScanRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppShareCenterRoute: typeof AppShareCenterRoute
+  AppSupportRoute: typeof AppSupportRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -759,6 +779,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppScanRoute: AppScanRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppShareCenterRoute: AppShareCenterRoute,
+  AppSupportRoute: AppSupportRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -779,13 +800,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
