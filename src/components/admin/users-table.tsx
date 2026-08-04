@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Check, Eye, Search, UserRound, X } from "lucide-react";
+import { Ban, Check, ChevronLeft, ChevronRight, Eye, Search, Trash2, UserRound, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,28 +21,37 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ApprovalBadge } from "@/components/admin/status-badge";
 import { EmptyState } from "@/components/system/empty-state";
-import type { AdminUser } from "@/lib/admin";
+import type { AdminRole, AdminUser } from "@/lib/admin";
+import { roleFor } from "@/lib/admin";
 import type { ApprovalStatus } from "@/lib/access";
 
 type Filter = "all" | ApprovalStatus;
 
+const PAGE_SIZE = 10;
+
 export function UsersTable({
   users,
+  roles = [],
   filter: fixedFilter,
   busyId,
   onSetStatus,
+  onDelete,
   emptyLabel,
 }: {
   users: AdminUser[];
+  roles?: AdminRole[];
   /** When set the status filter is locked to this value (Pending / Approved views). */
   filter?: ApprovalStatus;
   busyId: string | null;
   onSetStatus: (user: AdminUser, status: ApprovalStatus) => void;
+  onDelete?: (user: AdminUser) => void;
   emptyLabel: string;
 }) {
   const [term, setTerm] = useState("");
   const [filter, setFilter] = useState<Filter>(fixedFilter ?? "all");
   const [viewing, setViewing] = useState<AdminUser | null>(null);
+  const [page, setPage] = useState(0);
+  const [deleting, setDeleting] = useState<AdminUser | null>(null);
   const [confirming, setConfirming] = useState<{ user: AdminUser; status: ApprovalStatus } | null>(
     null,
   );
@@ -60,6 +69,10 @@ export function UsersTable({
     });
   }, [users, term, effectiveFilter]);
 
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const current = Math.min(page, pageCount - 1);
+  const paged = rows.slice(current * PAGE_SIZE, current * PAGE_SIZE + PAGE_SIZE);
+
   return (
     <section className="glass-panel rounded-3xl p-5">
       <div className="flex flex-wrap items-center gap-3">
@@ -70,7 +83,10 @@ export function UsersTable({
           />
           <Input
             value={term}
-            onChange={(event) => setTerm(event.target.value)}
+            onChange={(event) => {
+              setTerm(event.target.value);
+              setPage(0);
+            }}
             placeholder="Search name, email, phone or city"
             aria-label="Search users"
             className="rounded-2xl pl-9"
@@ -82,7 +98,10 @@ export function UsersTable({
               <button
                 key={option}
                 type="button"
-                onClick={() => setFilter(option)}
+                onClick={() => {
+                  setFilter(option);
+                  setPage(0);
+                }}
                 className={`rounded-xl px-3 py-1.5 text-xs font-semibold capitalize transition-colors ${
                   filter === option
                     ? "bg-card text-foreground shadow-sm"
@@ -103,7 +122,7 @@ export function UsersTable({
         </div>
       ) : (
         <ul className="mt-5 space-y-3">
-          {rows.map((user) => (
+          {paged.map((user) => (
             <li
               key={user.id}
               className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card/60 p-4"
@@ -131,6 +150,9 @@ export function UsersTable({
                 </p>
               </div>
 
+              <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                {roleFor(roles, user.id)}
+              </span>
               <ApprovalBadge status={user.approval_status} />
 
               <div className="flex flex-wrap gap-2">
@@ -146,16 +168,30 @@ export function UsersTable({
                   </Button>
                 )}
                 {user.approval_status !== "rejected" && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="rounded-xl"
-                    disabled={busyId === user.id}
-                    onClick={() => setConfirming({ user, status: "rejected" })}
-                  >
-                    <X className="size-4" />
-                    Reject
-                  </Button>
+                  <>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-xl"
+                      disabled={busyId === user.id}
+                      onClick={() => setConfirming({ user, status: "rejected" })}
+                    >
+                      <X className="size-4" />
+                      Reject
+                    </Button>
+                    {user.approval_status === "approved" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-xl"
+                        disabled={busyId === user.id}
+                        onClick={() => setConfirming({ user, status: "rejected" })}
+                      >
+                        <Ban className="size-4" />
+                        Suspend
+                      </Button>
+                    )}
+                  </>
                 )}
                 <Button
                   size="sm"
@@ -164,13 +200,79 @@ export function UsersTable({
                   onClick={() => setViewing(user)}
                 >
                   <Eye className="size-4" />
-                  View profile
+                  View
                 </Button>
+                {onDelete && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-xl text-alert hover:text-alert"
+                    disabled={busyId === user.id}
+                    onClick={() => setDeleting(user)}
+                  >
+                    <Trash2 className="size-4" />
+                    Delete
+                  </Button>
+                )}
               </div>
             </li>
           ))}
         </ul>
       )}
+
+      {rows.length > PAGE_SIZE && (
+        <div className="mt-4 flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            Page {current + 1} of {pageCount}
+          </p>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-xl"
+              disabled={current === 0}
+              onClick={() => setPage(current - 1)}
+            >
+              <ChevronLeft className="size-4" />
+              Previous
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-xl"
+              disabled={current >= pageCount - 1}
+              onClick={() => setPage(current + 1)}
+            >
+              Next
+              <ChevronRight className="size-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <AlertDialog open={Boolean(deleting)} onOpenChange={(open) => !open && setDeleting(null)}>
+        <AlertDialogContent className="rounded-3xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this account permanently?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleting?.full_name || deleting?.email} and all of their emergency records, medical
+              profile and RESQR IDs will be removed. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-2xl">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-2xl bg-alert text-alert-foreground hover:bg-alert/90"
+              onClick={() => {
+                if (deleting) onDelete?.(deleting);
+                setDeleting(null);
+              }}
+            >
+              Delete account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={Boolean(confirming)} onOpenChange={(open) => !open && setConfirming(null)}>
         <AlertDialogContent className="rounded-3xl">
