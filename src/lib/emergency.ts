@@ -184,6 +184,11 @@ export async function createEmergency(options: {
 
   await logEvent(data.id, options.userId, "SOS triggered", "Alert created on your device.");
 
+  // Recipients ALWAYS come from the signed-in user's own saved records — never
+  // from a caller-supplied list, and never from any hardcoded/admin address.
+  const ownContacts = await loadOwnContacts(options.userId);
+  const contacts = ownContacts;
+
   let address: string | null = null;
   try {
     const position = await getCurrentPosition();
