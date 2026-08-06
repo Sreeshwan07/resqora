@@ -21,6 +21,7 @@ import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
 import { Route as AppCheckinsRouteImport } from './routes/_app.checkins'
 import { Route as AppContactsRouteImport } from './routes/_app.contacts'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppDigitalTwinRouteImport } from './routes/_app.digital-twin'
 import { Route as AppDocumentsRouteImport } from './routes/_app.documents'
 import { Route as AppDonorsRouteImport } from './routes/_app.donors'
 import { Route as AppEmailDiagnosticsRouteImport } from './routes/_app.email-diagnostics'
@@ -103,6 +104,11 @@ const AppContactsRoute = AppContactsRouteImport.update({
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDigitalTwinRoute = AppDigitalTwinRouteImport.update({
+  id: '/digital-twin',
+  path: '/digital-twin',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDocumentsRoute = AppDocumentsRouteImport.update({
@@ -239,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/checkins': typeof AppCheckinsRoute
   '/contacts': typeof AppContactsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/digital-twin': typeof AppDigitalTwinRoute
   '/documents': typeof AppDocumentsRoute
   '/donors': typeof AppDonorsRoute
   '/email-diagnostics': typeof AppEmailDiagnosticsRoute
@@ -276,6 +283,7 @@ export interface FileRoutesByTo {
   '/checkins': typeof AppCheckinsRoute
   '/contacts': typeof AppContactsRoute
   '/dashboard': typeof AppDashboardRoute
+  '/digital-twin': typeof AppDigitalTwinRoute
   '/documents': typeof AppDocumentsRoute
   '/donors': typeof AppDonorsRoute
   '/email-diagnostics': typeof AppEmailDiagnosticsRoute
@@ -315,6 +323,7 @@ export interface FileRoutesById {
   '/_app/checkins': typeof AppCheckinsRoute
   '/_app/contacts': typeof AppContactsRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/digital-twin': typeof AppDigitalTwinRoute
   '/_app/documents': typeof AppDocumentsRoute
   '/_app/donors': typeof AppDonorsRoute
   '/_app/email-diagnostics': typeof AppEmailDiagnosticsRoute
@@ -354,6 +363,7 @@ export interface FileRouteTypes {
     | '/checkins'
     | '/contacts'
     | '/dashboard'
+    | '/digital-twin'
     | '/documents'
     | '/donors'
     | '/email-diagnostics'
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/checkins'
     | '/contacts'
     | '/dashboard'
+    | '/digital-twin'
     | '/documents'
     | '/donors'
     | '/email-diagnostics'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/_app/checkins'
     | '/_app/contacts'
     | '/_app/dashboard'
+    | '/_app/digital-twin'
     | '/_app/documents'
     | '/_app/donors'
     | '/_app/email-diagnostics'
@@ -553,6 +565,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/digital-twin': {
+      id: '/_app/digital-twin'
+      path: '/digital-twin'
+      fullPath: '/digital-twin'
+      preLoaderRoute: typeof AppDigitalTwinRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/documents': {
@@ -733,6 +752,7 @@ interface AppRouteChildren {
   AppCheckinsRoute: typeof AppCheckinsRoute
   AppContactsRoute: typeof AppContactsRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDigitalTwinRoute: typeof AppDigitalTwinRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppDonorsRoute: typeof AppDonorsRoute
   AppEmailDiagnosticsRoute: typeof AppEmailDiagnosticsRoute
@@ -761,6 +781,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppCheckinsRoute: AppCheckinsRoute,
   AppContactsRoute: AppContactsRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDigitalTwinRoute: AppDigitalTwinRoute,
   AppDocumentsRoute: AppDocumentsRoute,
   AppDonorsRoute: AppDonorsRoute,
   AppEmailDiagnosticsRoute: AppEmailDiagnosticsRoute,
@@ -800,13 +821,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

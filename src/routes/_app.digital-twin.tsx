@@ -184,7 +184,7 @@ function DigitalTwinPage() {
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <StatusIndicator level="critical" label={statusLabel(emergency.status)} />
+                <StatusIndicator status="critical" label={statusLabel(emergency.status)} />
                 <Badge
                   variant="outline"
                   className="rounded-full text-[10px] font-semibold uppercase"
