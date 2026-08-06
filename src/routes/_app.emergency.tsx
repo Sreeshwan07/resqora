@@ -184,13 +184,15 @@ function EmergencyPage() {
         }
       />
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="mx-auto grid w-full max-w-2xl gap-4">
         <div className="glass-panel rounded-3xl p-6">
+          {!current && (
           <SosButton
             onTrigger={() => requestSos()}
             disabled={busy || Boolean(current)}
             active={Boolean(current)}
           />
+          )}
 
           {busy && !current && (
             <div className="mt-4 space-y-2 rounded-2xl border border-alert/40 bg-alert/5 p-4">
@@ -210,74 +212,54 @@ function EmergencyPage() {
           )}
 
           {current ? (
-            <div className="mt-4 space-y-4">
+            <div className="space-y-4">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="grid gap-3 rounded-2xl border border-alert/40 bg-alert/5 p-4 sm:grid-cols-2"
               >
-                <LiveDetail
-                  label="Emergency ID"
-                  value={current.id.slice(0, 8).toUpperCase()}
-                />
                 <LiveDetail label="Status" value={statusLabel(current.status)} />
                 <LiveDetail
-                  label="Elapsed"
+                  label="Emergency timer"
                   value={formatDuration(elapsed)}
                   icon={<Timer className="size-3.5" aria-hidden="true" />}
                 />
                 <LiveDetail
-                  label="Started"
-                  value={new Date(current.started_at).toLocaleTimeString()}
+                  label="Live location"
+                  value={
+                    coords
+                      ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`
+                      : "Awaiting GPS"
+                  }
+                  icon={<MapPin className="size-3.5" aria-hidden="true" />}
                 />
-                <LiveDetail
-                  label="Latitude"
-                  value={coords ? coords.lat.toFixed(6) : "Awaiting GPS"}
-                />
-                <LiveDetail
-                  label="Longitude"
-                  value={coords ? coords.lng.toFixed(6) : "Awaiting GPS"}
-                />
+                <LiveDetail label="Reference" value={current.id.slice(0, 8).toUpperCase()} />
               </motion.div>
+              <Button
+                size="xl"
+                onClick={handleCancel}
+                disabled={busy}
+                className="h-16 w-full rounded-3xl bg-success text-base font-bold text-success-foreground hover:bg-success/90"
+              >
+                {busy ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : (
+                  <X className="size-5" aria-hidden="true" />
+                )}
+                Cancel SOS
+              </Button>
               <div className="flex flex-wrap justify-center gap-2">
-                <Button asChild variant="hero">
-                  <Link to="/digital-twin">
-                    <MapPin className="size-4" />
-                    Digital Twin
-                  </Link>
-                </Button>
-                <Button asChild variant="hero">
-                  <Link to="/live">
-                    <MapPin className="size-4" />
-                    Live tracking
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  disabled={!coords}
-                  onClick={async () => {
-                    if (!coords) return;
-                    await copyText(mapsLink(coords));
-                    toast.success("Location link copied");
-                  }}
-                >
-                  <Copy className="size-4" />
-                  Copy location
-                </Button>
-                <Button variant="outline" onClick={handleAdvance} disabled={busy}>
-                  {busy && <Loader2 className="size-4 animate-spin" />}
+                <Button variant="ghost" size="sm" onClick={handleAdvance} disabled={busy}>
                   Advance status
                 </Button>
-                <Button variant="outline" onClick={handleResolve} disabled={busy}>
+                <Button variant="ghost" size="sm" onClick={handleResolve} disabled={busy}>
                   <CheckCircle2 className="size-4" />
                   Mark resolved
                 </Button>
-                <Button variant="ghost" onClick={handleCancel} disabled={busy}>
-                  <X className="size-4" />
-                  Cancel
+                <Button asChild variant="ghost" size="sm">
+                  <Link to="/live">Live tracking</Link>
                 </Button>
               </div>
-
             </div>
           ) : (
             <div className="mt-6 grid gap-4">
@@ -317,15 +299,16 @@ function EmergencyPage() {
         </div>
 
         <div className="space-y-4">
-          <CrashDetectionPanel
-            enabled={profile.data?.crash_detection ?? true}
-            onToggle={toggleCrashDetection}
-            onConfirm={() => requestSos("accident")}
-            busy={busy}
-          />
-
+          {!current && (
+            <CrashDetectionPanel
+              enabled={profile.data?.crash_detection ?? true}
+              onToggle={toggleCrashDetection}
+              onConfirm={() => requestSos("accident")}
+              busy={busy}
+            />
+          )}
           <div className="glass-panel rounded-2xl p-5">
-            <h2 className="text-sm font-semibold text-foreground">Response timeline</h2>
+            <h2 className="text-sm font-semibold text-foreground">Emergency timeline</h2>
             {!current ? (
               <p className="mt-3 text-sm text-muted-foreground">
                 No active emergency. Steps appear here in real time when an SOS is sent.
