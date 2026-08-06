@@ -485,6 +485,19 @@ export async function createEmergency(options: {
     } catch (error) {
       report.push({ channel: "whatsapp", status: "failed", detail: errorText(error), count: 0 });
     }
+  } else {
+    await logEvent(
+      data.id,
+      options.userId,
+      "Email skipped",
+      "No emergency contact emails have been configured.",
+    );
+    report.push({
+      channel: "email",
+      status: "skipped",
+      detail: "No emergency contact emails have been configured.",
+      count: 0,
+    });
   }
 
   await logEvent(
