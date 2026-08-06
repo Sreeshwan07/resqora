@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { HeartPulse, LogOut, Settings, ShieldCheck, UserRound, Users } from "lucide-react";
+import { HeartPulse, LogOut, QrCode, Settings, ShieldCheck, UserRound, Users } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -20,7 +20,8 @@ import { logSecurityEvent } from "@/lib/audit";
 const ITEMS = [
   { label: "My Profile", to: "/profile", icon: UserRound },
   { label: "Medical Profile", to: "/medical-id", icon: HeartPulse },
-  { label: "Emergency Contacts", to: "/contacts", icon: Users },
+  { label: "Guardian & Emergency Contacts", to: "/contacts", icon: Users },
+  { label: "RESQR ID", to: "/resqr-id", icon: QrCode },
   { label: "Settings", to: "/settings", icon: Settings },
 ] as const;
 

@@ -82,6 +82,9 @@ export function RecentActivityFeed({ limit = 5 }: { limit?: number }) {
     .sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
     .slice(0, limit);
 
+  // Hidden entirely when there is nothing to show — keeps Home short.
+  if (feed.length === 0) return null;
+
   return (
     <section aria-label="Recent activity" className="space-y-3">
       <div className="flex items-center justify-between gap-2">
@@ -93,12 +96,7 @@ export function RecentActivityFeed({ limit = 5 }: { limit?: number }) {
         </Button>
       </div>
 
-      {feed.length === 0 ? (
-        <p className="soft-card rounded-3xl p-5 text-center text-sm text-muted-foreground">
-          No recent emergency activity.
-        </p>
-      ) : (
-        <ul className="soft-card divide-y divide-border/60 rounded-3xl px-4">
+      <ul className="soft-card divide-y divide-border/60 rounded-3xl px-4">
           {feed.map((item) => (
             <li key={item.id} className="flex items-center gap-3 py-3.5">
               <span
@@ -119,8 +117,7 @@ export function RecentActivityFeed({ limit = 5 }: { limit?: number }) {
               </span>
             </li>
           ))}
-        </ul>
-      )}
+      </ul>
     </section>
   );
 }
