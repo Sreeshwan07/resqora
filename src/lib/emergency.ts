@@ -128,6 +128,11 @@ export function statusLabel(status: string) {
 }
 
 export async function createEmergency(options: {
+  /**
+   * Loads the signed-in user's own Guardian + emergency contacts. Emergency
+   * emails are only ever addressed to these rows, so no other account (including
+   * an administrator) can receive another user's alert.
+   */
   userId: string;
   type: string;
   severity?: string;
