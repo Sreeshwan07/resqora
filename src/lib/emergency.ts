@@ -329,6 +329,20 @@ export async function createEmergency(options: {
   // Guardian Mode: secure dashboard session + Guardian email.
   const guardian = guardianOf(contacts);
   if (guardian) {
+    if (!guardian.email?.includes("@")) {
+      await logEvent(
+        data.id,
+        options.userId,
+        "Guardian email missing",
+        "No Guardian email has been configured.",
+      );
+      report.push({
+        channel: "guardian",
+        status: "skipped",
+        detail: "No Guardian email has been configured.",
+        count: 0,
+      });
+    }
     try {
       const { data: current } = await supabase
         .from("emergencies")
@@ -362,6 +376,19 @@ export async function createEmergency(options: {
     } catch (error) {
       report.push({ channel: "guardian", status: "failed", detail: errorText(error), count: 0 });
     }
+  } else {
+    await logEvent(
+      data.id,
+      options.userId,
+      "Guardian email missing",
+      "No Guardian email has been configured.",
+    );
+    report.push({
+      channel: "guardian",
+      status: "skipped",
+      detail: "No Guardian email has been configured.",
+      count: 0,
+    });
   }
 
   // Email channel: delivery to every contact with an address.
