@@ -87,7 +87,7 @@ function GuardianDashboard() {
 
   return (
     <main className="aurora min-h-screen">
-      <div className="mx-auto max-w-6xl space-y-4 p-4 pb-6 sm:p-6">
+      <div className="mx-auto max-w-3xl space-y-4 p-4 pb-6 sm:p-6">
         <header className="glass-panel flex flex-wrap items-center justify-between gap-3 rounded-3xl p-4">
           <div className="flex items-center gap-3">
             <Logo />
