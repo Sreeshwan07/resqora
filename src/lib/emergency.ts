@@ -127,12 +127,27 @@ export function statusLabel(status: string) {
   return STATUS_FLOW[statusIndex(status)].label;
 }
 
+/**
+ * Loads the signed-in user's own Guardian + emergency contacts. Emergency
+ * emails are only ever addressed to these rows, so no other account (including
+ * an administrator) can ever receive another user's alert.
+ */
+async function loadOwnContacts(userId: string): Promise<EmergencyContact[]> {
+  const { data: auth } = await supabase.auth.getUser();
+  const authedId = auth.user?.id;
+  if (!authedId) throw new Error("You must be signed in to send an SOS.");
+  if (authedId !== userId) throw new Error("Session mismatch — please sign in again.");
+  const { data, error } = await supabase
+    .from("emergency_contacts")
+    .select("*")
+    .eq("user_id", authedId)
+    .order("is_guardian", { ascending: false })
+    .order("position", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as EmergencyContact[];
+}
+
 export async function createEmergency(options: {
-  /**
-   * Loads the signed-in user's own Guardian + emergency contacts. Emergency
-   * emails are only ever addressed to these rows, so no other account (including
-   * an administrator) can receive another user's alert.
-   */
   userId: string;
   type: string;
   severity?: string;
