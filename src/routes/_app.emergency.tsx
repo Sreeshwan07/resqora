@@ -86,7 +86,7 @@ function EmergencyPage() {
     void (async () => {
       await trigger("sos");
       await navigate({ to: "/emergency", search: {}, replace: true });
-      await navigate({ to: "/live" });
+      await navigate({ to: "/digital-twin" });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auto, user, current, active.isPending, contacts.isPending]);
@@ -241,6 +241,12 @@ function EmergencyPage() {
               </motion.div>
               <div className="flex flex-wrap justify-center gap-2">
                 <Button asChild variant="hero">
+                  <Link to="/digital-twin">
+                    <MapPin className="size-4" />
+                    Digital Twin
+                  </Link>
+                </Button>
+                <Button asChild variant="hero">
                   <Link to="/live">
                     <MapPin className="size-4" />
                     Live tracking
@@ -380,7 +386,7 @@ function EmergencyPage() {
         onConfirm={() => {
           const chosen = pendingType ?? type;
           setPendingType(null);
-          void trigger(chosen).then(() => navigate({ to: "/live" }));
+          void trigger(chosen).then(() => navigate({ to: "/digital-twin" }));
         }}
       />
     </>
