@@ -345,6 +345,51 @@ export type Database = {
         }
         Relationships: []
       }
+      guardian_notes: {
+        Row: {
+          created_at: string
+          emergency_id: string
+          guardian_name: string
+          guardian_session_id: string | null
+          id: string
+          note: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emergency_id: string
+          guardian_name: string
+          guardian_session_id?: string | null
+          id?: string
+          note: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emergency_id?: string
+          guardian_name?: string
+          guardian_session_id?: string | null
+          id?: string
+          note?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardian_notes_emergency_id_fkey"
+            columns: ["emergency_id"]
+            isOneToOne: false
+            referencedRelation: "emergencies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guardian_notes_guardian_session_id_fkey"
+            columns: ["guardian_session_id"]
+            isOneToOne: false
+            referencedRelation: "guardian_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guardian_sessions: {
         Row: {
           active: boolean
@@ -401,6 +446,50 @@ export type Database = {
             columns: ["guardian_contact_id"]
             isOneToOne: false
             referencedRelation: "emergency_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guardian_tasks: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          done: boolean
+          emergency_id: string
+          id: string
+          label: string
+          task_key: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          done?: boolean
+          emergency_id: string
+          id?: string
+          label: string
+          task_key: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          done?: boolean
+          emergency_id?: string
+          id?: string
+          label?: string
+          task_key?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardian_tasks_emergency_id_fkey"
+            columns: ["emergency_id"]
+            isOneToOne: false
+            referencedRelation: "emergencies"
             referencedColumns: ["id"]
           },
         ]
@@ -871,6 +960,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_guardian_note: {
+        Args: { _emergency_id: string; _note: string; _token: string }
+        Returns: Json
+      }
       get_donor_phone: { Args: { _donor_id: string }; Returns: string }
       get_guardian_view: {
         Args: { _emergency_id: string; _token: string }
@@ -889,6 +982,29 @@ export type Database = {
           longitude: number
           speed: number
         }[]
+      }
+      guardian_session_for: {
+        Args: { _emergency_id: string; _token: string }
+        Returns: {
+          active: boolean
+          created_at: string
+          emergency_id: string
+          expires_at: string | null
+          guardian_contact_id: string | null
+          guardian_email: string | null
+          guardian_name: string
+          guardian_phone: string | null
+          id: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "guardian_sessions"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       has_role: {
         Args: {
@@ -919,6 +1035,16 @@ export type Database = {
           full_name: string
           id: string
         }[]
+      }
+      set_guardian_task: {
+        Args: {
+          _done: boolean
+          _emergency_id: string
+          _label: string
+          _task_key: string
+          _token: string
+        }
+        Returns: Json
       }
     }
     Enums: {
