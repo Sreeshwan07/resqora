@@ -230,8 +230,8 @@ export const navSections: NavSection[] = [
 
 export const mobileNav: NavItem[] = [
   { label: "Home", to: "/", icon: Home, description: "Emergency dashboard" },
+  { label: "Nearby", to: "/nearby", icon: MapPinned, description: "Emergency services near you" },
   { label: "SOS", to: "/emergency", icon: Siren, description: "Trigger assistance" },
   resqAiNav,
-  { label: "RESQR ID", to: "/resqr-id", icon: QrCode, description: "Emergency QR" },
-  primaryNav[4],
+  { label: "Profile", to: "/profile", icon: UserRound, description: "Your safety identity" },
 ];
