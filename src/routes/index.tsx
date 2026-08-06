@@ -9,7 +9,8 @@ import {
 } from "@/components/landing/emergency-status-card";
 import { EmergencyConsole } from "@/components/landing/emergency-console";
 import { EmergencyContactsCard } from "@/components/landing/emergency-contacts-card";
-import { QuickActions } from "@/components/landing/quick-actions";
+import { EmergencyTools } from "@/components/landing/emergency-tools";
+import { GuardianShortcut } from "@/components/landing/guardian-shortcut";
 import { CompactNearestServices } from "@/components/landing/compact-nearest-services";
 import { RecentActivityFeed } from "@/components/landing/recent-activity-feed";
 import { MobileNav } from "@/components/layouts/mobile-nav";
@@ -81,6 +82,8 @@ function Index() {
             <ApprovalGate status={access.status} />
           ) : (
             <>
+              <GuardianShortcut />
+
               <EmergencyStatusCard
                 status={status}
                 now={now}
@@ -92,13 +95,13 @@ function Index() {
 
               <EmergencyConsole />
 
-              <QuickActions />
+              <EmergencyTools />
 
               <CompactNearestServices nearby={nearby} />
 
-              <EmergencyContactsCard
-                notified={Boolean(emergency && emergency.status !== "created")}
-              />
+              {emergency && emergency.status !== "resolved" && (
+                <EmergencyContactsCard notified={emergency.status !== "created"} />
+              )}
 
               <RecentActivityFeed />
             </>
