@@ -109,7 +109,7 @@ function EmergencyPage() {
     if (!user || busy) return;
     setBusy(true);
     try {
-      await createEmergency({
+      const created = await createEmergency({
         userId: user.id,
         type: emergencyType,
         notes: notes.trim() || undefined,
@@ -118,7 +118,15 @@ function EmergencyPage() {
         profile: profile.data ?? null,
       });
       await refresh();
-      toast.success("SOS sent — your contacts have been alerted");
+      const email = created.notifications.find((n) => n.channel === "email");
+      const guardian = created.notifications.find((n) => n.channel === "guardian");
+      if (email?.status === "sent") {
+        toast.success(`SOS sent — ${email.detail}`);
+      } else {
+        toast.success("SOS activated — live tracking started");
+      }
+      if (guardian && guardian.status !== "sent") toast.warning(guardian.detail);
+      if (email && email.status !== "sent") toast.warning(email.detail);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not send SOS");
     } finally {
