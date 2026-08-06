@@ -5,13 +5,6 @@ import { ThemeToggle } from "@/components/system/theme-toggle";
 import { ProfileMenu } from "@/components/layouts/profile-menu";
 import { useAuth } from "@/hooks/use-auth";
 
-const links = [
-  { label: "Nearby", to: "/nearby" as const },
-  { label: "History", to: "/history" as const },
-  { label: "About", to: "/about" as const },
-  { label: "Profile", to: "/profile" as const },
-];
-
 export function LandingNav() {
   const { user } = useAuth();
   return (
@@ -21,17 +14,6 @@ export function LandingNav() {
           <Logo size="lg" tagline="Emergency Response" />
         </Link>
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
-          <nav aria-label="Sections" className="hidden items-center gap-1 md:flex">
-            {links.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className="rounded-xl px-3.5 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
           <ThemeToggle />
           {user ? (
             <ProfileMenu />

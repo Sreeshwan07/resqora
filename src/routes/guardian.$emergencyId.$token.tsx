@@ -13,7 +13,6 @@ import { GuardianNotes } from "@/components/guardian/guardian-notes";
 import { GuardianQuickActions } from "@/components/guardian/guardian-quick-actions";
 import { GuardianServices } from "@/components/guardian/guardian-services";
 import { GuardianStatusGrid } from "@/components/guardian/guardian-status-grid";
-import { GuardianTwin } from "@/components/guardian/guardian-twin";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import type { NearbyPlace, PlaceCategory } from "@/lib/nearby.server";
@@ -88,7 +87,7 @@ function GuardianDashboard() {
 
   return (
     <main className="aurora min-h-screen">
-      <div className="mx-auto max-w-6xl space-y-4 p-4 pb-6 sm:p-6">
+      <div className="mx-auto max-w-3xl space-y-4 p-4 pb-6 sm:p-6">
         <header className="glass-panel flex flex-wrap items-center justify-between gap-3 rounded-3xl p-4">
           <div className="flex items-center gap-3">
             <Logo />
@@ -106,65 +105,63 @@ function GuardianDashboard() {
 
         <GuardianHeader view={data} now={now} />
 
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="space-y-4">
-            <GuardianMap view={data} />
-            <GuardianAiSummary view={data} hospital={hospital} />
-            <GuardianMedical view={data} />
-            <GuardianTwin view={data} hospital={hospital} />
-          </div>
+        {/* One scrollable command centre: every section appears exactly once. */}
+        <GuardianStatusGrid view={data} />
 
-          <div className="space-y-4">
-            <GuardianStatusGrid view={data} />
-            <GuardianMissions
-              view={data}
-              emergencyId={emergencyId}
-              token={token}
-              onSaved={() => void view.refetch()}
-            />
-            <section className="glass-panel rounded-3xl p-4">
-              <h2 className="font-display text-lg font-bold">Nearest emergency services</h2>
-              <p className="mb-3 text-xs text-muted-foreground">
-                Live, emergency-capable responders around {data.full_name.split(" ")[0]}’s current
-                position.
-              </p>
-              <GuardianServices lat={data.latitude} lng={data.longitude} onNearest={setNearest} />
-            </section>
-            <GuardianNotes
-              view={data}
-              emergencyId={emergencyId}
-              token={token}
-              onSaved={() => void view.refetch()}
-            />
-            <section className="glass-panel rounded-3xl p-4">
-              <h2 className="font-display text-lg font-bold">Emergency timeline</h2>
-              <ol className="mt-3 space-y-3">
-                {data.timeline.length === 0 && (
-                  <li className="text-sm text-muted-foreground">Awaiting the first event.</li>
-                )}
-                {[...data.timeline].reverse().map((event, index) => (
-                  <li key={`${event.label}-${event.created_at}-${index}`} className="flex gap-3">
-                    <span
-                      className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold">{event.label}</p>
-                      {event.detail && (
-                        <p className="text-xs text-muted-foreground">{event.detail}</p>
-                      )}
-                      <p className="text-[11px] text-muted-foreground">
-                        {new Date(event.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </section>
-          </div>
-        </div>
+        <GuardianMap view={data} />
 
         <GuardianHandover view={data} dashboardUrl={dashboardUrl} />
+
+        <GuardianMedical view={data} />
+
+        <GuardianAiSummary view={data} hospital={hospital} />
+
+        <section className="glass-panel rounded-3xl p-4">
+          <h2 className="font-display text-lg font-bold">Emergency timeline</h2>
+          <ol className="mt-3 space-y-3">
+            {data.timeline.length === 0 && (
+              <li className="text-sm text-muted-foreground">Awaiting the first event.</li>
+            )}
+            {[...data.timeline].reverse().map((event, index) => (
+              <li key={`${event.label}-${event.created_at}-${index}`} className="flex gap-3">
+                <span
+                  className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
+                  aria-hidden="true"
+                />
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{event.label}</p>
+                  {event.detail && <p className="text-xs text-muted-foreground">{event.detail}</p>}
+                  <p className="text-[11px] text-muted-foreground">
+                    {new Date(event.created_at).toLocaleString()}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <GuardianMissions
+          view={data}
+          emergencyId={emergencyId}
+          token={token}
+          onSaved={() => void view.refetch()}
+        />
+
+        <section className="glass-panel rounded-3xl p-4">
+          <h2 className="font-display text-lg font-bold">Nearest emergency services</h2>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Live, emergency-capable responders around {data.full_name.split(" ")[0]}’s current
+            position.
+          </p>
+          <GuardianServices lat={data.latitude} lng={data.longitude} onNearest={setNearest} />
+        </section>
+
+        <GuardianNotes
+          view={data}
+          emergencyId={emergencyId}
+          token={token}
+          onSaved={() => void view.refetch()}
+        />
 
         <GuardianQuickActions view={data} hospital={hospital} dashboardUrl={dashboardUrl} />
 

@@ -1,5 +1,6 @@
+import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { MapPin, Navigation, PhoneCall, RefreshCw } from "lucide-react";
+import { ChevronRight, MapPin, Navigation, PhoneCall, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { mapsClickHandler, mapsHref } from "@/lib/maps";
@@ -27,15 +28,20 @@ export function CompactNearestServices({
         <h2 className="font-display text-lg font-extrabold tracking-tight text-foreground sm:text-xl">
           Nearest Emergency Services
         </h2>
-        <Button
-          size="icon"
-          variant="ghost"
-          aria-label="Refresh nearby services"
-          disabled={!nearby.origin || nearby.isFetching}
-          onClick={() => void nearby.refresh()}
-        >
-          <RefreshCw className={cn("size-4", nearby.isFetching && "animate-spin")} />
-        </Button>
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            size="icon"
+            variant="ghost"
+            aria-label="Refresh nearby services"
+            disabled={!nearby.origin || nearby.isFetching}
+            onClick={() => void nearby.refresh()}
+          >
+            <RefreshCw className={cn("size-4", nearby.isFetching && "animate-spin")} />
+          </Button>
+          <Button asChild variant="ghost" size="sm" className="h-9 rounded-2xl text-xs font-bold">
+            <Link to="/nearby">View all</Link>
+          </Button>
+        </div>
       </div>
 
       <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4">
@@ -143,6 +149,17 @@ export function CompactNearestServices({
                   </a>
                 </Button>
               </div>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="mt-2 h-9 w-full rounded-2xl text-xs font-bold text-muted-foreground"
+              >
+                <Link to="/nearby" search={{ category: row.category }}>
+                  View more {row.label.toLowerCase()}s
+                  <ChevronRight className="size-3.5" />
+                </Link>
+              </Button>
             </motion.li>
           );
         })}

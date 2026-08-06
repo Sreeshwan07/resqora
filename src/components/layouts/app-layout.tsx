@@ -32,8 +32,9 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const contacts = useQuery(contactsQuery(user?.id));
   // Not-yet-approved accounts see the approval notice instead of protected features.
   const locked = !access.loading && !access.approved && !isUnrestrictedPath(pathname);
-  // /live renders its own detailed live-location panel — avoid showing it twice.
-  const showLocationCard = !pathname.startsWith("/live") && !locked && access.approved;
+  // Live location is shown once: on Nearby, where distances depend on it. Home,
+  // SOS, Live and Digital Twin each render their own location surface.
+  const showLocationCard = pathname === "/nearby" && !locked && access.approved;
 
   // Ask for notification permission once, then keep an offline copy of the
   // medical ID + trusted contacts so they work with no connectivity.

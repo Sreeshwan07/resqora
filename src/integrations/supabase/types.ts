@@ -1026,6 +1026,16 @@ export type Database = {
         }
         Returns: undefined
       }
+      my_guardian_links: {
+        Args: never
+        Returns: {
+          emergency_id: string
+          emergency_status: string
+          started_at: string
+          token: string
+          victim_name: string
+        }[]
+      }
       search_blood_donors: {
         Args: { _city?: string; _group?: string }
         Returns: {
