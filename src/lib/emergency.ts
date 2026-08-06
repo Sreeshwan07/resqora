@@ -235,7 +235,7 @@ export async function createEmergency(options: {
   try {
     // Every SOS gets a secure Guardian session; its dashboard URL is the single
     // live-tracking link used by email, WhatsApp and the share centre.
-    const guardianContact = guardianOf(options.contacts ?? []);
+    const guardianContact = guardianOf(contacts);
     const tracking = await ensureTrackingUrl({
       userId: options.userId,
       emergencyId: data.id,
@@ -261,8 +261,6 @@ export async function createEmergency(options: {
     "AI analysis started",
     "Severity scoring and response priority calculated from your emergency type.",
   );
-
-  const contacts = options.contacts ?? [];
 
   // Alert every trusted contact and record the delivery outcome per contact.
   if (contacts.length > 0) {
