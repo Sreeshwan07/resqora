@@ -127,6 +127,26 @@ export function statusLabel(status: string) {
   return STATUS_FLOW[statusIndex(status)].label;
 }
 
+/**
+ * Loads the signed-in user's own Guardian + emergency contacts. Emergency
+ * emails are only ever addressed to these rows, so no other account (including
+ * an administrator) can ever receive another user's alert.
+ */
+async function loadOwnContacts(userId: string): Promise<EmergencyContact[]> {
+  const { data: auth } = await supabase.auth.getUser();
+  const authedId = auth.user?.id;
+  if (!authedId) throw new Error("You must be signed in to send an SOS.");
+  if (authedId !== userId) throw new Error("Session mismatch — please sign in again.");
+  const { data, error } = await supabase
+    .from("emergency_contacts")
+    .select("*")
+    .eq("user_id", authedId)
+    .order("is_guardian", { ascending: false })
+    .order("position", { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as EmergencyContact[];
+}
+
 export async function createEmergency(options: {
   userId: string;
   type: string;
@@ -184,6 +204,11 @@ export async function createEmergency(options: {
 
   await logEvent(data.id, options.userId, "SOS triggered", "Alert created on your device.");
 
+  // Recipients ALWAYS come from the signed-in user's own saved records — never
+  // from a caller-supplied list, and never from any hardcoded/admin address.
+  const ownContacts = await loadOwnContacts(options.userId);
+  const contacts = ownContacts;
+
   let address: string | null = null;
   try {
     const position = await getCurrentPosition();
@@ -230,7 +255,7 @@ export async function createEmergency(options: {
   try {
     // Every SOS gets a secure Guardian session; its dashboard URL is the single
     // live-tracking link used by email, WhatsApp and the share centre.
-    const guardianContact = guardianOf(options.contacts ?? []);
+    const guardianContact = guardianOf(contacts);
     const tracking = await ensureTrackingUrl({
       userId: options.userId,
       emergencyId: data.id,
@@ -256,8 +281,6 @@ export async function createEmergency(options: {
     "AI analysis started",
     "Severity scoring and response priority calculated from your emergency type.",
   );
-
-  const contacts = options.contacts ?? [];
 
   // Alert every trusted contact and record the delivery outcome per contact.
   if (contacts.length > 0) {
@@ -306,6 +329,20 @@ export async function createEmergency(options: {
   // Guardian Mode: secure dashboard session + Guardian email.
   const guardian = guardianOf(contacts);
   if (guardian) {
+    if (!guardian.email?.includes("@")) {
+      await logEvent(
+        data.id,
+        options.userId,
+        "Guardian email missing",
+        "No Guardian email has been configured.",
+      );
+      report.push({
+        channel: "guardian",
+        status: "skipped",
+        detail: "No Guardian email has been configured.",
+        count: 0,
+      });
+    }
     try {
       const { data: current } = await supabase
         .from("emergencies")
@@ -339,6 +376,19 @@ export async function createEmergency(options: {
     } catch (error) {
       report.push({ channel: "guardian", status: "failed", detail: errorText(error), count: 0 });
     }
+  } else {
+    await logEvent(
+      data.id,
+      options.userId,
+      "Guardian email missing",
+      "No Guardian email has been configured.",
+    );
+    report.push({
+      channel: "guardian",
+      status: "skipped",
+      detail: "No Guardian email has been configured.",
+      count: 0,
+    });
   }
 
   // Email channel: delivery to every contact with an address.
@@ -362,12 +412,12 @@ export async function createEmergency(options: {
           data.id,
           options.userId,
           "Email skipped",
-          "No trusted contact has an email address saved.",
+          "No emergency contact emails have been configured.",
         );
         report.push({
           channel: "email",
           status: "skipped",
-          detail: "No trusted contact has an email address saved.",
+          detail: "No emergency contact emails have been configured.",
           count: 0,
         });
       } else if (emailResult.configured) {
@@ -435,6 +485,19 @@ export async function createEmergency(options: {
     } catch (error) {
       report.push({ channel: "whatsapp", status: "failed", detail: errorText(error), count: 0 });
     }
+  } else {
+    await logEvent(
+      data.id,
+      options.userId,
+      "Email skipped",
+      "No emergency contact emails have been configured.",
+    );
+    report.push({
+      channel: "email",
+      status: "skipped",
+      detail: "No emergency contact emails have been configured.",
+      count: 0,
+    });
   }
 
   await logEvent(

@@ -155,14 +155,26 @@ export async function sendEmergencyTemplateEmail(
 
   const maxAttempts = options.attempts ?? 3;
   let lastError = "Unknown EmailJS error";
+  const recipient = params.to_email.trim();
+  // The recipient is always the dynamic value passed in here. Aliases cover the
+  // common EmailJS "To Email" template variable names so the template can never
+  // fall back to a static/default account address.
+  const payload: Record<string, unknown> = {
+    ...params,
+    to_email: recipient,
+    email: recipient,
+    to: recipient,
+    recipient,
+    user_email: recipient,
+  };
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
-      await emailjs.send(config.serviceId, config.templateId, params, {
+      await emailjs.send(config.serviceId, config.templateId, payload, {
         publicKey: config.publicKey,
       });
       writeEmailDiagnostics({
         lastSentAt: new Date().toISOString(),
-        lastRecipient: params.to_email,
+        lastRecipient: recipient,
       });
       return { ok: true, attempts: attempt };
     } catch (error) {
