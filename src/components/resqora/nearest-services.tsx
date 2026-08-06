@@ -163,8 +163,9 @@ function CategoryCard({
 }) {
   const [expanded, setExpanded] = useState(false);
 
+  // Top 3 nearest per category, expandable to the full shortlist.
   const ordered = [...places].sort((a, b) => a.distanceKm - b.distanceKm);
-  const visible = expanded ? ordered.slice(0, 3) : ordered.slice(0, 1);
+  const visible = expanded ? ordered.slice(0, 6) : ordered.slice(0, 3);
 
   return (
     <div className="min-w-0">
@@ -192,7 +193,7 @@ function CategoryCard({
           ))
         )}
       </div>
-      {places.length > 1 && (
+      {places.length > 3 && (
         <Button
           size="sm"
           variant="ghost"
