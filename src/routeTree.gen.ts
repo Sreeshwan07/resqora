@@ -20,7 +20,9 @@ import { Route as AppAdminRouteImport } from './routes/_app.admin'
 import { Route as AppAssistantRouteImport } from './routes/_app.assistant'
 import { Route as AppCheckinsRouteImport } from './routes/_app.checkins'
 import { Route as AppContactsRouteImport } from './routes/_app.contacts'
+import { Route as AppCoreRouteImport } from './routes/_app.core'
 import { Route as AppDashboardRouteImport } from './routes/_app.dashboard'
+import { Route as AppDigitalTwinRouteImport } from './routes/_app.digital-twin'
 import { Route as AppDocumentsRouteImport } from './routes/_app.documents'
 import { Route as AppDonorsRouteImport } from './routes/_app.donors'
 import { Route as AppEmailDiagnosticsRouteImport } from './routes/_app.email-diagnostics'
@@ -100,9 +102,19 @@ const AppContactsRoute = AppContactsRouteImport.update({
   path: '/contacts',
   getParentRoute: () => AppRoute,
 } as any)
+const AppCoreRoute = AppCoreRouteImport.update({
+  id: '/core',
+  path: '/core',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDigitalTwinRoute = AppDigitalTwinRouteImport.update({
+  id: '/digital-twin',
+  path: '/digital-twin',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDocumentsRoute = AppDocumentsRouteImport.update({
@@ -238,7 +250,9 @@ export interface FileRoutesByFullPath {
   '/assistant': typeof AppAssistantRoute
   '/checkins': typeof AppCheckinsRoute
   '/contacts': typeof AppContactsRoute
+  '/core': typeof AppCoreRoute
   '/dashboard': typeof AppDashboardRoute
+  '/digital-twin': typeof AppDigitalTwinRoute
   '/documents': typeof AppDocumentsRoute
   '/donors': typeof AppDonorsRoute
   '/email-diagnostics': typeof AppEmailDiagnosticsRoute
@@ -275,7 +289,9 @@ export interface FileRoutesByTo {
   '/assistant': typeof AppAssistantRoute
   '/checkins': typeof AppCheckinsRoute
   '/contacts': typeof AppContactsRoute
+  '/core': typeof AppCoreRoute
   '/dashboard': typeof AppDashboardRoute
+  '/digital-twin': typeof AppDigitalTwinRoute
   '/documents': typeof AppDocumentsRoute
   '/donors': typeof AppDonorsRoute
   '/email-diagnostics': typeof AppEmailDiagnosticsRoute
@@ -314,7 +330,9 @@ export interface FileRoutesById {
   '/_app/assistant': typeof AppAssistantRoute
   '/_app/checkins': typeof AppCheckinsRoute
   '/_app/contacts': typeof AppContactsRoute
+  '/_app/core': typeof AppCoreRoute
   '/_app/dashboard': typeof AppDashboardRoute
+  '/_app/digital-twin': typeof AppDigitalTwinRoute
   '/_app/documents': typeof AppDocumentsRoute
   '/_app/donors': typeof AppDonorsRoute
   '/_app/email-diagnostics': typeof AppEmailDiagnosticsRoute
@@ -353,7 +371,9 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/checkins'
     | '/contacts'
+    | '/core'
     | '/dashboard'
+    | '/digital-twin'
     | '/documents'
     | '/donors'
     | '/email-diagnostics'
@@ -390,7 +410,9 @@ export interface FileRouteTypes {
     | '/assistant'
     | '/checkins'
     | '/contacts'
+    | '/core'
     | '/dashboard'
+    | '/digital-twin'
     | '/documents'
     | '/donors'
     | '/email-diagnostics'
@@ -428,7 +450,9 @@ export interface FileRouteTypes {
     | '/_app/assistant'
     | '/_app/checkins'
     | '/_app/contacts'
+    | '/_app/core'
     | '/_app/dashboard'
+    | '/_app/digital-twin'
     | '/_app/documents'
     | '/_app/donors'
     | '/_app/email-diagnostics'
@@ -548,11 +572,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppContactsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/core': {
+      id: '/_app/core'
+      path: '/core'
+      fullPath: '/core'
+      preLoaderRoute: typeof AppCoreRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/dashboard': {
       id: '/_app/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/digital-twin': {
+      id: '/_app/digital-twin'
+      path: '/digital-twin'
+      fullPath: '/digital-twin'
+      preLoaderRoute: typeof AppDigitalTwinRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/documents': {
@@ -732,7 +770,9 @@ interface AppRouteChildren {
   AppAssistantRoute: typeof AppAssistantRoute
   AppCheckinsRoute: typeof AppCheckinsRoute
   AppContactsRoute: typeof AppContactsRoute
+  AppCoreRoute: typeof AppCoreRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppDigitalTwinRoute: typeof AppDigitalTwinRoute
   AppDocumentsRoute: typeof AppDocumentsRoute
   AppDonorsRoute: typeof AppDonorsRoute
   AppEmailDiagnosticsRoute: typeof AppEmailDiagnosticsRoute
@@ -760,7 +800,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppAssistantRoute: AppAssistantRoute,
   AppCheckinsRoute: AppCheckinsRoute,
   AppContactsRoute: AppContactsRoute,
+  AppCoreRoute: AppCoreRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppDigitalTwinRoute: AppDigitalTwinRoute,
   AppDocumentsRoute: AppDocumentsRoute,
   AppDonorsRoute: AppDonorsRoute,
   AppEmailDiagnosticsRoute: AppEmailDiagnosticsRoute,

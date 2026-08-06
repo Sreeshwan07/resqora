@@ -58,8 +58,10 @@ function traumaHospitalLink(preferred: string | null) {
 
 function EmergencySummaryPage() {
   const { code } = Route.useParams();
-  const summary = useQuery(resqrSummaryQuery(code));
+  // Refresh while scanned so a responder sees the live SOS state change.
+  const summary = useQuery({ ...resqrSummaryQuery(code), refetchInterval: 10_000 });
   const data = summary.data ?? null;
+  const live = data?.active_emergency ?? null;
 
   return (
     <main className="mx-auto w-full max-w-xl px-4 py-6 sm:py-10">
@@ -82,6 +84,42 @@ function EmergencySummaryPage() {
         </section>
       ) : (
         <>
+          {live && (
+            <section className="mt-6 rounded-3xl border border-destructive/50 bg-destructive/10 p-5">
+              <p className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-destructive">
+                <Siren className="size-3.5" aria-hidden="true" />
+                SOS active now
+              </p>
+              <h2 className="mt-2 text-lg font-semibold text-foreground">
+                {live.reference} · {live.type.replace(/_/g, " ")} · {live.severity}
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {live.address ?? "Location resolving…"} · started{" "}
+                {new Date(live.started_at).toLocaleTimeString()}
+                {live.location_updated_at
+                  ? ` · location updated ${new Date(live.location_updated_at).toLocaleTimeString()}`
+                  : ""}
+              </p>
+              {live.latitude != null && live.longitude != null && (
+                <Button
+                  asChild
+                  size="lg"
+                  variant="destructive"
+                  className="mt-3 h-14 w-full justify-start rounded-2xl text-base"
+                >
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${live.latitude},${live.longitude}&travelmode=driving`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <Navigation className="size-5" aria-hidden="true" />
+                    Navigate to their live location
+                  </a>
+                </Button>
+              )}
+            </section>
+          )}
+
           <section className="mt-6 rounded-3xl border border-border bg-card p-5 shadow-sm">
             <h1 className="text-lg font-semibold text-foreground">Emergency summary</h1>
             <p className="mt-1 text-sm text-muted-foreground">

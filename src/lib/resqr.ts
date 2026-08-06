@@ -5,6 +5,20 @@ import { randomToken, origin } from "@/lib/share";
 
 export type ResqrId = Database["public"]["Tables"]["resqr_ids"]["Row"];
 
+/** Live SOS state exposed on a scanned RESQR ID while an emergency is running. */
+export type ResqrActiveEmergency = {
+  reference: string;
+  type: string;
+  severity: string;
+  status: string;
+  live_status: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  started_at: string;
+  location_updated_at: string | null;
+};
+
 /** Emergency-only projection returned by the secure lookup. Never contains PII beyond care needs. */
 export type ResqrSummary = {
   code: string;
@@ -18,6 +32,7 @@ export type ResqrSummary = {
   guardian_phone: string | null;
   preferred_hospital: string | null;
   preferred_language: string | null;
+  active_emergency: ResqrActiveEmergency | null;
 };
 
 export const NOT_PROVIDED = "Not Provided.";
