@@ -24,6 +24,7 @@ import {
   QrCode,
   ScanLine,
   LifeBuoy,
+  Cpu,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -84,6 +85,20 @@ export const supportPageNav: NavItem = {
   to: "/support",
   icon: LifeBuoy,
   description: "Approval help & account questions",
+};
+
+export const coreNav: NavItem = {
+  label: "RESQORA CORE",
+  to: "/core",
+  icon: Cpu,
+  description: "AI emergency coordination system",
+};
+
+export const digitalTwinNav: NavItem = {
+  label: "Digital Twin",
+  to: "/digital-twin",
+  icon: Radar,
+  description: "Live emergency workspace",
 };
 
 export const checkinsNav: NavItem = {
@@ -180,8 +195,10 @@ export const navSections: NavSection[] = [
     title: "Emergency",
     items: [
       { label: "Home", to: "/", icon: Home, description: "Main dashboard" },
+      coreNav,
       { label: "RESQ AI", to: "/resq-ai", icon: Stethoscope, description: "AI medical assistant" },
       { label: "Emergency SOS", to: "/emergency", icon: Siren, description: "Emergency activation" },
+      digitalTwinNav,
       { label: "Report accident", to: "/report", icon: Camera, description: "Report with AI analysis" },
       {
         label: "Nearby services",
