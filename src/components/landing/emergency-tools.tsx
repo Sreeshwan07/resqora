@@ -5,9 +5,19 @@ import { History, IdCard, QrCode, Users } from "lucide-react";
 /** The four emergency tools — each feature lives here and nowhere else on Home. */
 const TOOLS = [
   { to: "/resqr-id" as const, icon: QrCode, title: "RESQR ID", subtitle: "Emergency QR" },
-  { to: "/medical-id" as const, icon: IdCard, title: "Medical Profile", subtitle: "Health details" },
+  {
+    to: "/medical-id" as const,
+    icon: IdCard,
+    title: "Medical Profile",
+    subtitle: "Health details",
+  },
   { to: "/contacts" as const, icon: Users, title: "Guardian & Contacts", subtitle: "Who we alert" },
-  { to: "/history" as const, icon: History, title: "Emergency History", subtitle: "Past incidents" },
+  {
+    to: "/history" as const,
+    icon: History,
+    title: "Emergency History",
+    subtitle: "Past incidents",
+  },
 ];
 
 export function EmergencyTools() {

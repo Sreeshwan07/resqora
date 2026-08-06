@@ -97,26 +97,26 @@ export function RecentActivityFeed({ limit = 5 }: { limit?: number }) {
       </div>
 
       <ul className="soft-card divide-y divide-border/60 rounded-3xl px-4">
-          {feed.map((item) => (
-            <li key={item.id} className="flex items-center gap-3 py-3.5">
-              <span
-                aria-hidden="true"
-                className="grid size-10 shrink-0 place-items-center rounded-2xl bg-teal/10 text-teal"
-              >
-                <item.icon className="size-4.5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {item.kind}
-                  {item.detail ? ` · ${item.detail}` : ""}
-                </p>
-              </div>
-              <span className="shrink-0 text-[11px] font-semibold text-muted-foreground">
-                {hydrated ? new Date(item.at).toLocaleDateString() : ""}
-              </span>
-            </li>
-          ))}
+        {feed.map((item) => (
+          <li key={item.id} className="flex items-center gap-3 py-3.5">
+            <span
+              aria-hidden="true"
+              className="grid size-10 shrink-0 place-items-center rounded-2xl bg-teal/10 text-teal"
+            >
+              <item.icon className="size-4.5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold text-foreground">{item.title}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {item.kind}
+                {item.detail ? ` · ${item.detail}` : ""}
+              </p>
+            </div>
+            <span className="shrink-0 text-[11px] font-semibold text-muted-foreground">
+              {hydrated ? new Date(item.at).toLocaleDateString() : ""}
+            </span>
+          </li>
+        ))}
       </ul>
     </section>
   );

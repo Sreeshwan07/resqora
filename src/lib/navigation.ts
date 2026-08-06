@@ -197,9 +197,19 @@ export const navSections: NavSection[] = [
       { label: "Home", to: "/", icon: Home, description: "Main dashboard" },
       coreNav,
       { label: "RESQ AI", to: "/resq-ai", icon: Stethoscope, description: "AI medical assistant" },
-      { label: "Emergency SOS", to: "/emergency", icon: Siren, description: "Emergency activation" },
+      {
+        label: "Emergency SOS",
+        to: "/emergency",
+        icon: Siren,
+        description: "Emergency activation",
+      },
       digitalTwinNav,
-      { label: "Report accident", to: "/report", icon: Camera, description: "Report with AI analysis" },
+      {
+        label: "Report accident",
+        to: "/report",
+        icon: Camera,
+        description: "Report with AI analysis",
+      },
       {
         label: "Nearby services",
         to: "/nearby",
@@ -211,10 +221,30 @@ export const navSections: NavSection[] = [
   {
     title: "My records",
     items: [
-      { label: "RESQR ID", to: "/resqr-id", icon: QrCode, description: "Emergency QR & medical ID" },
-      { label: "Medical profile", to: "/medical-id", icon: IdCard, description: "Medical information" },
-      { label: "Emergency contacts", to: "/contacts", icon: Users, description: "Guardian management" },
-      { label: "Emergency history", to: "/history", icon: History, description: "Previous SOS and reports" },
+      {
+        label: "RESQR ID",
+        to: "/resqr-id",
+        icon: QrCode,
+        description: "Emergency QR & medical ID",
+      },
+      {
+        label: "Medical profile",
+        to: "/medical-id",
+        icon: IdCard,
+        description: "Medical information",
+      },
+      {
+        label: "Emergency contacts",
+        to: "/contacts",
+        icon: Users,
+        description: "Guardian management",
+      },
+      {
+        label: "Emergency history",
+        to: "/history",
+        icon: History,
+        description: "Previous SOS and reports",
+      },
     ],
   },
   {

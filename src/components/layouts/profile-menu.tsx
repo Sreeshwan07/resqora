@@ -95,7 +95,10 @@ export function ProfileMenu() {
           </>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="rounded-xl text-alert focus:text-alert" onSelect={() => void signOut()}>
+        <DropdownMenuItem
+          className="rounded-xl text-alert focus:text-alert"
+          onSelect={() => void signOut()}
+        >
           <LogOut className="size-4" aria-hidden="true" />
           Logout
         </DropdownMenuItem>

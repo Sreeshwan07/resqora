@@ -21,12 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  activeEmergencyQuery,
-  contactsQuery,
-  emergencyEventsQuery,
-  profileQuery,
-} from "@/lib/api";
+import { activeEmergencyQuery, contactsQuery, emergencyEventsQuery, profileQuery } from "@/lib/api";
 import { coordsOf, copyText, mapsLink } from "@/lib/alerts";
 import {
   EMERGENCY_TYPES,
@@ -52,7 +47,10 @@ export const Route = createFileRoute("/_app/emergency")({
           "Trigger an RESQORA SOS with GPS capture, instant contact alerts, live status tracking and automatic crash detection.",
       },
       { property: "og:title", content: "RESQORA Emergency SOS" },
-      { property: "og:description", content: "One tap alerts your contacts and nearby responders." },
+      {
+        property: "og:description",
+        content: "One tap alerts your contacts and nearby responders.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -187,11 +185,11 @@ function EmergencyPage() {
       <div className="mx-auto grid w-full max-w-2xl gap-4">
         <div className="glass-panel rounded-3xl p-6">
           {!current && (
-          <SosButton
-            onTrigger={() => requestSos()}
-            disabled={busy || Boolean(current)}
-            active={Boolean(current)}
-          />
+            <SosButton
+              onTrigger={() => requestSos()}
+              disabled={busy || Boolean(current)}
+              active={Boolean(current)}
+            />
           )}
 
           {busy && !current && (
@@ -227,9 +225,7 @@ function EmergencyPage() {
                 <LiveDetail
                   label="Live location"
                   value={
-                    coords
-                      ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}`
-                      : "Awaiting GPS"
+                    coords ? `${coords.lat.toFixed(5)}, ${coords.lng.toFixed(5)}` : "Awaiting GPS"
                   }
                   icon={<MapPin className="size-3.5" aria-hidden="true" />}
                 />
