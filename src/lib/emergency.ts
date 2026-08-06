@@ -412,12 +412,12 @@ export async function createEmergency(options: {
           data.id,
           options.userId,
           "Email skipped",
-          "No trusted contact has an email address saved.",
+          "No emergency contact emails have been configured.",
         );
         report.push({
           channel: "email",
           status: "skipped",
-          detail: "No trusted contact has an email address saved.",
+          detail: "No emergency contact emails have been configured.",
           count: 0,
         });
       } else if (emailResult.configured) {
