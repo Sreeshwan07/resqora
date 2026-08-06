@@ -825,8 +825,8 @@ const INTEGRATIONS = [
   { name: "EmailJS", detail: "Emergency and guardian email alerts" },
   { name: "Firebase Cloud Messaging", detail: "Web push notifications" },
   { name: "Google Maps Platform", detail: "Places, geocoding and navigation links" },
-  { name: "Lovable Cloud database", detail: "Accounts, emergencies, telemetry and logs" },
-  { name: "Gemini via Lovable AI", detail: "RESQ AI triage and accident vision analysis" },
+  { name: "RESQORA cloud database", detail: "Accounts, emergencies, telemetry and logs" },
+  { name: "RESQORA AI engine", detail: "RESQ AI triage and accident vision analysis" },
 ] as const;
 
 /** Read-only integration health board — credentials stay server-side and are never rendered. */
