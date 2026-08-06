@@ -22,7 +22,12 @@ export async function requestPushPermission() {
 export function showPush(title: string, body?: string, tag?: string) {
   if (!pushSupported() || Notification.permission !== "granted") return false;
   try {
-    new Notification(title, { body, tag, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png" });
+    new Notification(title, {
+      body,
+      tag,
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+    });
     return true;
   } catch {
     return false;

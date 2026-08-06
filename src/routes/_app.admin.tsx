@@ -70,7 +70,8 @@ export const Route = createFileRoute("/_app/admin")({
       { property: "og:title", content: "RESQORA Admin Dashboard" },
       {
         property: "og:description",
-        content: "Account approvals, emergency reports and platform analytics for RESQORA operators.",
+        content:
+          "Account approvals, emergency reports and platform analytics for RESQORA operators.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -167,7 +168,8 @@ function AdminPage() {
     const byType = new Map<string, number>();
     for (const item of emergencies) byType.set(item.type, (byType.get(item.type) ?? 0) + 1);
     const bySeverity = new Map<string, number>();
-    for (const item of emergencies) bySeverity.set(item.severity, (bySeverity.get(item.severity) ?? 0) + 1);
+    for (const item of emergencies)
+      bySeverity.set(item.severity, (bySeverity.get(item.severity) ?? 0) + 1);
 
     const signupsByDay = new Map<string, number>();
     for (const item of users) {
@@ -203,12 +205,18 @@ function AdminPage() {
       avg,
       types: [...byType.entries()].map(([name, value]) => ({ name, value })),
       severities: [...bySeverity.entries()].map(([name, value]) => ({ name, value })),
-      signups: [...signupsByDay.entries()].slice(0, 14).reverse().map(([name, value]) => ({ name, value })),
+      signups: [...signupsByDay.entries()]
+        .slice(0, 14)
+        .reverse()
+        .map(([name, value]) => ({ name, value })),
     };
   }, [data.data]);
 
   const registrationAlerts = useMemo(
-    () => (notifications.data ?? []).filter((item) => item.title === "New User Registration" || item.title === "New user registration"),
+    () =>
+      (notifications.data ?? []).filter(
+        (item) => item.title === "New User Registration" || item.title === "New user registration",
+      ),
     [notifications.data],
   );
 
@@ -368,8 +376,12 @@ function AdminPage() {
                             className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card/60 p-4"
                           >
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-foreground">New User Registration</p>
-                              <p className="mt-0.5 truncate text-sm text-muted-foreground">{item.body}</p>
+                              <p className="text-sm font-semibold text-foreground">
+                                New User Registration
+                              </p>
+                              <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                                {item.body}
+                              </p>
                             </div>
                             <span className="text-xs text-muted-foreground">
                               {new Date(item.created_at).toLocaleString()}
@@ -456,9 +468,7 @@ function AdminPage() {
                   label="email alerts"
                 />
               )}
-              {tab === "push" && (
-                <PushRecords tokens={stats.pushTokens} users={stats.users} />
-              )}
+              {tab === "push" && <PushRecords tokens={stats.pushTokens} users={stats.users} />}
               {tab === "audit" && <AuditRecords rows={stats.security} users={stats.users} />}
 
               {tab === "medai" && <MedAiRecords rows={stats.medai} users={stats.users} />}
@@ -470,7 +480,11 @@ function AdminPage() {
                 <>
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <StatCard icon={Users} label="Total users" value={String(stats.users.length)} />
-                    <StatCard icon={Clock} label="Pending users" value={String(stats.pending.length)} />
+                    <StatCard
+                      icon={Clock}
+                      label="Pending users"
+                      value={String(stats.pending.length)}
+                    />
                     <StatCard
                       icon={CheckCircle2}
                       label="Approved users"
@@ -527,7 +541,9 @@ function AdminPage() {
                     <p className="text-xs uppercase tracking-wide text-muted-foreground">
                       Super administrator
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-foreground">{SUPER_ADMIN_EMAIL}</p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {SUPER_ADMIN_EMAIL}
+                    </p>
                     <p className="mt-2 text-sm text-muted-foreground">
                       This address receives the admin role automatically on sign-up. Every other
                       account is a normal user, and admin routes are enforced by database policies —
@@ -721,7 +737,10 @@ function PushRecords({ tokens, users }: { tokens: AdminPushToken[]; users: Admin
       key: "state",
       label: "State",
       render: (row) => (
-        <StatusIndicator status={row.active ? "safe" : "offline"} label={row.active ? "Active" : "Inactive"} />
+        <StatusIndicator
+          status={row.active ? "safe" : "offline"}
+          label={row.active ? "Active" : "Inactive"}
+        />
       ),
       text: (row) => (row.active ? "active" : "inactive"),
     },
@@ -767,7 +786,9 @@ function AuditRecords({ rows, users }: { rows: AdminSecurityEvent[]; users: Admi
       key: "user",
       label: "Actor",
       render: (row) => (
-        <span className="font-medium">{row.user_id ? userLabel(users, row.user_id) : "System"}</span>
+        <span className="font-medium">
+          {row.user_id ? userLabel(users, row.user_id) : "System"}
+        </span>
       ),
       text: (row) => (row.user_id ? userLabel(users, row.user_id) : "system"),
     },

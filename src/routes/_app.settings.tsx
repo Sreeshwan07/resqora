@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell, LogOut, MapPin, Moon, Settings as SettingsIcon, ShieldCheck, Sun } from "lucide-react";
+import {
+  Bell,
+  LogOut,
+  MapPin,
+  Moon,
+  Settings as SettingsIcon,
+  ShieldCheck,
+  Sun,
+} from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/system/page-header";
 import { Button } from "@/components/ui/button";
@@ -209,13 +217,19 @@ function SettingsPage() {
                 disabled={permission === "unsupported" || permission === "denied"}
                 onClick={async () => {
                   if (permission === "granted") {
-                    showPush("RESQORA test alert", "Push notifications are working on this device.");
+                    showPush(
+                      "RESQORA test alert",
+                      "Push notifications are working on this device.",
+                    );
                     return;
                   }
                   const result = await requestPushPermission();
                   setPermission(result);
                   if (result === "granted") {
-                    showPush("Push notifications enabled", "RESQORA can now reach you on this device.");
+                    showPush(
+                      "Push notifications enabled",
+                      "RESQORA can now reach you on this device.",
+                    );
                     toast.success("Push notifications enabled");
                   } else {
                     toast.error("Notification permission was not granted");

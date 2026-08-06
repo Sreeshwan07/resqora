@@ -11,12 +11,7 @@ import {
   YAxis,
 } from "recharts";
 
-const PIE_TONES = [
-  "var(--success)",
-  "var(--warning)",
-  "var(--alert)",
-  "var(--primary)",
-];
+const PIE_TONES = ["var(--success)", "var(--warning)", "var(--alert)", "var(--primary)"];
 
 export function CountBarChart({
   title,

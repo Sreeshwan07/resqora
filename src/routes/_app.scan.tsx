@@ -16,7 +16,10 @@ export const Route = createFileRoute("/_app/scan")({
           "Point your camera at a RESQORA RESQR ID to open the emergency summary with blood group, allergies, medications and guardian contact.",
       },
       { property: "og:title", content: "RESQR ID scanner — RESQORA" },
-      { property: "og:description", content: "Scan an emergency QR and open the care summary instantly." },
+      {
+        property: "og:description",
+        content: "Scan an emergency QR and open the care summary instantly.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

@@ -19,8 +19,7 @@ const buttonVariants = cva(
         hero: "bg-linear-to-r from-primary to-alert text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5",
         emergency:
           "bg-alert text-alert-foreground shadow-lg shadow-alert/30 hover:bg-alert/90 hover:-translate-y-0.5",
-        glass:
-          "glass-panel text-foreground hover:bg-accent/60 hover:-translate-y-0.5 shadow-none",
+        glass: "glass-panel text-foreground hover:bg-accent/60 hover:-translate-y-0.5 shadow-none",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -14,13 +14,7 @@ function phaseOf(view: GuardianView) {
 }
 
 /** Live Digital Twin mirror of the incident for the Guardian. */
-export function GuardianTwin({
-  view,
-  hospital,
-}: {
-  view: GuardianView;
-  hospital?: NearbyPlace;
-}) {
+export function GuardianTwin({ view, hospital }: { view: GuardianView; hospital?: NearbyPlace }) {
   const missions = missionList(view);
   const movement = movementOf(view.track);
   const live = !guardianEnded(view);
@@ -54,13 +48,15 @@ export function GuardianTwin({
         <Cell label="Movement" value={movement.label} />
         <Cell
           label="Medical"
-          value={[
-            view.blood_group ? `Blood ${view.blood_group}` : null,
-            view.allergies ? "allergies on file" : null,
-            view.medical_conditions ? "conditions on file" : null,
-          ]
-            .filter(Boolean)
-            .join(" · ") || "No medical data recorded"}
+          value={
+            [
+              view.blood_group ? `Blood ${view.blood_group}` : null,
+              view.allergies ? "allergies on file" : null,
+              view.medical_conditions ? "conditions on file" : null,
+            ]
+              .filter(Boolean)
+              .join(" · ") || "No medical data recorded"
+          }
         />
         <Cell label="AI summary" value={view.ai_summary ? "Ready" : "Pending"} />
         <Cell label="Timeline events" value={`${view.timeline.length} logged`} />

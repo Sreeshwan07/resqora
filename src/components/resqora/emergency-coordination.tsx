@@ -61,7 +61,12 @@ export function EmergencyCoordination({
                 <>
                   <PlaceCard place={primary} origin={state.origin} />
                   {alternates.map((place: NearbyPlace, index: number) => (
-                    <PlaceCard key={place.id} place={place} origin={state.origin} rank={index + 2} />
+                    <PlaceCard
+                      key={place.id}
+                      place={place}
+                      origin={state.origin}
+                      rank={index + 2}
+                    />
                   ))}
                 </>
               ) : (
@@ -87,7 +92,12 @@ export function EmergencyCoordination({
             <p className="truncate text-sm font-semibold text-foreground">{EMERGENCY_LINE.name}</p>
             <p className="text-xs text-muted-foreground">{EMERGENCY_LINE.phone}</p>
           </div>
-          <Button asChild size="icon" variant="emergency" aria-label="Call the public emergency line">
+          <Button
+            asChild
+            size="icon"
+            variant="emergency"
+            aria-label="Call the public emergency line"
+          >
             <a href={`tel:${EMERGENCY_LINE.phone}`}>
               <PhoneCall className="size-4" />
             </a>

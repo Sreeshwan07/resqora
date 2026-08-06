@@ -77,8 +77,7 @@ function LiveLocationPage() {
     enabled: Boolean(user?.id && emergencyId),
     queryFn: async () => ensureLiveShareLink(user!.id, emergencyId!),
   });
-  const trackingUrl =
-    shareLink.data && shareLink.data.active ? shareUrl(shareLink.data) : null;
+  const trackingUrl = shareLink.data && shareLink.data.active ? shareUrl(shareLink.data) : null;
 
   useEffect(() => {
     if (!startedAt) {
@@ -383,15 +382,7 @@ function LiveLocationPage() {
   );
 }
 
-function Detail({
-  label,
-  value,
-  className,
-}: {
-  label: string;
-  value: string;
-  className?: string;
-}) {
+function Detail({ label, value, className }: { label: string; value: string; className?: string }) {
   return (
     <div>
       <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</p>

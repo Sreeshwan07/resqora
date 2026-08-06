@@ -151,7 +151,17 @@ export const adminDataQuery = () =>
           .limit(400),
         supabase.from("user_roles").select("user_id, role"),
       ]);
-      for (const result of [users, emergencies, activity, medai, resqr, deliveries, pushTokens, security, roles]) {
+      for (const result of [
+        users,
+        emergencies,
+        activity,
+        medai,
+        resqr,
+        deliveries,
+        pushTokens,
+        security,
+        roles,
+      ]) {
         if (result.error) throw new Error(result.error.message);
       }
       return {

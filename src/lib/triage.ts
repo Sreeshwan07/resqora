@@ -157,14 +157,18 @@ export function firstAidSteps(answers: Record<string, string>, severity: Severit
   }
 
   if (answers.bleeding === "Heavy or spurting") {
-    steps.push("Apply firm direct pressure with a clean cloth. Do not remove soaked dressings — add more on top.");
+    steps.push(
+      "Apply firm direct pressure with a clean cloth. Do not remove soaked dressings — add more on top.",
+    );
     steps.push("Raise the injured limb above heart level if there is no suspected fracture.");
   } else if (answers.bleeding === "Minor bleeding") {
     steps.push("Clean the wound with water and cover it with a sterile dressing.");
   }
 
   if (answers.situation === "Fire or smoke") {
-    steps.push("Stay low under the smoke and move to fresh air immediately — never re-enter a burning space.");
+    steps.push(
+      "Stay low under the smoke and move to fresh air immediately — never re-enter a burning space.",
+    );
   }
 
   if (answers.alone === "I am completely alone") {
@@ -178,7 +182,9 @@ export function firstAidSteps(answers: Record<string, string>, severity: Severit
   steps.push("Keep them warm, talk calmly and stay with them until help arrives.");
 
   if (severity === "critical" || severity === "high") {
-    steps.push("Trigger an RESQORA SOS now so responders and your contacts get your live location.");
+    steps.push(
+      "Trigger an RESQORA SOS now so responders and your contacts get your live location.",
+    );
   }
 
   return steps;

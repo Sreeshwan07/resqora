@@ -18,7 +18,9 @@ export const profileQuery = (userId: string | undefined) =>
     queryKey: ["profile", userId],
     enabled: Boolean(userId),
     queryFn: async () =>
-      unwrap(await supabase.from("profiles").select("*").eq("id", userId!).maybeSingle()) as Profile | null,
+      unwrap(
+        await supabase.from("profiles").select("*").eq("id", userId!).maybeSingle(),
+      ) as Profile | null,
   });
 
 export const contactsQuery = (userId: string | undefined) =>
@@ -118,8 +120,14 @@ export const adminOverviewQuery = () =>
     queryKey: ["admin-overview"],
     queryFn: async () => {
       const [profiles, emergencies] = await Promise.all([
-        supabase.from("profiles").select("id, current_city, onboarding_completed, safety_score, created_at"),
-        supabase.from("emergencies").select("id, type, severity, status, latitude, longitude, started_at, resolved_at, duration_seconds"),
+        supabase
+          .from("profiles")
+          .select("id, current_city, onboarding_completed, safety_score, created_at"),
+        supabase
+          .from("emergencies")
+          .select(
+            "id, type, severity, status, latitude, longitude, started_at, resolved_at, duration_seconds",
+          ),
       ]);
       if (profiles.error) throw new Error(profiles.error.message);
       if (emergencies.error) throw new Error(emergencies.error.message);

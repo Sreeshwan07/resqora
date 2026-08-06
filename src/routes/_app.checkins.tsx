@@ -244,7 +244,9 @@ function CheckinsPage() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => update(item.id, { status: "cancelled" }, "Check-in cancelled")}
+                            onClick={() =>
+                              update(item.id, { status: "cancelled" }, "Check-in cancelled")
+                            }
                           >
                             Cancel
                           </Button>

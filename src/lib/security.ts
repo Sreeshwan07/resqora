@@ -10,6 +10,8 @@ import { z } from "zod";
 /* Sanitisation                                                        */
 /* ------------------------------------------------------------------ */
 
+// Control characters are matched deliberately so they can be stripped from user input.
+// eslint-disable-next-line no-control-regex
 const CONTROL_CHARS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g;
 
 /** Strips tags, control characters and collapses whitespace for single-line text. */
@@ -38,7 +40,10 @@ export function sanitizeMultiline(value: string | null | undefined, max = 4000) 
 /** Keeps only characters that can legally appear in a dialable number. */
 export function sanitizePhone(value: string | null | undefined) {
   if (!value) return "";
-  return value.replace(/[^\d+()\-\s]/g, "").trim().slice(0, 24);
+  return value
+    .replace(/[^\d+()\-\s]/g, "")
+    .trim()
+    .slice(0, 24);
 }
 
 /** Only http(s) URLs survive — blocks javascript:, data:, file: and friends. */
@@ -109,12 +114,7 @@ export function firstIssue(error: z.ZodError) {
 /* ------------------------------------------------------------------ */
 
 export type RateLimitAction =
-  | "signin"
-  | "signup"
-  | "password-reset"
-  | "sos"
-  | "report"
-  | "share-send";
+  "signin" | "signup" | "password-reset" | "sos" | "report" | "share-send";
 
 const LIMITS: Record<RateLimitAction, { max: number; windowMs: number; label: string }> = {
   signin: { max: 6, windowMs: 5 * 60_000, label: "sign-in attempts" },
@@ -210,7 +210,9 @@ export function secureObjectName(mimeType: string) {
   return `${id}.${EXTENSIONS[mimeType] ?? "bin"}`;
 }
 
-export function validateUpload(file: File): { ok: true; name: string } | { ok: false; error: string } {
+export function validateUpload(
+  file: File,
+): { ok: true; name: string } | { ok: false; error: string } {
   if (!(ALLOWED_UPLOAD_TYPES as readonly string[]).includes(file.type)) {
     return { ok: false, error: "Only JPEG, PNG, WebP, HEIC images or PDF files are allowed." };
   }

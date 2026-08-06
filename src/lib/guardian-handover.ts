@@ -19,7 +19,10 @@ export function handoverLines(view: GuardianView, dashboardUrl: string) {
     ["Guardian", `${view.guardian_name}${view.guardian_phone ? ` · ${view.guardian_phone}` : ""}`],
     ["Current status", statusLabel(view.status)],
     ["Emergency type", `${view.type} · severity ${view.severity}`],
-    ["Recommended hospital", view.preferred_hospital || view.ai_recommendation || "Nearest trauma centre"],
+    [
+      "Recommended hospital",
+      view.preferred_hospital || view.ai_recommendation || "Nearest trauma centre",
+    ],
     ["Current address", view.address || "Address unavailable"],
     ["GPS", coords],
     ["Started", new Date(view.started_at).toLocaleString()],
@@ -30,7 +33,10 @@ export function handoverLines(view: GuardianView, dashboardUrl: string) {
           Math.round((Date.now() - new Date(view.started_at).getTime()) / 1000),
       ),
     ],
-    ["Last updated", view.location_updated_at ? new Date(view.location_updated_at).toLocaleString() : "—"],
+    [
+      "Last updated",
+      view.location_updated_at ? new Date(view.location_updated_at).toLocaleString() : "—",
+    ],
     ["Live dashboard", dashboardUrl],
   ];
 }

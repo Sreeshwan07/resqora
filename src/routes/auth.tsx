@@ -107,7 +107,9 @@ function AuthPage() {
     event.preventDefault();
     const parsedEmail = emailSchema.safeParse(email);
     if (!parsedEmail.success || !password) {
-      toast.error(parsedEmail.success ? "Enter your password to continue" : firstIssue(parsedEmail.error));
+      toast.error(
+        parsedEmail.success ? "Enter your password to continue" : firstIssue(parsedEmail.error),
+      );
       return;
     }
     const limit = checkRateLimit("signin");
@@ -257,7 +259,11 @@ function AuthPage() {
                 <p className="mt-1 text-sm text-muted-foreground">
                   Sign in to reach your emergency network in seconds.
                 </p>
-                <GoogleButton busy={googleBusy} onClick={handleGoogle} label="Continue with Google" />
+                <GoogleButton
+                  busy={googleBusy}
+                  onClick={handleGoogle}
+                  label="Continue with Google"
+                />
                 <Divider />
                 <form className="mt-6 space-y-4" onSubmit={handleSignIn}>
                   <Field
@@ -296,18 +302,28 @@ function AuthPage() {
                     </button>
                   </div>
                   <Button type="submit" variant="hero" className="w-full" disabled={busy}>
-                    {busy ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+                    {busy ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="size-4" />
+                    )}
                     Sign in
                   </Button>
                 </form>
               </TabsContent>
 
               <TabsContent value="signup" className="mt-6">
-                <h1 className="text-xl font-semibold text-foreground">Create your RESQORA account</h1>
+                <h1 className="text-xl font-semibold text-foreground">
+                  Create your RESQORA account
+                </h1>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Takes under two minutes to be protected.
                 </p>
-                <GoogleButton busy={googleBusy} onClick={handleGoogle} label="Sign up with Google" />
+                <GoogleButton
+                  busy={googleBusy}
+                  onClick={handleGoogle}
+                  label="Sign up with Google"
+                />
                 <Divider />
                 <form className="mt-6 space-y-4" onSubmit={handleSignUp}>
                   <Field
@@ -338,7 +354,11 @@ function AuthPage() {
                     hint="Minimum 8 characters"
                   />
                   <Button type="submit" variant="hero" className="w-full" disabled={busy}>
-                    {busy ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+                    {busy ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="size-4" />
+                    )}
                     Create account
                   </Button>
                 </form>
@@ -360,7 +380,11 @@ function AuthPage() {
                     autoComplete="email"
                   />
                   <Button type="submit" variant="outline" className="w-full" disabled={busy}>
-                    {busy ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
+                    {busy ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <Mail className="size-4" />
+                    )}
                     Send reset link
                   </Button>
                 </form>

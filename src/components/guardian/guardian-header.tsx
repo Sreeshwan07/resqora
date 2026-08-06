@@ -9,7 +9,14 @@ export function GuardianHeader({ view, now }: { view: GuardianView; now: number 
   const ended = guardianEnded(view);
   const elapsed = ended
     ? (view.duration_seconds ??
-      Math.max(0, Math.round((new Date(view.resolved_at ?? view.started_at).getTime() - new Date(view.started_at).getTime()) / 1000)))
+      Math.max(
+        0,
+        Math.round(
+          (new Date(view.resolved_at ?? view.started_at).getTime() -
+            new Date(view.started_at).getTime()) /
+            1000,
+        ),
+      ))
     : Math.max(0, Math.round((now - new Date(view.started_at).getTime()) / 1000));
 
   return (
@@ -76,9 +83,7 @@ export function GuardianHeader({ view, now }: { view: GuardianView; now: number 
           icon={MapPin}
           label="Last updated"
           value={
-            view.location_updated_at
-              ? new Date(view.location_updated_at).toLocaleTimeString()
-              : "—"
+            view.location_updated_at ? new Date(view.location_updated_at).toLocaleTimeString() : "—"
           }
         />
         <Cell
@@ -97,15 +102,7 @@ export function GuardianHeader({ view, now }: { view: GuardianView; now: number 
   );
 }
 
-function Cell({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof Clock;
-  label: string;
-  value: string;
-}) {
+function Cell({ icon: Icon, label, value }: { icon: typeof Clock; label: string; value: string }) {
   return (
     <div className="rounded-2xl bg-card/70 p-3">
       <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">

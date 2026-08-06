@@ -69,7 +69,9 @@ export function MedAiHistoryPanel({
               <li
                 key={conversation.id}
                 className={`flex items-center gap-1 rounded-xl border p-1 pl-2 transition ${
-                  active ? "border-primary/50 bg-primary/10" : "border-transparent hover:bg-muted/50"
+                  active
+                    ? "border-primary/50 bg-primary/10"
+                    : "border-transparent hover:bg-muted/50"
                 }`}
               >
                 <button
@@ -78,11 +80,16 @@ export function MedAiHistoryPanel({
                   className="min-w-0 flex-1 py-1.5 text-left"
                 >
                   <span className="flex items-center gap-1.5 truncate text-sm font-medium">
-                    <MessageSquare className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <MessageSquare
+                      className="size-3.5 shrink-0 text-muted-foreground"
+                      aria-hidden="true"
+                    />
                     {conversation.title}
                   </span>
                   <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                    {urgency ? `${urgencyMeta[urgency].emoji} ${urgencyMeta[urgency].label} · ` : ""}
+                    {urgency
+                      ? `${urgencyMeta[urgency].emoji} ${urgencyMeta[urgency].label} · `
+                      : ""}
                     {languages[(conversation.language as "en" | "hi" | "te") ?? "en"]?.nativeLabel}
                     {" · "}
                     {new Date(conversation.updated_at).toLocaleDateString()}

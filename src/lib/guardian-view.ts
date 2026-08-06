@@ -89,9 +89,7 @@ export const GUARDIAN_MISSIONS: { key: string; label: string }[] = [
 ];
 
 export function guardianEnded(view: GuardianView) {
-  return (
-    view.status === "resolved" || view.status === "cancelled" || view.live_status === "safe"
-  );
+  return view.status === "resolved" || view.status === "cancelled" || view.live_status === "safe";
 }
 
 /** 5-second live refresh while the SOS runs; stops automatically once resolved. */
@@ -113,11 +111,7 @@ export const guardianViewQuery = (emergencyId: string, token: string) =>
     },
   });
 
-export async function addGuardianNote(input: {
-  emergencyId: string;
-  token: string;
-  note: string;
-}) {
+export async function addGuardianNote(input: { emergencyId: string; token: string; note: string }) {
   const { error } = await supabase.rpc("add_guardian_note", {
     _emergency_id: input.emergencyId,
     _token: input.token,

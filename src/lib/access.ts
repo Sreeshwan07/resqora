@@ -33,7 +33,12 @@ export const accessQuery = (userId: string | undefined) =>
     queryFn: async (): Promise<AccessState> => {
       const [profile, roles] = await Promise.all([
         supabase.from("profiles").select("approval_status").eq("id", userId!).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", userId!).eq("role", "admin").maybeSingle(),
+        supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId!)
+          .eq("role", "admin")
+          .maybeSingle(),
       ]);
       if (profile.error) throw new Error(profile.error.message);
       if (roles.error) throw new Error(roles.error.message);

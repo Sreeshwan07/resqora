@@ -32,7 +32,8 @@ export const Route = createFileRoute("/_app/email-diagnostics")({
       { property: "og:title", content: "RESQORA email diagnostics" },
       {
         property: "og:description",
-        content: "Live status of the emergency email transport used for contact and Guardian alerts.",
+        content:
+          "Live status of the emergency email transport used for contact and Guardian alerts.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -120,10 +121,18 @@ function EmailDiagnosticsPage() {
               Email service is not configured. Missing: {missing.join(", ")}
             </p>
           ) : null}
-          <Row label="SDK initialised" value={isEmailInitialised() ? "Yes" : "No"} ok={isEmailInitialised()} />
+          <Row
+            label="SDK initialised"
+            value={isEmailInitialised() ? "Yes" : "No"}
+            ok={isEmailInitialised()}
+          />
           <Row label="Service ID" value={mask(parts.serviceId)} ok={Boolean(parts.serviceId)} />
           <Row label="Template ID" value={mask(parts.templateId)} ok={Boolean(parts.templateId)} />
-          <Row label="Public key loaded" value={parts.publicKey ? "Yes" : "No"} ok={Boolean(parts.publicKey)} />
+          <Row
+            label="Public key loaded"
+            value={parts.publicKey ? "Yes" : "No"}
+            ok={Boolean(parts.publicKey)}
+          />
           <Row
             label="Last email sent"
             value={

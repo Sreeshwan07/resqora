@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { logEvent, notify, type Emergency } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { contactsQuery, logEvent, profileQuery, type Emergency } from "@/lib/api";
 import { cancelEmergency, resolveEmergency } from "@/lib/emergency";
 import { logActivity } from "@/lib/activity";
 import { showPush } from "@/lib/push";
@@ -23,6 +24,8 @@ export function LiveStatusControls({ emergency }: { emergency: Emergency }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const profile = useQuery(profileQuery(user?.id));
+  const contacts = useQuery(contactsQuery(user?.id));
   const current = (emergency as Emergency & { live_status?: string }).live_status ?? "need_help";
 
   async function refresh() {
@@ -64,16 +67,17 @@ export function LiveStatusControls({ emergency }: { emergency: Emergency }) {
   async function cancel() {
     setBusy(true);
     try {
-      await cancelEmergency(emergency);
-      await stopSharing();
-      await notify(emergency.user_id, {
-        category: "emergency",
-        title: "Emergency cancelled",
-        body: "Your alert was cancelled and live sharing was stopped.",
+      // cancelEmergency owns the full close-out: tracking, timeline, history,
+      // notifications and the resolved notice to every alerted contact.
+      await cancelEmergency(emergency, {
+        profile: profile.data,
+        contacts: contacts.data ?? [],
       });
-      await logActivity(user?.id, "Emergency closed", "Cancelled by the user");
+      await stopSharing();
       toast.success("Emergency cancelled");
       await refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not cancel the emergency");
     } finally {
       setBusy(false);
     }

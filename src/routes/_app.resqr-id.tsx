@@ -22,7 +22,10 @@ export const Route = createFileRoute("/_app/resqr-id")({
           "Your personal RESQR ID QR code. Download it, print a wallet card or share it so responders can pull up your emergency summary in one scan.",
       },
       { property: "og:title", content: "My RESQR ID — RESQORA" },
-      { property: "og:description", content: "A secure emergency QR that carries no personal data." },
+      {
+        property: "og:description",
+        content: "A secure emergency QR that carries no personal data.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -109,7 +112,12 @@ function MyResqrIdPage() {
       />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
-        <QrCodeCard value={url} label="Your emergency QR" filename="resqora-resqr-id.png" size={240} />
+        <QrCodeCard
+          value={url}
+          label="Your emergency QR"
+          filename="resqora-resqr-id.png"
+          size={240}
+        />
 
         <div className="glass-panel space-y-4 rounded-3xl p-5">
           <div>
@@ -138,7 +146,11 @@ function MyResqrIdPage() {
               Print wallet card
             </Button>
             <Button variant="destructive" onClick={regenerate} disabled={busy || !user}>
-              {busy ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+              {busy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <RefreshCw className="size-4" />
+              )}
               Regenerate QR
             </Button>
           </div>

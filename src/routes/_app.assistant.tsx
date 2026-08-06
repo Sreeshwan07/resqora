@@ -65,10 +65,7 @@ function AssistantPage() {
     const nextScore = score + option.weight;
     setAnswers(nextAnswers);
     setScore(nextScore);
-    setMessages((prev) => [
-      ...prev,
-      { id: `${question.id}-a`, role: "user", text: option.label },
-    ]);
+    setMessages((prev) => [...prev, { id: `${question.id}-a`, role: "user", text: option.label }]);
 
     const nextIndex = index + 1;
     setThinking(true);
@@ -130,7 +127,10 @@ function AssistantPage() {
         description="Guided triage that calculates severity and walks you through first aid."
         actions={
           severity ? (
-            <StatusIndicator status={severityMeta[severity].status} label={severityMeta[severity].label} />
+            <StatusIndicator
+              status={severityMeta[severity].status}
+              label={severityMeta[severity].label}
+            />
           ) : (
             <StatusIndicator status="active" label="Triage in progress" />
           )

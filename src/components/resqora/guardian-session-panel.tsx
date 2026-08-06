@@ -52,7 +52,8 @@ export function GuardianSessionPanel({
         trackingUrl,
       });
       await session.refetch();
-      if (!result.configured) toast.error("Email service is not connected yet — share the link manually");
+      if (!result.configured)
+        toast.error("Email service is not connected yet — share the link manually");
       else if (result.emailed) toast.success(`Guardian alert sent to ${guardian.name}`);
       else toast.message("Guardian dashboard ready — add an email for automatic delivery");
     } catch (error) {

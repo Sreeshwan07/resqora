@@ -29,6 +29,43 @@ import {
 import { readBatteryLevel, readSpeed } from "@/lib/device";
 import { logSecurityEvent } from "@/lib/audit";
 import { checkRateLimit, sanitizeMultiline } from "@/lib/security";
+import { generateActionPlan } from "@/lib/coordinator.functions";
+import { cachePlan, medicalContext, persistPlan } from "@/lib/core";
+
+/**
+ * Runs the AI Emergency Coordinator as soon as an SOS goes active so the action
+ * plan is already on the emergency row when the guardian opens their dashboard —
+ * the user does not have to visit the Digital Twin first. Best effort: a failure
+ * never affects the emergency itself, and the workspace can retry on demand.
+ */
+async function buildInitialActionPlan(input: {
+  emergency: Emergency;
+  userId: string;
+  profile?: Profile | null;
+  address: string | null;
+}) {
+  try {
+    const plan = await generateActionPlan({
+      data: {
+        type: input.emergency.type,
+        severity: input.emergency.severity,
+        notes: input.emergency.notes ?? undefined,
+        address: input.address ?? undefined,
+        medical: medicalContext(input.profile),
+      },
+    });
+    cachePlan(input.emergency.id, plan);
+    await persistPlan(input.emergency.id, plan);
+    await logEvent(
+      input.emergency.id,
+      input.userId,
+      "AI action plan ready",
+      `${plan.headline} — ${plan.hospitalType}, responder ETA ≈ ${plan.etaMinutes} min.`,
+    );
+  } catch {
+    /* the Digital Twin regenerates the plan on demand */
+  }
+}
 
 export const EMERGENCY_TYPES = [
   { value: "medical", label: "Medical" },
@@ -439,7 +476,14 @@ export async function createEmergency(options: {
   });
 
   const { data: fresh } = await supabase.from("emergencies").select("*").eq("id", data.id).single();
-  return { ...((fresh ?? data) as Emergency), notifications: report };
+  const finalEmergency = (fresh ?? data) as Emergency;
+  void buildInitialActionPlan({
+    emergency: finalEmergency,
+    userId: options.userId,
+    profile: options.profile,
+    address,
+  });
+  return { ...finalEmergency, notifications: report };
 }
 
 /**
@@ -541,10 +585,25 @@ export async function resolveEmergency(emergency: Emergency) {
   await logActivity(emergency.user_id, "Emergency closed", "Emergency resolved");
 }
 
-export async function cancelEmergency(emergency: Emergency) {
+export async function cancelEmergency(
+  emergency: Emergency,
+  extra?: { profile?: Profile | null; contacts?: EmergencyContact[] },
+) {
+  const cancelledAt = new Date();
+  const duration = Math.max(
+    1,
+    Math.round((cancelledAt.getTime() - new Date(emergency.started_at).getTime()) / 1000),
+  );
+  // Freeze the session: status, close time and elapsed duration are all written
+  // once so the history entry and the timeline stop changing after this point.
   await supabase
     .from("emergencies")
-    .update({ status: "cancelled", resolved_at: new Date().toISOString() })
+    .update({
+      status: "cancelled",
+      live_status: "safe",
+      resolved_at: cancelledAt.toISOString(),
+      duration_seconds: duration,
+    })
     .eq("id", emergency.id);
   // Cancelling must kill every live tracking token immediately.
   await supabase
@@ -561,6 +620,47 @@ export async function cancelEmergency(emergency: Emergency) {
   void logSecurityEvent("SOS deactivated", "Emergency cancelled by the user", {
     emergency_id: emergency.id,
   });
+  await logActivity(emergency.user_id, "SOS cancelled", `${emergency.type} alert cancelled`);
+  await notify(emergency.user_id, {
+    category: "emergency",
+    title: "Emergency cancelled",
+    body: "Live tracking stopped and the alert was closed in your history.",
+  });
+  notifyEmergency("emergency_closed");
+  void pushEmergencyAlert({
+    kind: "resolved",
+    emergencyId: emergency.id,
+    personName: extra?.profile?.full_name,
+  });
+  // Anyone who received the alert is told it is over, on the same channels.
+  const contacts = extra?.contacts ?? [];
+  if (contacts.length > 0) {
+    try {
+      const deliveries = await seedDeliveries({
+        userId: emergency.user_id,
+        emergencyId: emergency.id,
+        contacts,
+        kind: "resolved",
+      });
+      await dispatchDeliveries({
+        deliveries,
+        message: buildResolvedAlert({ emergency, profile: extra?.profile }),
+      });
+    } catch {
+      /* the notice can be resent from the share centre */
+    }
+    try {
+      await sendEmergencyEmailAlerts({
+        userId: emergency.user_id,
+        emergency,
+        profile: extra?.profile,
+        contacts,
+        kind: "resolved",
+      });
+    } catch {
+      /* the notice can be resent from the share centre */
+    }
+  }
 }
 
 export function formatDuration(seconds: number | null) {

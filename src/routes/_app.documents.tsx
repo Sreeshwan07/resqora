@@ -18,7 +18,10 @@ export const Route = createFileRoute("/_app/documents")({
           "Generate and download your emergency medical profile and incident history as responder-ready PDF documents.",
       },
       { property: "og:title", content: "Emergency documents — RESQORA" },
-      { property: "og:description", content: "Responder-ready medical profile and incident history PDFs." },
+      {
+        property: "og:description",
+        content: "Responder-ready medical profile and incident history PDFs.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

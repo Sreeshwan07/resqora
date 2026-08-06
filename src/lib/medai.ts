@@ -378,14 +378,54 @@ export const firstAidLibrary: FirstAidTopic[] = [
 ];
 
 export const quickSymptoms: { id: string; label: string; prompt: string; emoji: string }[] = [
-  { id: "chest", label: "Chest pain", emoji: "🫀", prompt: "I have severe chest pain and it spreads to my left arm." },
-  { id: "breath", label: "Can't breathe", emoji: "🫁", prompt: "I am struggling to breathe and feel tightness in my chest." },
-  { id: "bleeding", label: "Heavy bleeding", emoji: "🩸", prompt: "There is heavy bleeding from a deep cut that will not stop." },
-  { id: "unconscious", label: "Unconscious", emoji: "😶", prompt: "Someone has collapsed and is not responding to me." },
-  { id: "fever", label: "High fever", emoji: "🌡️", prompt: "High fever of 103°F since last night with body aches." },
-  { id: "head", label: "Head injury", emoji: "🤕", prompt: "I fell and hit my head, now I feel dizzy and nauseous." },
-  { id: "burn", label: "Burn", emoji: "🔥", prompt: "I burnt my hand on hot oil and blisters are forming." },
-  { id: "stroke", label: "Face droop", emoji: "🧠", prompt: "One side of the face is drooping and speech is slurred." },
+  {
+    id: "chest",
+    label: "Chest pain",
+    emoji: "🫀",
+    prompt: "I have severe chest pain and it spreads to my left arm.",
+  },
+  {
+    id: "breath",
+    label: "Can't breathe",
+    emoji: "🫁",
+    prompt: "I am struggling to breathe and feel tightness in my chest.",
+  },
+  {
+    id: "bleeding",
+    label: "Heavy bleeding",
+    emoji: "🩸",
+    prompt: "There is heavy bleeding from a deep cut that will not stop.",
+  },
+  {
+    id: "unconscious",
+    label: "Unconscious",
+    emoji: "😶",
+    prompt: "Someone has collapsed and is not responding to me.",
+  },
+  {
+    id: "fever",
+    label: "High fever",
+    emoji: "🌡️",
+    prompt: "High fever of 103°F since last night with body aches.",
+  },
+  {
+    id: "head",
+    label: "Head injury",
+    emoji: "🤕",
+    prompt: "I fell and hit my head, now I feel dizzy and nauseous.",
+  },
+  {
+    id: "burn",
+    label: "Burn",
+    emoji: "🔥",
+    prompt: "I burnt my hand on hot oil and blisters are forming.",
+  },
+  {
+    id: "stroke",
+    label: "Face droop",
+    emoji: "🧠",
+    prompt: "One side of the face is drooping and speech is slurred.",
+  },
 ];
 
 /* ------------------------------ chat history ------------------------------ */

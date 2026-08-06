@@ -24,8 +24,7 @@ function serviceAccount(): ServiceAccount | null {
 }
 
 function base64Url(input: ArrayBuffer | string) {
-  const bytes =
-    typeof input === "string" ? new TextEncoder().encode(input) : new Uint8Array(input);
+  const bytes = typeof input === "string" ? new TextEncoder().encode(input) : new Uint8Array(input);
   let binary = "";
   bytes.forEach((byte) => {
     binary += String.fromCharCode(byte);

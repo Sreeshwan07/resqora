@@ -232,8 +232,17 @@ function ProfilePage() {
             </TabsList>
 
             <TabsContent value="personal" className="mt-6 grid gap-4 sm:grid-cols-2">
-              <Field label="Full name" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
-              <Field label="Phone" type="tel" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
+              <Field
+                label="Full name"
+                value={form.full_name}
+                onChange={(v) => setForm({ ...form, full_name: v })}
+              />
+              <Field
+                label="Phone"
+                type="tel"
+                value={form.phone}
+                onChange={(v) => setForm({ ...form, phone: v })}
+              />
               <Field
                 label="Date of birth"
                 type="date"
@@ -258,7 +267,11 @@ function ProfilePage() {
               />
               <div className="sm:col-span-2">
                 <Button variant="hero" onClick={saveProfile} disabled={saving}>
-                  {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                  {saving ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Save className="size-4" />
+                  )}
                   Save changes
                 </Button>
               </div>
@@ -299,7 +312,11 @@ function ProfilePage() {
               />
               <div>
                 <Button variant="hero" onClick={saveProfile} disabled={saving}>
-                  {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                  {saving ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Save className="size-4" />
+                  )}
                   Save medical ID
                 </Button>
               </div>
@@ -320,7 +337,9 @@ function ProfilePage() {
                       label="Name"
                       value={contact.name}
                       onChange={(v) =>
-                        setDrafts((prev) => prev.map((c, i) => (i === index ? { ...c, name: v } : c)))
+                        setDrafts((prev) =>
+                          prev.map((c, i) => (i === index ? { ...c, name: v } : c)),
+                        )
                       }
                     />
                     <Field
@@ -337,7 +356,9 @@ function ProfilePage() {
                       type="tel"
                       value={contact.phone}
                       onChange={(v) =>
-                        setDrafts((prev) => prev.map((c, i) => (i === index ? { ...c, phone: v } : c)))
+                        setDrafts((prev) =>
+                          prev.map((c, i) => (i === index ? { ...c, phone: v } : c)),
+                        )
                       }
                     />
                     <Field
@@ -345,7 +366,9 @@ function ProfilePage() {
                       type="email"
                       value={contact.email}
                       onChange={(v) =>
-                        setDrafts((prev) => prev.map((c, i) => (i === index ? { ...c, email: v } : c)))
+                        setDrafts((prev) =>
+                          prev.map((c, i) => (i === index ? { ...c, email: v } : c)),
+                        )
                       }
                     />
                   </div>

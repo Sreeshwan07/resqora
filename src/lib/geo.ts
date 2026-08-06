@@ -16,8 +16,7 @@ export function haversineKm(a: GeoPoint, b: GeoPoint) {
   const dLng = toRad(b.lng - a.lng);
   const lat1 = toRad(a.lat);
   const lat2 = toRad(b.lat);
-  const h =
-    Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  const h = Math.sin(dLat / 2) ** 2 + Math.sin(dLng / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
   return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(h)));
 }
 
@@ -35,7 +34,8 @@ function seed(id: string) {
 
 function project(origin: GeoPoint, distanceKm: number, bearing: number): GeoPoint {
   const dLat = (distanceKm / 111) * Math.cos(bearing);
-  const dLng = (distanceKm / (111 * Math.cos((origin.lat * Math.PI) / 180) || 1)) * Math.sin(bearing);
+  const dLng =
+    (distanceKm / (111 * Math.cos((origin.lat * Math.PI) / 180) || 1)) * Math.sin(bearing);
   return { lat: origin.lat + dLat, lng: origin.lng + dLng };
 }
 

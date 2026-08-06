@@ -1,5 +1,15 @@
 import { useMemo, useState } from "react";
-import { Ban, Check, ChevronLeft, ChevronRight, Eye, Search, Trash2, UserRound, X } from "lucide-react";
+import {
+  Ban,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  Search,
+  Trash2,
+  UserRound,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -118,7 +128,11 @@ export function UsersTable({
 
       {rows.length === 0 ? (
         <div className="mt-5">
-          <EmptyState icon={UserRound} title={emptyLabel} description="Nothing matches this view yet." />
+          <EmptyState
+            icon={UserRound}
+            title={emptyLabel}
+            description="Nothing matches this view yet."
+          />
         </div>
       ) : (
         <ul className="mt-5 space-y-3">
@@ -168,30 +182,28 @@ export function UsersTable({
                   </Button>
                 )}
                 {user.approval_status !== "rejected" && (
-                  <>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl"
-                      disabled={busyId === user.id}
-                      onClick={() => setConfirming({ user, status: "rejected" })}
-                    >
-                      <X className="size-4" />
-                      Reject
-                    </Button>
-                    {user.approval_status === "approved" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-xl"
-                        disabled={busyId === user.id}
-                        onClick={() => setConfirming({ user, status: "rejected" })}
-                      >
+                  // One revoke action per state: pending accounts are rejected,
+                  // already-approved accounts are suspended. Same effect, so only
+                  // the label that matches the account's state is shown.
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-xl"
+                    disabled={busyId === user.id}
+                    onClick={() => setConfirming({ user, status: "rejected" })}
+                  >
+                    {user.approval_status === "approved" ? (
+                      <>
                         <Ban className="size-4" />
                         Suspend
-                      </Button>
+                      </>
+                    ) : (
+                      <>
+                        <X className="size-4" />
+                        Reject
+                      </>
                     )}
-                  </>
+                  </Button>
                 )}
                 <Button
                   size="sm"
@@ -312,7 +324,10 @@ export function UsersTable({
               <Field label="Phone" value={viewing.phone} />
               <Field label="City" value={viewing.current_city} />
               <Field label="Blood group" value={viewing.blood_group} />
-              <Field label="Onboarding" value={viewing.onboarding_completed ? "Complete" : "Incomplete"} />
+              <Field
+                label="Onboarding"
+                value={viewing.onboarding_completed ? "Complete" : "Incomplete"}
+              />
               <Field label="Registered" value={new Date(viewing.created_at).toLocaleString()} />
               <Field
                 label="Approved at"

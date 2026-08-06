@@ -15,7 +15,10 @@ export const Route = createFileRoute("/m/$token")({
           "Responder view of an RESQORA emergency medical profile: blood group, allergies, conditions, notes and trusted contacts.",
       },
       { property: "og:title", content: "Emergency medical profile — RESQORA" },
-      { property: "og:description", content: "Secure responder access to critical medical details." },
+      {
+        property: "og:description",
+        content: "Secure responder access to critical medical details.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex,nofollow" },
@@ -69,7 +72,9 @@ function SharedProfilePage() {
         ) : !profile ? (
           <div className="glass-panel grid place-items-center rounded-3xl p-10 text-center">
             <ShieldAlert className="size-10 text-muted-foreground" aria-hidden="true" />
-            <h1 className="mt-4 text-xl font-semibold text-foreground">This profile link is inactive</h1>
+            <h1 className="mt-4 text-xl font-semibold text-foreground">
+              This profile link is inactive
+            </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               The owner revoked this medical QR link or it has expired.
             </p>
@@ -110,7 +115,10 @@ function SharedProfilePage() {
 
             <div className="grid gap-4 border-b border-border p-5 sm:grid-cols-2">
               <Field label="Allergies" value={profile.allergies || "None recorded"} />
-              <Field label="Medical conditions" value={profile.medical_conditions || "None recorded"} />
+              <Field
+                label="Medical conditions"
+                value={profile.medical_conditions || "None recorded"}
+              />
               <Field label="Medications" value={profile.medications || "None recorded"} />
               <Field label="Phone" value={profile.phone || "Not provided"} />
               <Field label="Home address" value={profile.home_address || "Not provided"} />

@@ -16,7 +16,9 @@ export const ACTIVITY_ACTIONS = [
 export async function logActivity(userId: string | undefined, action: string, detail?: string) {
   if (!userId) return;
   try {
-    await supabase.from("activity_logs").insert({ user_id: userId, action, detail: detail ?? null });
+    await supabase
+      .from("activity_logs")
+      .insert({ user_id: userId, action, detail: detail ?? null });
   } catch {
     /* activity logging must never break a user action */
   }

@@ -1,4 +1,12 @@
-import { Flame, MapPin, Navigation, PhoneCall, Share2, ShieldCheck, Stethoscope } from "lucide-react";
+import {
+  Flame,
+  MapPin,
+  Navigation,
+  PhoneCall,
+  Share2,
+  ShieldCheck,
+  Stethoscope,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { copyText, mapsLink, mapsNavigateLink } from "@/lib/alerts";

@@ -40,7 +40,12 @@ import {
 import { checkinsQuery } from "@/lib/resqora-data";
 import { coordsOf, copyText, mapsLink, shareText } from "@/lib/alerts";
 import { createEmergency, statusLabel } from "@/lib/emergency";
-import { buildSosMessage, ensureLiveShareLink, ensureMedicalShareLink, shareUrl } from "@/lib/share";
+import {
+  buildSosMessage,
+  ensureLiveShareLink,
+  ensureMedicalShareLink,
+  shareUrl,
+} from "@/lib/share";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_app/dashboard")({
@@ -63,8 +68,16 @@ export const Route = createFileRoute("/_app/dashboard")({
 
 type StatusTone = "safe" | "pending" | "active" | "enroute" | "resolved";
 
-const STATUS_STYLES: Record<StatusTone, { dot: string; ring: string; text: string; label: string }> = {
-  safe: { dot: "bg-success", ring: "border-success/40 bg-success/5", text: "text-success", label: "Safe" },
+const STATUS_STYLES: Record<
+  StatusTone,
+  { dot: string; ring: string; text: string; label: string }
+> = {
+  safe: {
+    dot: "bg-success",
+    ring: "border-success/40 bg-success/5",
+    text: "text-success",
+    label: "Safe",
+  },
   pending: {
     dot: "bg-warning",
     ring: "border-warning/40 bg-warning/5",
@@ -140,7 +153,8 @@ function HomePage() {
   const locationText = coords
     ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`
     : profile.data?.current_city || profile.data?.home_address || "Location not shared";
-  const updatedAt = current?.location_updated_at ?? current?.updated_at ?? lastEmergency?.updated_at;
+  const updatedAt =
+    current?.location_updated_at ?? current?.updated_at ?? lastEmergency?.updated_at;
 
   async function triggerSos() {
     if (!user || busy || current) return;
@@ -216,10 +230,17 @@ function HomePage() {
           <div className="min-w-0">
             <span className="flex items-center gap-2">
               <span className="relative flex size-3 shrink-0">
-                <span className={cn("absolute inline-flex size-3 animate-ping rounded-full opacity-60", style.dot)} />
+                <span
+                  className={cn(
+                    "absolute inline-flex size-3 animate-ping rounded-full opacity-60",
+                    style.dot,
+                  )}
+                />
                 <span className={cn("relative inline-flex size-3 rounded-full", style.dot)} />
               </span>
-              <span className={cn("truncate font-display text-lg font-bold sm:text-xl", style.text)}>
+              <span
+                className={cn("truncate font-display text-lg font-bold sm:text-xl", style.text)}
+              >
                 {statusText}
               </span>
             </span>
@@ -256,10 +277,26 @@ function HomePage() {
       {/* Quick actions */}
       <section aria-label="Quick actions">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
-          <QuickAction icon={Siren} label="SOS" tone="alert" onClick={() => setConfirmOpen(true)} disabled={busy || Boolean(current)} />
-          <QuickAction icon={Share2} label="Share location" onClick={shareLiveLocation} disabled={busy} />
+          <QuickAction
+            icon={Siren}
+            label="SOS"
+            tone="alert"
+            onClick={() => setConfirmOpen(true)}
+            disabled={busy || Boolean(current)}
+          />
+          <QuickAction
+            icon={Share2}
+            label="Share location"
+            onClick={shareLiveLocation}
+            disabled={busy}
+          />
           <QuickAction icon={PhoneCall} label="Call contact" onClick={callContact} />
-          <QuickAction icon={Building2} label="Hospital" to="/nearby" search={{ category: "hospital" }} />
+          <QuickAction
+            icon={Building2}
+            label="Hospital"
+            to="/nearby"
+            search={{ category: "hospital" }}
+          />
           <QuickAction icon={Shield} label="Police" to="/nearby" search={{ category: "police" }} />
           <QuickAction icon={QrCode} label="Medical QR" onClick={openMedicalQr} />
           <QuickAction icon={AlarmClock} label="Check-in" to="/checkins" />
@@ -267,18 +304,51 @@ function HomePage() {
       </section>
 
       {/* Feature tiles */}
-      <section aria-label="RESQORA features" className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+      <section
+        aria-label="RESQORA features"
+        className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+      >
         <Tile icon={Radar} label="Live location" to="/live" meta={coords ? "Tracking" : "Idle"} />
         <Tile icon={Bot} label="AI assistant" to="/assistant" meta="Triage" />
-        <Tile icon={Users} label="Contacts" to="/profile" meta={`${contacts.data?.length ?? 0}/3`} />
+        <Tile
+          icon={Users}
+          label="Contacts"
+          to="/profile"
+          meta={`${contacts.data?.length ?? 0}/3`}
+        />
         <Tile icon={Building2} label="Hospitals" to="/nearby" search={{ category: "hospital" }} />
         <Tile icon={Shield} label="Police" to="/nearby" search={{ category: "police" }} />
         <Tile icon={Flame} label="Fire stations" to="/nearby" search={{ category: "fire" }} />
-        <Tile icon={Droplets} label="Blood banks" to="/nearby" search={{ category: "blood_bank" }} />
-        <Tile icon={AlarmClock} label="Safety check-in" to="/checkins" meta={pendingCheckin ? "Pending" : "Off"} />
-        <Tile icon={HistoryIcon} label="History" to="/history" meta={String(emergencies.data?.length ?? 0)} />
-        <Tile icon={TriangleAlert} label="Disaster alerts" to="/notifications" meta={disasterAlerts ? String(disasterAlerts) : "Clear"} />
-        <Tile icon={Bell} label="Notifications" to="/notifications" meta={unread ? String(unread) : "0"} />
+        <Tile
+          icon={Droplets}
+          label="Blood banks"
+          to="/nearby"
+          search={{ category: "blood_bank" }}
+        />
+        <Tile
+          icon={AlarmClock}
+          label="Safety check-in"
+          to="/checkins"
+          meta={pendingCheckin ? "Pending" : "Off"}
+        />
+        <Tile
+          icon={HistoryIcon}
+          label="History"
+          to="/history"
+          meta={String(emergencies.data?.length ?? 0)}
+        />
+        <Tile
+          icon={TriangleAlert}
+          label="Disaster alerts"
+          to="/notifications"
+          meta={disasterAlerts ? String(disasterAlerts) : "Clear"}
+        />
+        <Tile
+          icon={Bell}
+          label="Notifications"
+          to="/notifications"
+          meta={unread ? String(unread) : "0"}
+        />
         <Tile icon={QrCode} label="Medical ID QR" onClick={openMedicalQr} />
       </section>
 
@@ -400,7 +470,11 @@ function Tile({
     "glass-panel block w-full rounded-2xl p-4 text-left transition hover:border-primary/40 hover:bg-primary/5 active:scale-[0.98]";
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
       {to ? (
         <Link to={to} search={search} className={className}>
           {inner}

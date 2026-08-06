@@ -44,6 +44,8 @@ export function useNearbyServices(
     if (previous && haversineKm(previous, source) < MOVE_THRESHOLD_KM) return previous;
     anchorRef.current = source;
     return source;
+    // `source` is a fresh object every render; the coordinate fields are the real inputs.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source?.lat, source?.lng, source?.label]);
 
   useEffect(() => {

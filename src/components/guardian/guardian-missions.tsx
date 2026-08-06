@@ -60,7 +60,10 @@ export function GuardianMissions({
               {mission.done ? (
                 <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" aria-hidden="true" />
               ) : (
-                <Circle className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <Circle
+                  className="mt-0.5 size-5 shrink-0 text-muted-foreground"
+                  aria-hidden="true"
+                />
               )}
               <span className="min-w-0">
                 <span className={cn("block text-sm font-semibold", mission.done && "line-through")}>

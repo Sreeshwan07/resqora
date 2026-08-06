@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Copy, Link2, Mail, MapPin, MessageCircle, MessageSquare, RefreshCcw, ShieldOff } from "lucide-react";
+import {
+  Copy,
+  Link2,
+  Mail,
+  MapPin,
+  MessageCircle,
+  MessageSquare,
+  RefreshCcw,
+  ShieldOff,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,7 +68,11 @@ export function ShareSos({
     setBusy(true);
     try {
       await revokeShareLink(active.id);
-      await logActivity(user?.id, "Location sharing stopped", `Emergency ${emergency.id.slice(0, 8)}`);
+      await logActivity(
+        user?.id,
+        "Location sharing stopped",
+        `Emergency ${emergency.id.slice(0, 8)}`,
+      );
       void logSecurityEvent("Share link revoked", `Emergency ${emergency.id.slice(0, 8)}`);
       toast.success("Sharing link disabled");
       await link.refetch();

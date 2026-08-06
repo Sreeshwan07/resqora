@@ -47,16 +47,23 @@ export function GuardianAiSummary({
         />
         <Row
           label="Recommended actions"
-          value={view.ai_recommendation ?? "Keep the person still, stay on the line and await responders."}
+          value={
+            view.ai_recommendation ??
+            "Keep the person still, stay on the line and await responders."
+          }
         />
-        <Row label="Recommended hospital" value={recommendedHospital ?? "Nearest emergency-capable hospital"} />
         <Row
-          label="Recommended specialist"
-          value={specialistFor(view.type)}
+          label="Recommended hospital"
+          value={recommendedHospital ?? "Nearest emergency-capable hospital"}
         />
+        <Row label="Recommended specialist" value={specialistFor(view.type)} />
         <Row
           label="Estimated travel time"
-          value={hospital ? `${hospital.etaMinutes} min · ${hospital.distanceKm.toFixed(1)} km` : "Calculating from live GPS"}
+          value={
+            hospital
+              ? `${hospital.etaMinutes} min · ${hospital.distanceKm.toFixed(1)} km`
+              : "Calculating from live GPS"
+          }
         />
       </dl>
 

@@ -85,7 +85,9 @@ export function MedAiMessage({
           )}
         </div>
 
-        {assessment && <UrgencyBadge urgency={assessment.urgency} reason={assessment.urgencyReason} />}
+        {assessment && (
+          <UrgencyBadge urgency={assessment.urgency} reason={assessment.urgencyReason} />
+        )}
 
         <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
 

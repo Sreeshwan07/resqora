@@ -53,7 +53,8 @@ export const analyzeEmergencyImage = createServerFn({ method: "POST" })
       }),
     });
 
-    if (response.status === 429) throw new Error("AI is busy right now — please retry in a moment.");
+    if (response.status === 429)
+      throw new Error("AI is busy right now — please retry in a moment.");
     if (response.status === 402) throw new Error("AI credits exhausted for this workspace.");
     if (!response.ok) throw new Error(`AI analysis failed (${response.status})`);
 

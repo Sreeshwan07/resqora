@@ -115,8 +115,7 @@ function writeEmailDiagnostics(patch: EmailDiagnostics) {
 /* --------------------------------- sending -------------------------------- */
 
 export type EmailSendResult =
-  | { ok: true; attempts: number }
-  | { ok: false; attempts: number; error: string };
+  { ok: true; attempts: number } | { ok: false; attempts: number; error: string };
 
 function errorText(error: unknown) {
   if (!error) return "Unknown EmailJS error";
@@ -137,14 +136,21 @@ export async function sendEmergencyTemplateEmail(
 ): Promise<EmailSendResult> {
   const config = emailConfig();
   if (!config) {
-    writeEmailDiagnostics({ lastError: EMAIL_NOT_CONFIGURED, lastErrorAt: new Date().toISOString() });
+    writeEmailDiagnostics({
+      lastError: EMAIL_NOT_CONFIGURED,
+      lastErrorAt: new Date().toISOString(),
+    });
     return { ok: false, attempts: 0, error: EMAIL_NOT_CONFIGURED };
   }
   if (!initEmailService()) {
     return { ok: false, attempts: 0, error: EMAIL_NOT_CONFIGURED };
   }
   if (!isValidEmail(params.to_email)) {
-    return { ok: false, attempts: 0, error: `Invalid recipient email: ${params.to_email || "empty"}` };
+    return {
+      ok: false,
+      attempts: 0,
+      error: `Invalid recipient email: ${params.to_email || "empty"}`,
+    };
   }
 
   const maxAttempts = options.attempts ?? 3;

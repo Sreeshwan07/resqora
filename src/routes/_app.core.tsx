@@ -50,8 +50,7 @@ function CorePage() {
     plan: cachedPlan(emergency?.id),
     hasResqr: Boolean(resqr.data),
     contactCount: contacts.data?.length ?? 0,
-    lastAccidentReport:
-      history.data?.find((item) => Boolean(item.ai_summary)) ?? null,
+    lastAccidentReport: history.data?.find((item) => Boolean(item.ai_summary)) ?? null,
   });
 
   return (

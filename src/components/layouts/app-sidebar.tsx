@@ -8,13 +8,7 @@ import { isUnrestrictedPath } from "@/lib/access";
 import { useAccess } from "@/hooks/use-access";
 import { cn } from "@/lib/utils";
 
-export function AppSidebar({
-  collapsed,
-  onToggle,
-}: {
-  collapsed: boolean;
-  onToggle: () => void;
-}) {
+export function AppSidebar({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const access = useAccess();
   const [openSections, setOpenSections] = useState<string[]>(navSections.map((s) => s.title));

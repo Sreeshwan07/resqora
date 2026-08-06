@@ -25,7 +25,10 @@ export const Route = createFileRoute("/_app/history")({
           "A complete timeline of your RESQORA emergencies with type, severity, location, duration and outcome.",
       },
       { property: "og:title", content: "RESQORA Emergency History" },
-      { property: "og:description", content: "Every alert, response time and outcome in one timeline." },
+      {
+        property: "og:description",
+        content: "Every alert, response time and outcome in one timeline.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -51,7 +54,13 @@ function HistoryPage() {
     const term = search.trim().toLowerCase();
     if (!term) return all;
     return all.filter((item) =>
-      [item.type, item.status, item.notes ?? "", item.address ?? "", new Date(item.started_at).toLocaleString()]
+      [
+        item.type,
+        item.status,
+        item.notes ?? "",
+        item.address ?? "",
+        new Date(item.started_at).toLocaleString(),
+      ]
         .join(" ")
         .toLowerCase()
         .includes(term),
@@ -61,7 +70,9 @@ function HistoryPage() {
   const resolved = (data ?? []).filter((item) => item.status === "resolved");
   const avg =
     resolved.length > 0
-      ? Math.round(resolved.reduce((sum, i) => sum + (i.duration_seconds ?? 0), 0) / resolved.length)
+      ? Math.round(
+          resolved.reduce((sum, i) => sum + (i.duration_seconds ?? 0), 0) / resolved.length,
+        )
       : null;
 
   return (
@@ -137,7 +148,11 @@ function HistoryPage() {
                 aria-hidden="true"
                 className={cn(
                   "absolute -left-[31px] top-7 size-3 rounded-full ring-4 ring-background",
-                  item.status === "resolved" ? "bg-success" : item.status === "cancelled" ? "bg-muted-foreground" : "bg-alert",
+                  item.status === "resolved"
+                    ? "bg-success"
+                    : item.status === "cancelled"
+                      ? "bg-muted-foreground"
+                      : "bg-alert",
                 )}
               />
               <div className="flex flex-wrap items-start justify-between gap-3">
