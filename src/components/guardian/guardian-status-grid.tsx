@@ -5,9 +5,7 @@ import { guardianEnded, type GuardianView } from "@/lib/guardian-view";
 export function GuardianStatusGrid({ view }: { view: GuardianView }) {
   const live = !guardianEnded(view);
   const lastPing = view.track[0]?.created_at ?? view.location_updated_at;
-  const updating = Boolean(
-    live && lastPing && Date.now() - new Date(lastPing).getTime() < 120_000,
-  );
+  const updating = Boolean(live && lastPing && Date.now() - new Date(lastPing).getTime() < 120_000);
   const items: { label: string; ok: boolean; detail: string }[] = [
     {
       label: "Guardian email delivered",

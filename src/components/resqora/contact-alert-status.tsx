@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Loader2, Mail, MessageCircle, MessageSquare, RefreshCcw, Send, X } from "lucide-react";
+import {
+  Check,
+  Loader2,
+  Mail,
+  MessageCircle,
+  MessageSquare,
+  RefreshCcw,
+  Send,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -102,11 +111,7 @@ export function ContactAlertStatus({
           contacts confirmed delivered.
         </p>
         <Button size="sm" variant="outline" onClick={retryAll} disabled={busy}>
-          {busy ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <RefreshCcw className="size-4" />
-          )}
+          {busy ? <Loader2 className="size-4 animate-spin" /> : <RefreshCcw className="size-4" />}
           Resend all
         </Button>
       </div>
@@ -130,7 +135,12 @@ export function ContactAlertStatus({
               </div>
 
               <div className="mt-3 flex flex-wrap gap-2">
-                <Button size="sm" variant="hero" asChild onClick={() => confirmSent(row, "whatsapp")}>
+                <Button
+                  size="sm"
+                  variant="hero"
+                  asChild
+                  onClick={() => confirmSent(row, "whatsapp")}
+                >
                   <a href={whatsappHref(message, phone)} target="_blank" rel="noreferrer">
                     <MessageCircle className="size-4" />
                     WhatsApp
@@ -142,7 +152,12 @@ export function ContactAlertStatus({
                     SMS
                   </a>
                 </Button>
-                <Button size="sm" variant="outline" asChild onClick={() => confirmSent(row, "email")}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  asChild
+                  onClick={() => confirmSent(row, "email")}
+                >
                   <a href={emailHref(message)}>
                     <Mail className="size-4" />
                     Email

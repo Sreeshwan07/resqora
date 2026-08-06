@@ -82,7 +82,9 @@ function coerce(raw: unknown): MedAiAssessment {
     : "moderate";
   const list = (input: unknown, cap: number) =>
     Array.isArray(input)
-      ? input.filter((item): item is string => typeof item === "string" && item.trim().length > 0).slice(0, cap)
+      ? input
+          .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+          .slice(0, cap)
       : [];
   const text = (input: unknown) =>
     typeof input === "string" && input.trim().length > 0 ? input.trim() : null;
@@ -136,7 +138,8 @@ export async function runMedAi(input: {
     }),
   });
 
-  if (response.status === 429) throw new Error("MedAI is busy right now — please retry in a moment.");
+  if (response.status === 429)
+    throw new Error("MedAI is busy right now — please retry in a moment.");
   if (response.status === 402) throw new Error("AI credits exhausted for this workspace.");
   if (!response.ok) throw new Error(`MedAI request failed (${response.status})`);
 

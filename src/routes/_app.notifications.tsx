@@ -24,7 +24,10 @@ export const Route = createFileRoute("/_app/notifications")({
           "Your RESQORA notification centre: emergency status updates, safety tips and account notices in one place.",
       },
       { property: "og:title", content: "RESQORA Notifications" },
-      { property: "og:description", content: "Emergency updates, safety tips and account notices." },
+      {
+        property: "og:description",
+        content: "Emergency updates, safety tips and account notices.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

@@ -89,7 +89,11 @@ export function MedicalIdCard({
   const rows = [
     { icon: Droplets, label: "Blood group", value: profile?.blood_group || "Not set" },
     { icon: TriangleAlert, label: "Allergies", value: profile?.allergies || "None recorded" },
-    { icon: HeartPulse, label: "Conditions", value: profile?.medical_conditions || "None recorded" },
+    {
+      icon: HeartPulse,
+      label: "Conditions",
+      value: profile?.medical_conditions || "None recorded",
+    },
     { icon: Pill, label: "Medications", value: profile?.medications || "None recorded" },
   ];
 
@@ -110,7 +114,9 @@ export function MedicalIdCard({
           </span>
         )}
         <div className="min-w-0">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Medical ID</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            Medical ID
+          </p>
           <p className="mt-0.5 truncate font-display text-lg font-semibold text-foreground">
             {profile?.full_name || "Unnamed profile"}
           </p>

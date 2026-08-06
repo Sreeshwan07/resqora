@@ -134,7 +134,12 @@ export function PlaceCard({
             <Navigation className="size-4" /> Navigate
           </a>
         </Button>
-        <Button asChild size="icon" variant="outline" className="size-12 shrink-0 rounded-full bg-card">
+        <Button
+          asChild
+          size="icon"
+          variant="outline"
+          className="size-12 shrink-0 rounded-full bg-card"
+        >
           <a
             href={mapsHref(place, "view")}
             onClick={mapsClickHandler(place, "view")}
@@ -184,11 +189,7 @@ function CategoryCard({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: index * 0.04 }}
             >
-              <PlaceCard
-                place={place}
-                origin={origin}
-                serviceLabel={CATEGORY_LABEL[category]}
-              />
+              <PlaceCard place={place} origin={origin} serviceLabel={CATEGORY_LABEL[category]} />
             </motion.div>
           ))
         )}

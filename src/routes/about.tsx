@@ -82,11 +82,26 @@ const WHY = [
 ] as const;
 
 const WORKFLOW = [
-  { label: "SOS triggered", body: "One tap, a voice command, or an automatic crash-detection countdown." },
-  { label: "Location captured", body: "GPS coordinates, accuracy and a resolved street address attach to the alert." },
-  { label: "AI assessment", body: "Severity is scored, priority set and the right responder categories chosen." },
-  { label: "People notified", body: "Guardian and trusted contacts receive push, email and WhatsApp alerts with a live map link." },
-  { label: "Emergency active", body: "Live tracking refreshes every 10 seconds with telemetry and status updates." },
+  {
+    label: "SOS triggered",
+    body: "One tap, a voice command, or an automatic crash-detection countdown.",
+  },
+  {
+    label: "Location captured",
+    body: "GPS coordinates, accuracy and a resolved street address attach to the alert.",
+  },
+  {
+    label: "AI assessment",
+    body: "Severity is scored, priority set and the right responder categories chosen.",
+  },
+  {
+    label: "People notified",
+    body: "Guardian and trusted contacts receive push, email and WhatsApp alerts with a live map link.",
+  },
+  {
+    label: "Emergency active",
+    body: "Live tracking refreshes every 10 seconds with telemetry and status updates.",
+  },
   { label: "Resolved", body: "A timestamped summary is written to your history and activity log." },
 ] as const;
 
@@ -503,8 +518,12 @@ function AboutPage() {
               Privacy & security
             </h2>
             <ul className="mt-3 space-y-2 text-sm leading-relaxed text-muted-foreground">
-              <li>Your records are row-level protected — only your account can read or write them.</li>
-              <li>Public tracking, guardian and RESQR links use random tokens you can revoke anytime.</li>
+              <li>
+                Your records are row-level protected — only your account can read or write them.
+              </li>
+              <li>
+                Public tracking, guardian and RESQR links use random tokens you can revoke anytime.
+              </li>
               <li>Location is captured only while an emergency or check-in is running.</li>
               <li>Sign-ins, SOS events and profile changes are recorded in your activity log.</li>
             </ul>

@@ -92,7 +92,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "RESQORA — Emergency SOS" },
       {
         property: "og:description",
-        content: "RESQORA puts one-tap SOS, AI accident reporting and the nearest hospital, police, fire and blood bank on a single emergency-ready screen.",
+        content:
+          "RESQORA puts one-tap SOS, AI accident reporting and the nearest hospital, police, fire and blood bank on a single emergency-ready screen.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -101,9 +102,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-title", content: "RESQORA" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { name: "twitter:title", content: "RESQORA — Emergency SOS" },
-      { name: "twitter:description", content: "RESQORA puts one-tap SOS, AI accident reporting and the nearest hospital, police, fire and blood bank on a single emergency-ready screen." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/opgh28RpOwd9u5uojiAdEFLNH283/social-images/social-1785683216874-social-image.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/opgh28RpOwd9u5uojiAdEFLNH283/social-images/social-1785683216874-social-image.webp" },
+      {
+        name: "twitter:description",
+        content:
+          "RESQORA puts one-tap SOS, AI accident reporting and the nearest hospital, police, fire and blood bank on a single emergency-ready screen.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/opgh28RpOwd9u5uojiAdEFLNH283/social-images/social-1785683216874-social-image.webp",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/opgh28RpOwd9u5uojiAdEFLNH283/social-images/social-1785683216874-social-image.webp",
+      },
     ],
     links: [
       {

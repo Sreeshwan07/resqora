@@ -2,7 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowLeft, ArrowRight, HeartPulse, Loader2, PhoneCall, ShieldCheck, UserRound } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  HeartPulse,
+  Loader2,
+  PhoneCall,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -57,9 +65,21 @@ const emptyContacts: ContactDraft[] = [
 
 const steps = [
   { title: "Personal details", description: "Who we tell responders you are.", icon: UserRound },
-  { title: "Medical ID", description: "What paramedics need in the first 60 seconds.", icon: HeartPulse },
-  { title: "Emergency contacts", description: "Exactly three people we alert instantly.", icon: PhoneCall },
-  { title: "Review & activate", description: "Confirm and switch protection on.", icon: ShieldCheck },
+  {
+    title: "Medical ID",
+    description: "What paramedics need in the first 60 seconds.",
+    icon: HeartPulse,
+  },
+  {
+    title: "Emergency contacts",
+    description: "Exactly three people we alert instantly.",
+    icon: PhoneCall,
+  },
+  {
+    title: "Review & activate",
+    description: "Confirm and switch protection on.",
+    icon: ShieldCheck,
+  },
 ];
 
 function OnboardingPage() {
@@ -119,10 +139,13 @@ function OnboardingPage() {
   }, [existingContacts]);
 
   const stepValid = useMemo(() => {
-    if (step === 0) return Boolean(form.full_name.trim() && form.phone.trim() && form.current_city.trim());
+    if (step === 0)
+      return Boolean(form.full_name.trim() && form.phone.trim() && form.current_city.trim());
     if (step === 1) return Boolean(form.blood_group);
     if (step === 2)
-      return contacts.every((c) => c.name.trim() && c.relationship.trim() && c.phone.trim().length >= 7);
+      return contacts.every(
+        (c) => c.name.trim() && c.relationship.trim() && c.phone.trim().length >= 7,
+      );
     return true;
   }, [step, form, contacts]);
 
@@ -347,7 +370,11 @@ function OnboardingPage() {
               </Button>
             ) : (
               <Button variant="hero" onClick={activate} disabled={saving}>
-                {saving ? <Loader2 className="size-4 animate-spin" /> : <ShieldCheck className="size-4" />}
+                {saving ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ShieldCheck className="size-4" />
+                )}
                 Activate protection
               </Button>
             )}
@@ -452,7 +479,9 @@ function SelectField({
 function ReviewBlock({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-2xl border border-border bg-card/60 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">{title}</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        {title}
+      </p>
       <p className="mt-2 text-sm text-foreground">{children}</p>
     </div>
   );

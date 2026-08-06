@@ -56,7 +56,12 @@ export function CrashDetectionPanel({
 
       <AnimatePresence mode="wait">
         {countdown === null ? (
-          <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <motion.div
+            key="idle"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
             <Button
               variant="outline"
               className="mt-5 w-full"

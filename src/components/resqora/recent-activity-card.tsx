@@ -47,7 +47,10 @@ export function RecentActivityCard({ limit = 3 }: { limit?: number }) {
                   {item.address ? ` · ${item.address}` : ""}
                 </p>
               </div>
-              <Badge variant="secondary" className="shrink-0 rounded-full text-[10px] font-semibold">
+              <Badge
+                variant="secondary"
+                className="shrink-0 rounded-full text-[10px] font-semibold"
+              >
                 {formatDuration(item.duration_seconds)}
               </Badge>
             </li>

@@ -23,10 +23,7 @@ export function LiveEmergencyWidget() {
     if (!emergency) return;
     const tick = () =>
       setElapsed(
-        Math.max(
-          1,
-          Math.round((Date.now() - new Date(emergency.started_at).getTime()) / 1000),
-        ),
+        Math.max(1, Math.round((Date.now() - new Date(emergency.started_at).getTime()) / 1000)),
       );
     tick();
     const timer = window.setInterval(tick, 1000);

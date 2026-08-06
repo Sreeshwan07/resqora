@@ -85,7 +85,11 @@ function DonorsPage() {
     },
     onSuccess: async (available) => {
       toast.success(available ? "You're listed as an available donor" : "Availability paused");
-      await logActivity(user?.id, "Profile updated", `Blood donor listing ${available ? "enabled" : "paused"}`);
+      await logActivity(
+        user?.id,
+        "Profile updated",
+        `Blood donor listing ${available ? "enabled" : "paused"}`,
+      );
       await queryClient.invalidateQueries({ queryKey: ["blood-donor", user?.id] });
       await queryClient.invalidateQueries({ queryKey: ["blood-donor-search"] });
     },

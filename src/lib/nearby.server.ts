@@ -16,10 +16,7 @@ export type NearbyPlace = {
 
 const EARTH_RADIUS_KM = 6371;
 
-export function haversineKm(
-  a: { lat: number; lng: number },
-  b: { lat: number; lng: number },
-) {
+export function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = (v: number) => (v * Math.PI) / 180;
   const dLat = toRad(b.lat - a.lat);
   const dLng = toRad(b.lng - a.lng);
@@ -207,9 +204,17 @@ function categorise(tags: Record<string, string>): PlaceCategory | null {
 function formatAddress(tags: Record<string, string>) {
   const line = [tags["addr:housenumber"], tags["addr:street"]].filter(Boolean).join(" ");
   return (
-    [line, tags["addr:suburb"], tags["addr:city"] || tags["addr:town"] || tags["addr:village"], tags["addr:postcode"], tags["addr:state"]]
+    [
+      line,
+      tags["addr:suburb"],
+      tags["addr:city"] || tags["addr:town"] || tags["addr:village"],
+      tags["addr:postcode"],
+      tags["addr:state"],
+    ]
       .filter(Boolean)
-      .join(", ") || tags["addr:full"] || ""
+      .join(", ") ||
+    tags["addr:full"] ||
+    ""
   );
 }
 

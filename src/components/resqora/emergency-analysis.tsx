@@ -31,12 +31,15 @@ type SpeechRecognitionLike = {
 
 function createRecognition(): SpeechRecognitionLike | null {
   if (typeof window === "undefined") return null;
-  const Ctor = (
-    window as unknown as {
-      SpeechRecognition?: new () => SpeechRecognitionLike;
-      webkitSpeechRecognition?: new () => SpeechRecognitionLike;
-    }
-  ).SpeechRecognition ?? (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionLike }).webkitSpeechRecognition;
+  const Ctor =
+    (
+      window as unknown as {
+        SpeechRecognition?: new () => SpeechRecognitionLike;
+        webkitSpeechRecognition?: new () => SpeechRecognitionLike;
+      }
+    ).SpeechRecognition ??
+    (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionLike })
+      .webkitSpeechRecognition;
   return Ctor ? new Ctor() : null;
 }
 
@@ -149,7 +152,8 @@ export function EmergencyAnalysisPanel({ emergency }: { emergency: Emergency }) 
         <div>
           <h2 className="text-sm font-semibold text-foreground">What happened?</h2>
           <p className="text-xs text-muted-foreground">
-            Speak or type — RESQORA scores severity and gives first-aid guidance while help is arranged.
+            Speak or type — RESQORA scores severity and gives first-aid guidance while help is
+            arranged.
           </p>
         </div>
       </div>

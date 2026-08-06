@@ -229,8 +229,7 @@ function MedAiPage() {
         },
       });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "MedAI could not answer right now.";
+      const message = error instanceof Error ? error.message : "MedAI could not answer right now.";
       toast.error(message);
       setBubbles((prev) => prev.filter((bubble) => bubble.id !== userBubble.id));
       setInput(prompt);
@@ -239,13 +238,13 @@ function MedAiPage() {
     }
 
     setBubbles((prev) => [
-        ...prev,
-        {
-          id: `local-${Date.now()}-a`,
-          role: "assistant",
-          content: assessment.reply,
-          assessment,
-        },
+      ...prev,
+      {
+        id: `local-${Date.now()}-a`,
+        role: "assistant",
+        content: assessment.reply,
+        assessment,
+      },
     ]);
     setLatest(assessment);
     setSending(false);
@@ -369,9 +368,7 @@ function MedAiPage() {
                       message={bubble}
                       onSpeak={voice.ttsSupported ? voice.speak : undefined}
                       onActivateSos={() => navigate({ to: "/emergency", search: { auto: true } })}
-                      hospitalNavigateUrl={
-                        hospitals[0] ? mapsHref(hospitals[0], "navigate") : null
-                      }
+                      hospitalNavigateUrl={hospitals[0] ? mapsHref(hospitals[0], "navigate") : null}
                     />
                   </motion.div>
                 ))}

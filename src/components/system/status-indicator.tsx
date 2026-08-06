@@ -32,7 +32,10 @@ export function StatusIndicator({
       <span className="relative flex size-2">
         {pulse && (
           <span
-            className={cn("absolute inline-flex size-full animate-ping rounded-full opacity-70", item.dot)}
+            className={cn(
+              "absolute inline-flex size-full animate-ping rounded-full opacity-70",
+              item.dot,
+            )}
           />
         )}
         <span className={cn("relative inline-flex size-2 rounded-full", item.dot)} />

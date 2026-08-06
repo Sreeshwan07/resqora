@@ -1,15 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Activity,
-  Copy,
-  HeartPulse,
-  MapPin,
-  Radar,
-  ShieldCheck,
-  Siren,
-} from "lucide-react";
+import { Activity, Copy, HeartPulse, MapPin, Radar, ShieldCheck, Siren } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader } from "@/components/system/page-header";
 import { EmptyState } from "@/components/system/empty-state";

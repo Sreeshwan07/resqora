@@ -38,7 +38,10 @@ export const Route = createFileRoute("/s/$token")({
           "Follow a shared RESQORA emergency in real time. This secure link shows the person's latest GPS position and status.",
       },
       { property: "og:title", content: "Live emergency location — RESQORA" },
-      { property: "og:description", content: "A secure RESQORA link with a live emergency position." },
+      {
+        property: "og:description",
+        content: "A secure RESQORA link with a live emergency position.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex,nofollow" },
@@ -164,220 +167,232 @@ function SharedLocationPage() {
         ) : !info ? (
           <div className="glass-panel grid place-items-center rounded-3xl p-10 text-center">
             <ShieldAlert className="size-10 text-muted-foreground" aria-hidden="true" />
-            <h1 className="mt-4 text-xl font-semibold text-foreground">This link is no longer active</h1>
+            <h1 className="mt-4 text-xl font-semibold text-foreground">
+              This link is no longer active
+            </h1>
             <p className="mt-2 text-sm text-muted-foreground">
               The person has stopped sharing their location, or the link has expired.
             </p>
           </div>
         ) : (
           <>
-          <div className="glass-panel overflow-hidden rounded-3xl">
-            <div className="border-b border-border p-5">
-              <p className="text-xs font-semibold uppercase tracking-widest text-alert">
-                Live emergency · {info.reference}
-              </p>
-              <h1 className="mt-1 font-display text-2xl font-bold text-foreground">
-                {resolved ? (
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="size-6 text-success" aria-hidden="true" />
-                    {info.full_name} — Emergency resolved
-                  </span>
-                ) : (
-                  <>
-                    {info.full_name} — {LIVE_LABELS[info.live_status] ?? "Emergency active"}
-                  </>
-                )}
-              </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {info.type} emergency · started {new Date(info.started_at).toLocaleString()}
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Badge variant="outline" className="gap-1 rounded-full text-[10px]">
-                  <Clock className="size-3" aria-hidden="true" />
-                  {formatDuration(elapsed)} elapsed
-                </Badge>
-                <Badge variant="outline" className="gap-1 rounded-full text-[10px]">
-                  <Gauge className="size-3" aria-hidden="true" />
-                  {info.speed != null ? `${Math.round(info.speed * 3.6)} km/h` : "Speed unavailable"}
-                </Badge>
-                <Badge variant="outline" className="gap-1 rounded-full text-[10px]">
-                  <BatteryMedium className="size-3" aria-hidden="true" />
-                  {info.battery_level != null ? `${info.battery_level}% battery` : "Battery unknown"}
-                </Badge>
-                <Badge variant="outline" className="gap-1 rounded-full text-[10px]">
-                  {online ? (
-                    <Wifi className="size-3" aria-hidden="true" />
+            <div className="glass-panel overflow-hidden rounded-3xl">
+              <div className="border-b border-border p-5">
+                <p className="text-xs font-semibold uppercase tracking-widest text-alert">
+                  Live emergency · {info.reference}
+                </p>
+                <h1 className="mt-1 font-display text-2xl font-bold text-foreground">
+                  {resolved ? (
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="size-6 text-success" aria-hidden="true" />
+                      {info.full_name} — Emergency resolved
+                    </span>
                   ) : (
-                    <WifiOff className="size-3" aria-hidden="true" />
+                    <>
+                      {info.full_name} — {LIVE_LABELS[info.live_status] ?? "Emergency active"}
+                    </>
                   )}
-                  {online ? "You are online" : "You are offline"}
-                </Badge>
+                </h1>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {info.type} emergency · started {new Date(info.started_at).toLocaleString()}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Badge variant="outline" className="gap-1 rounded-full text-[10px]">
+                    <Clock className="size-3" aria-hidden="true" />
+                    {formatDuration(elapsed)} elapsed
+                  </Badge>
+                  <Badge variant="outline" className="gap-1 rounded-full text-[10px]">
+                    <Gauge className="size-3" aria-hidden="true" />
+                    {info.speed != null
+                      ? `${Math.round(info.speed * 3.6)} km/h`
+                      : "Speed unavailable"}
+                  </Badge>
+                  <Badge variant="outline" className="gap-1 rounded-full text-[10px]">
+                    <BatteryMedium className="size-3" aria-hidden="true" />
+                    {info.battery_level != null
+                      ? `${info.battery_level}% battery`
+                      : "Battery unknown"}
+                  </Badge>
+                  <Badge variant="outline" className="gap-1 rounded-full text-[10px]">
+                    {online ? (
+                      <Wifi className="size-3" aria-hidden="true" />
+                    ) : (
+                      <WifiOff className="size-3" aria-hidden="true" />
+                    )}
+                    {online ? "You are online" : "You are offline"}
+                  </Badge>
+                </div>
+              </div>
+              <MapPreview coords={coords} title="Shared emergency location" />
+              <div className="grid gap-4 border-t border-border p-5 sm:grid-cols-2">
+                <Field label="Latitude" value={coords ? coords.lat.toFixed(6) : "Awaiting GPS"} />
+                <Field label="Longitude" value={coords ? coords.lng.toFixed(6) : "Awaiting GPS"} />
+                <Field label="Address" value={info.address || "Not provided"} />
+                <Field
+                  label="Emergency started"
+                  value={new Date(info.started_at).toLocaleString()}
+                />
+                <Field
+                  label="Location updated"
+                  value={
+                    info.location_updated_at
+                      ? new Date(info.location_updated_at).toLocaleTimeString()
+                      : "Waiting for first fix"
+                  }
+                />
+                {info.blood_group && <Field label="Blood group" value={info.blood_group} />}
+                {info.allergies && <Field label="Allergies" value={info.allergies} />}
+                {info.medical_conditions && (
+                  <Field label="Medical conditions" value={info.medical_conditions} />
+                )}
+                {info.medications && <Field label="Medications" value={info.medications} />}
+                {info.notes && <Field label="Notes" value={info.notes} />}
+                {info.resolved_at && (
+                  <Field label="Resolved" value={new Date(info.resolved_at).toLocaleString()} />
+                )}
+              </div>
+              <div className="grid gap-2 border-t border-border p-5 sm:grid-cols-2 lg:grid-cols-4">
+                <Button asChild variant="hero" disabled={!info.user_phone}>
+                  {info.user_phone ? (
+                    <a href={`tel:${info.user_phone}`}>
+                      <PhoneCall className="size-4" />
+                      Call {info.full_name.split(" ")[0]}
+                    </a>
+                  ) : (
+                    <span>
+                      <PhoneCall className="size-4" />
+                      No phone shared
+                    </span>
+                  )}
+                </Button>
+                <Button asChild variant="outline" disabled={!coords}>
+                  {coords ? (
+                    <a
+                      href={mapsDirectionsLink(`${coords.lat},${coords.lng}`)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      <Navigation className="size-4" />
+                      Navigate to them
+                    </a>
+                  ) : (
+                    <span>
+                      <Navigation className="size-4" />
+                      Awaiting GPS
+                    </span>
+                  )}
+                </Button>
+                <Button variant="outline" onClick={() => copy(details, "Emergency details")}>
+                  <Copy className="size-4" />
+                  Copy details
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => copy(window.location.href, "Tracking link")}
+                >
+                  <Link2 className="size-4" />
+                  Copy tracking link
+                </Button>
+              </div>
+              <div className="grid gap-2 border-t border-border p-5 sm:grid-cols-2 lg:grid-cols-4">
+                <ResponderButton place={nearest.hospital} label="Call nearest hospital" />
+                <ResponderButton place={nearest.police} label="Call police" />
+                <ResponderButton place={nearest.fire} label="Call fire station" />
+                <Button asChild variant="outline">
+                  <a href="#blood-banks">
+                    <Droplets className="size-4" />
+                    Nearby blood banks
+                  </a>
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2 border-t border-border p-5">
+                {(track.data ?? []).length > 0 && (
+                  <div className="w-full">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                      Movement history
+                    </p>
+                    <ul className="mt-2 max-h-44 space-y-1 overflow-auto">
+                      {(track.data ?? []).map((ping) => (
+                        <li
+                          key={ping.created_at}
+                          className="flex items-center justify-between gap-3 rounded-xl bg-muted/60 px-3 py-1.5 text-xs"
+                        >
+                          <span className="font-mono text-foreground">
+                            {ping.latitude.toFixed(5)}, {ping.longitude.toFixed(5)}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {new Date(ping.created_at).toLocaleTimeString()}
+                            {ping.accuracy ? ` · ±${Math.round(ping.accuracy)}m` : ""}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <Button asChild variant="hero" disabled={!coords}>
+                  {coords ? (
+                    <a href={mapsLink(coords)} target="_blank" rel="noreferrer">
+                      <ExternalLink className="size-4" />
+                      Open in Google Maps
+                    </a>
+                  ) : (
+                    <span>
+                      <MapPin className="size-4" />
+                      Waiting for GPS
+                    </span>
+                  )}
+                </Button>
+                <p className="self-center text-xs text-muted-foreground">
+                  {resolved
+                    ? "This emergency is closed — live updates have stopped."
+                    : "This page refreshes automatically every 10 seconds."}
+                </p>
               </div>
             </div>
-            <MapPreview coords={coords} title="Shared emergency location" />
-            <div className="grid gap-4 border-t border-border p-5 sm:grid-cols-2">
-              <Field label="Latitude" value={coords ? coords.lat.toFixed(6) : "Awaiting GPS"} />
-              <Field label="Longitude" value={coords ? coords.lng.toFixed(6) : "Awaiting GPS"} />
-              <Field label="Address" value={info.address || "Not provided"} />
-              <Field label="Emergency started" value={new Date(info.started_at).toLocaleString()} />
-              <Field
-                label="Location updated"
-                value={
-                  info.location_updated_at
-                    ? new Date(info.location_updated_at).toLocaleTimeString()
-                    : "Waiting for first fix"
-                }
-              />
-              {info.blood_group && <Field label="Blood group" value={info.blood_group} />}
-              {info.allergies && <Field label="Allergies" value={info.allergies} />}
-              {info.medical_conditions && (
-                <Field label="Medical conditions" value={info.medical_conditions} />
-              )}
-              {info.medications && <Field label="Medications" value={info.medications} />}
-              {info.notes && <Field label="Notes" value={info.notes} />}
-              {info.resolved_at && (
-                <Field label="Resolved" value={new Date(info.resolved_at).toLocaleString()} />
-              )}
-            </div>
-            <div className="grid gap-2 border-t border-border p-5 sm:grid-cols-2 lg:grid-cols-4">
-              <Button asChild variant="hero" disabled={!info.user_phone}>
-                {info.user_phone ? (
-                  <a href={`tel:${info.user_phone}`}>
-                    <PhoneCall className="size-4" />
-                    Call {info.full_name.split(" ")[0]}
-                  </a>
-                ) : (
-                  <span>
-                    <PhoneCall className="size-4" />
-                    No phone shared
-                  </span>
-                )}
-              </Button>
-              <Button asChild variant="outline" disabled={!coords}>
-                {coords ? (
-                  <a
-                    href={mapsDirectionsLink(`${coords.lat},${coords.lng}`)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <Navigation className="size-4" />
-                    Navigate to them
-                  </a>
-                ) : (
-                  <span>
-                    <Navigation className="size-4" />
-                    Awaiting GPS
-                  </span>
-                )}
-              </Button>
-              <Button variant="outline" onClick={() => copy(details, "Emergency details")}>
-                <Copy className="size-4" />
-                Copy details
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => copy(window.location.href, "Tracking link")}
-              >
-                <Link2 className="size-4" />
-                Copy tracking link
-              </Button>
-            </div>
-            <div className="grid gap-2 border-t border-border p-5 sm:grid-cols-2 lg:grid-cols-4">
-              <ResponderButton place={nearest.hospital} label="Call nearest hospital" />
-              <ResponderButton place={nearest.police} label="Call police" />
-              <ResponderButton place={nearest.fire} label="Call fire station" />
-              <Button asChild variant="outline">
-                <a href="#blood-banks">
-                  <Droplets className="size-4" />
-                  Nearby blood banks
-                </a>
-              </Button>
-            </div>
-            <div className="flex flex-wrap gap-2 border-t border-border p-5">
-              {(track.data ?? []).length > 0 && (
-                <div className="w-full">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    Movement history
-                  </p>
-                  <ul className="mt-2 max-h-44 space-y-1 overflow-auto">
-                    {(track.data ?? []).map((ping) => (
-                      <li
-                        key={ping.created_at}
-                        className="flex items-center justify-between gap-3 rounded-xl bg-muted/60 px-3 py-1.5 text-xs"
-                      >
-                        <span className="font-mono text-foreground">
-                          {ping.latitude.toFixed(5)}, {ping.longitude.toFixed(5)}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {new Date(ping.created_at).toLocaleTimeString()}
-                          {ping.accuracy ? ` · ±${Math.round(ping.accuracy)}m` : ""}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <Button asChild variant="hero" disabled={!coords}>
-                {coords ? (
-                  <a href={mapsLink(coords)} target="_blank" rel="noreferrer">
-                    <ExternalLink className="size-4" />
-                    Open in Google Maps
-                  </a>
-                ) : (
-                  <span>
-                    <MapPin className="size-4" />
-                    Waiting for GPS
-                  </span>
-                )}
-              </Button>
-              <p className="self-center text-xs text-muted-foreground">
-                {resolved
-                  ? "This emergency is closed — live updates have stopped."
-                  : "This page refreshes automatically every 10 seconds."}
+
+            <section id="blood-banks" className="glass-panel rounded-3xl p-5">
+              <h2 className="font-display text-lg font-bold text-foreground">
+                Nearest emergency services
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Real hospitals, police, fire &amp; rescue and blood banks around their last known
+                position.
               </p>
-            </div>
-          </div>
+              <div className="mt-4">
+                <GuardianServices
+                  lat={coords?.lat ?? null}
+                  lng={coords?.lng ?? null}
+                  onNearest={setNearest}
+                />
+              </div>
+            </section>
 
-          <section id="blood-banks" className="glass-panel rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold text-foreground">
-              Nearest emergency services
-            </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Real hospitals, police, fire &amp; rescue and blood banks around their last known
-              position.
-            </p>
-            <div className="mt-4">
-              <GuardianServices
-                lat={coords?.lat ?? null}
-                lng={coords?.lng ?? null}
-                onNearest={setNearest}
-              />
-            </div>
-          </section>
-
-          <section className="glass-panel rounded-3xl p-5">
-            <h2 className="font-display text-lg font-bold text-foreground">Emergency timeline</h2>
-            {(info.timeline ?? []).length === 0 ? (
-              <p className="mt-2 text-sm text-muted-foreground">No events recorded yet.</p>
-            ) : (
-              <ol className="mt-4 space-y-3">
-                {(info.timeline ?? []).map((event) => (
-                  <li key={`${event.label}-${event.created_at}`} className="flex gap-3">
-                    <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-foreground">{event.label}</p>
-                      {event.detail && (
-                        <p className="text-xs text-muted-foreground">{event.detail}</p>
-                      )}
-                      <p className="text-[11px] text-muted-foreground">
-                        {new Date(event.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </section>
+            <section className="glass-panel rounded-3xl p-5">
+              <h2 className="font-display text-lg font-bold text-foreground">Emergency timeline</h2>
+              {(info.timeline ?? []).length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">No events recorded yet.</p>
+              ) : (
+                <ol className="mt-4 space-y-3">
+                  {(info.timeline ?? []).map((event) => (
+                    <li key={`${event.label}-${event.created_at}`} className="flex gap-3">
+                      <span
+                        className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground">{event.label}</p>
+                        {event.detail && (
+                          <p className="text-xs text-muted-foreground">{event.detail}</p>
+                        )}
+                        <p className="text-[11px] text-muted-foreground">
+                          {new Date(event.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </section>
           </>
         )}
       </div>

@@ -53,7 +53,10 @@ export function GuardianMedical({ view }: { view: GuardianView }) {
       <dl className="mt-3 grid gap-3 sm:grid-cols-2">
         <Field label="Medical conditions" value={view.medical_conditions || "None recorded"} />
         <Field label="Current medicines" value={view.medications || "None recorded"} icon={Pill} />
-        <Field label="Preferred hospital" value={view.preferred_hospital || "Nearest emergency hospital"} />
+        <Field
+          label="Preferred hospital"
+          value={view.preferred_hospital || "Nearest emergency hospital"}
+        />
         <Field
           label="Preferred language"
           value={view.preferred_language || "Not set"}
@@ -83,15 +86,7 @@ export function GuardianMedical({ view }: { view: GuardianView }) {
   );
 }
 
-function Field({
-  label,
-  value,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  icon?: typeof Pill;
-}) {
+function Field({ label, value, icon: Icon }: { label: string; value: string; icon?: typeof Pill }) {
   return (
     <div className="rounded-2xl bg-card/70 p-3">
       <dt className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted-foreground">

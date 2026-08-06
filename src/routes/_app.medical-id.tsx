@@ -17,7 +17,10 @@ export const Route = createFileRoute("/_app/medical-id")({
           "One-tap medical ID with blood group, allergies, conditions, medications and trusted contacts, plus a responder QR code.",
       },
       { property: "og:title", content: "Medical ID — RESQORA" },
-      { property: "og:description", content: "Blood group, allergies, conditions and contacts in one tap." },
+      {
+        property: "og:description",
+        content: "Blood group, allergies, conditions and contacts in one tap.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

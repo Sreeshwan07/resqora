@@ -93,7 +93,11 @@ export function LocationGate() {
         {error && <p className="text-xs text-alert">{error}</p>}
 
         <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button className="h-11 w-full sm:flex-1" onClick={() => void enableLocation()} disabled={busy}>
+          <Button
+            className="h-11 w-full sm:flex-1"
+            onClick={() => void enableLocation()}
+            disabled={busy}
+          >
             <LocateFixed className="size-4" /> Enable location
           </Button>
           {mode === "prompt" && (

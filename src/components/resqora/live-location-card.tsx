@@ -53,7 +53,11 @@ export function LiveLocationCard({
         </div>
         {position && (
           <Button asChild size="sm" variant="outline">
-            <a href={mapsLink({ lat: position.lat, lng: position.lng })} target="_blank" rel="noreferrer">
+            <a
+              href={mapsLink({ lat: position.lat, lng: position.lng })}
+              target="_blank"
+              rel="noreferrer"
+            >
               <Navigation className="size-4" />
               Open map
             </a>

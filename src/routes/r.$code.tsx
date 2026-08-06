@@ -132,11 +132,23 @@ function EmergencySummaryPage() {
               <Row icon={CalendarDays} label="Age" text={value(data.age)} />
               <Row icon={AlertTriangle} label="Allergies" text={value(data.allergies)} />
               <Row icon={Pill} label="Current medicines" text={value(data.medications)} />
-              <Row icon={Stethoscope} label="Medical conditions" text={value(data.medical_conditions)} />
+              <Row
+                icon={Stethoscope}
+                label="Medical conditions"
+                text={value(data.medical_conditions)}
+              />
               <Row icon={PhoneCall} label="Guardian name" text={value(data.guardian_name)} />
               <Row icon={PhoneCall} label="Guardian phone" text={value(data.guardian_phone)} />
-              <Row icon={Hospital} label="Preferred hospital" text={value(data.preferred_hospital)} />
-              <Row icon={Languages} label="Preferred language" text={value(data.preferred_language)} />
+              <Row
+                icon={Hospital}
+                label="Preferred hospital"
+                text={value(data.preferred_hospital)}
+              />
+              <Row
+                icon={Languages}
+                label="Preferred language"
+                text={value(data.preferred_language)}
+              />
             </dl>
           </section>
 
@@ -155,20 +167,39 @@ function EmergencySummaryPage() {
                 Call guardian{data.guardian_name ? ` — ${data.guardian_name}` : ""}
               </a>
             </Button>
-            <Button asChild size="lg" variant="destructive" className="h-16 w-full justify-start rounded-2xl text-base">
+            <Button
+              asChild
+              size="lg"
+              variant="destructive"
+              className="h-16 w-full justify-start rounded-2xl text-base"
+            >
               <a href="tel:108">
                 <Siren className="size-5" aria-hidden="true" />
                 Call ambulance (108)
               </a>
             </Button>
-            <Button asChild size="lg" variant="outline" className="h-16 w-full justify-start rounded-2xl text-base">
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="h-16 w-full justify-start rounded-2xl text-base"
+            >
               <a href="tel:112">
                 <Activity className="size-5" aria-hidden="true" />
                 Call police (112)
               </a>
             </Button>
-            <Button asChild size="lg" variant="outline" className="h-16 w-full justify-start rounded-2xl text-base">
-              <a href={traumaHospitalLink(data.preferred_hospital)} target="_blank" rel="noreferrer">
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="h-16 w-full justify-start rounded-2xl text-base"
+            >
+              <a
+                href={traumaHospitalLink(data.preferred_hospital)}
+                target="_blank"
+                rel="noreferrer"
+              >
                 <Navigation className="size-5" aria-hidden="true" />
                 Navigate to nearest trauma hospital
               </a>

@@ -8,13 +8,7 @@ export type LivePosition = {
   source: "gps" | "manual";
 };
 
-export type LocationStatus =
-  | "idle"
-  | "locating"
-  | "granted"
-  | "manual"
-  | "denied"
-  | "unavailable";
+export type LocationStatus = "idle" | "locating" | "granted" | "manual" | "denied" | "unavailable";
 
 export type ManualLocation = { lat: number; lng: number; label: string };
 
@@ -102,7 +96,13 @@ function applyManual(manual: ManualLocation) {
     position:
       state.position && state.position.source === "gps"
         ? state.position
-        : { lat: manual.lat, lng: manual.lng, accuracy: 0, updatedAt: new Date(), source: "manual" },
+        : {
+            lat: manual.lat,
+            lng: manual.lng,
+            accuracy: 0,
+            updatedAt: new Date(),
+            source: "manual",
+          },
   });
 }
 

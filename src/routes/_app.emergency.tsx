@@ -152,7 +152,10 @@ function EmergencyPage() {
   async function handleCancel() {
     if (!active.data) return;
     setBusy(true);
-    await cancelEmergency(active.data);
+    await cancelEmergency(active.data, {
+      profile: profile.data,
+      contacts: contacts.data ?? [],
+    });
     await refresh();
     setBusy(false);
     toast("Alert cancelled");

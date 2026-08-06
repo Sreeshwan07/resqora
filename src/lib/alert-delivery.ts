@@ -123,10 +123,7 @@ export async function markDelivery(
  * outcome per contact. Returns false when no provider is connected so the UI can
  * offer WhatsApp / SMS / email hand-off instead.
  */
-export async function dispatchDeliveries(input: {
-  deliveries: AlertDelivery[];
-  message: string;
-}) {
+export async function dispatchDeliveries(input: { deliveries: AlertDelivery[]; message: string }) {
   const targets = input.deliveries.filter((d) => d.status !== "delivered" && d.contact_phone);
   if (targets.length === 0) return true;
   const { sendEmergencyAlerts } = await import("@/lib/alerts.functions");

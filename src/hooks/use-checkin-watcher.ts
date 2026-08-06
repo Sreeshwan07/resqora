@@ -47,9 +47,7 @@ export function useCheckinWatcher() {
           escalating.current.add(checkin.id);
           try {
             const contacts = await queryClient.fetchQuery(contactsQuery(user!.id));
-            const profile = await queryClient
-              .fetchQuery(profileQuery(user!.id))
-              .catch(() => null);
+            const profile = await queryClient.fetchQuery(profileQuery(user!.id)).catch(() => null);
             const emergency = await createEmergency({
               userId: user!.id,
               type: "sos",

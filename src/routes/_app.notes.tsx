@@ -167,7 +167,10 @@ function NotesPage() {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-foreground">{note.title}</p>
-                      <Badge variant="secondary" className="mt-1 rounded-full text-[10px] capitalize">
+                      <Badge
+                        variant="secondary"
+                        className="mt-1 rounded-full text-[10px] capitalize"
+                      >
                         {NOTE_CATEGORIES.find((c) => c.value === note.category)?.label ??
                           note.category}
                       </Badge>

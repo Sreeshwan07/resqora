@@ -1,10 +1,5 @@
 export type ServiceCategory =
-  | "hospital"
-  | "police"
-  | "fire"
-  | "blood_bank"
-  | "pharmacy"
-  | "shelter";
+  "hospital" | "police" | "fire" | "blood_bank" | "pharmacy" | "shelter";
 
 export type NearbyService = {
   id: string;
