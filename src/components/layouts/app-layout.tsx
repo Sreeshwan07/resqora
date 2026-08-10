@@ -11,6 +11,7 @@ import { LiveEmergencyWidget } from "@/components/resqora/live-emergency-widget"
 import { LiveLocationCard } from "@/components/resqora/live-location-card";
 import { LocationGate } from "@/components/resqora/location-gate";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { ConnectionBanner } from "@/components/pwa/connection-banner";
 import { PushRegistrar } from "@/components/pwa/push-registrar";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useEmergencyTracker } from "@/hooks/use-emergency-tracker";
@@ -54,6 +55,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex min-h-dvh w-full bg-background aurora">
       <AppSidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
       <div className="flex min-w-0 flex-1 flex-col">
+        <ConnectionBanner />
         <AppTopbar />
         <main className="flex-1 px-4 pb-28 pt-6 sm:px-6 lg:pb-10">
           <motion.div
