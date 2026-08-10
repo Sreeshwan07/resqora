@@ -14,6 +14,7 @@ import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
 import {
   EMAIL_NOT_CONFIGURED,
   isEmailConfigured,
+  isValidEmail,
   sendAndRecord,
   type EmergencyTemplateParams,
 } from "@/lib/email-service";
@@ -87,8 +88,19 @@ export function buildResolvedEmail(input: {
   };
 }
 
+/**
+ * Contacts that can actually receive an email: a valid address, and one row per
+ * address so the same person never receives the same alert twice.
+ */
 export function contactsWithEmail(contacts: EmergencyContact[]) {
-  return contacts.filter((contact) => Boolean(contact.email?.includes("@")));
+  const seen = new Set<string>();
+  return contacts.filter((contact) => {
+    if (!isValidEmail(contact.email)) return false;
+    const key = contact.email!.trim().toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 /** Creates one pending email delivery row per contact that has an address. */
