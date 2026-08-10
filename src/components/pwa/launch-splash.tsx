@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 const HOLD_MS = 900;
 const FADE_MS = 400;
 /** The logo's own background field — matching it hides the image edges. */
-const SPLASH_BG = "#eaedef";
+const SPLASH_BG = "#f7f9fc";
 
 /**
  * Installed-app launch splash. Android/iOS paint a system splash first (manifest
