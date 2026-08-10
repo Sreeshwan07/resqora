@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 const HOLD_MS = 900;
 const FADE_MS = 400;
+/** The logo's own background field — matching it hides the image edges. */
+const SPLASH_BG = "#eaedef";
 
 /**
  * Installed-app launch splash. Android/iOS paint a system splash first (manifest
@@ -32,7 +34,7 @@ export function LaunchSplash() {
   return (
     <div
       aria-hidden="true"
-      style={{ transitionDuration: `${FADE_MS}ms`, backgroundColor: "#f7f9fc" }}
+      style={{ transitionDuration: `${FADE_MS}ms`, backgroundColor: SPLASH_BG }}
       className={`fixed inset-0 z-[100] grid place-items-center px-8 transition-opacity motion-reduce:transition-none ${
         phase === "leaving" ? "opacity-0" : "opacity-100"
       }`}
@@ -42,7 +44,7 @@ export function LaunchSplash() {
         <img
           src="/brand/resqora-logo.png"
           alt="RESQORA — Emergency Response"
-          width={476}
+          width={473}
           height={320}
           decoding="sync"
           className="h-auto w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[400px]"
