@@ -25,7 +25,9 @@ export default defineConfig({
         manifest: false,
         workbox: {
           // The FCM worker is a separate registration and must never be precached.
-          globIgnores: ["**/firebase-messaging-sw.js"],
+          // iOS launch images are painted by Safari before the SW is involved, so
+          // precaching ~800 KB of them would only slow the first install.
+          globIgnores: ["**/firebase-messaging-sw.js", "brand/splash-*.jpg"],
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           runtimeCaching: [
             {
