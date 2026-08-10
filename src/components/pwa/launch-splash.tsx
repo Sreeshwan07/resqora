@@ -1,33 +1,53 @@
 import { useEffect, useState } from "react";
 
+const HOLD_MS = 900;
+const FADE_MS = 400;
+
 /**
- * Standalone launch splash. Android/iOS show a system splash from the manifest,
- * but the app shell still needs a beat to hydrate — this keeps the launch branded
- * instead of flashing an empty screen. It only runs in installed (standalone) mode.
+ * Installed-app launch splash. Android/iOS paint a system splash first (manifest
+ * icon / apple-touch-startup-image), then the shell needs a beat to hydrate —
+ * this bridges that gap with the official RESQORA logo instead of a blank frame,
+ * then fades into Home. Runs only in standalone (installed) mode; the logo is a
+ * static local file so it paints instantly and works with no connectivity.
  */
 export function LaunchSplash() {
-  const [visible, setVisible] = useState(false);
+  const [phase, setPhase] = useState<"hidden" | "shown" | "leaving">("hidden");
 
   useEffect(() => {
     const standalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       (window.navigator as { standalone?: boolean }).standalone === true;
     if (!standalone) return;
-    setVisible(true);
-    const timer = window.setTimeout(() => setVisible(false), 900);
-    return () => window.clearTimeout(timer);
+    setPhase("shown");
+    const leave = window.setTimeout(() => setPhase("leaving"), HOLD_MS);
+    const done = window.setTimeout(() => setPhase("hidden"), HOLD_MS + FADE_MS);
+    return () => {
+      window.clearTimeout(leave);
+      window.clearTimeout(done);
+    };
   }, []);
 
-  if (!visible) return null;
+  if (phase === "hidden") return null;
 
   return (
     <div
       aria-hidden="true"
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-4 bg-background"
+      style={{ transitionDuration: `${FADE_MS}ms`, backgroundColor: "#f7f9fc" }}
+      className={`fixed inset-0 z-[100] grid place-items-center px-8 transition-opacity motion-reduce:transition-none ${
+        phase === "leaving" ? "opacity-0" : "opacity-100"
+      }`}
     >
-      <img src="/icons/icon-192.png" alt="" className="size-20 rounded-3xl shadow-lg" />
-      <p className="text-lg font-bold tracking-tight text-foreground">RESQORA</p>
-      <p className="text-xs text-muted-foreground">Every Second Matters. Every Life Connected.</p>
+      <picture>
+        <source srcSet="/brand/resqora-logo.webp" type="image/webp" />
+        <img
+          src="/brand/resqora-logo.png"
+          alt="RESQORA — Emergency Response"
+          width={476}
+          height={320}
+          decoding="sync"
+          className="h-auto w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[400px]"
+        />
+      </picture>
     </div>
   );
 }
