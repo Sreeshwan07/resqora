@@ -24,8 +24,16 @@ export default defineConfig({
         filename: "sw.js",
         manifest: false,
         workbox: {
+          // The client build lands in dist/client while Vite's outDir is dist, so
+          // without these the worker is written outside the served directory and
+          // /sw.js 404s in production (with precache URLs prefixed "client/").
+          globDirectory: "dist/client",
+          swDest: "dist/client/sw.js",
+          globPatterns: ["**/*.{js,css,html,png,jpg,webp,svg,ico,woff2,webmanifest}"],
           // The FCM worker is a separate registration and must never be precached.
-          globIgnores: ["**/firebase-messaging-sw.js"],
+          // iOS launch images are painted by Safari before the SW is involved, so
+          // precaching ~800 KB of them would only slow the first install.
+          globIgnores: ["**/firebase-messaging-sw.js", "brand/splash-*.jpg"],
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           runtimeCaching: [
             {

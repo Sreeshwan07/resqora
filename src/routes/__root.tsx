@@ -17,6 +17,32 @@ import { Toaster } from "@/components/ui/sonner";
 import { registerServiceWorker } from "@/lib/register-sw";
 import { LaunchSplash } from "@/components/pwa/launch-splash";
 
+/**
+ * iOS/iPadOS has no manifest splash — Safari only honours
+ * `apple-touch-startup-image` matched by exact device metrics, so each supported
+ * screen gets its own pre-rendered file with the untouched RESQORA logo centred
+ * on the same light field the in-app splash uses.
+ */
+const IOS_LAUNCH_SCREENS: Array<{ w: number; h: number; dpr: number }> = [
+  { w: 375, h: 667, dpr: 2 },
+  { w: 414, h: 896, dpr: 2 },
+  { w: 375, h: 812, dpr: 3 },
+  { w: 390, h: 844, dpr: 3 },
+  { w: 393, h: 852, dpr: 3 },
+  { w: 428, h: 926, dpr: 3 },
+  { w: 430, h: 932, dpr: 3 },
+  { w: 768, h: 1024, dpr: 2 },
+  { w: 810, h: 1080, dpr: 2 },
+  { w: 834, h: 1194, dpr: 2 },
+  { w: 1024, h: 1366, dpr: 2 },
+];
+
+const iosLaunchImageLinks = IOS_LAUNCH_SCREENS.map(({ w, h, dpr }) => ({
+  rel: "apple-touch-startup-image",
+  href: `/brand/splash-${w * dpr}x${h * dpr}.jpg`,
+  media: `screen and (device-width: ${w}px) and (device-height: ${h}px) and (-webkit-device-pixel-ratio: ${dpr}) and (orientation: portrait)`,
+}));
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -124,10 +150,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "preload", as: "image", href: "/brand/resqora-logo.webp", type: "image/webp" },
       { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32.png" },
       { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16.png" },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
       { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
+      ...iosLaunchImageLinks,
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
