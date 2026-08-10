@@ -134,15 +134,9 @@ function LiveLocationPage() {
     [emergencyId, user, queryClient],
   );
 
-  // Keep responders on a fresh fix while an emergency is running.
-  useEffect(() => {
-    if (!emergencyId) return;
-    if (offline) return;
-    const id = window.setInterval(() => {
-      void refreshLocation({ silent: true, log: false });
-    }, 10000);
-    return () => window.clearInterval(id);
-  }, [emergencyId, refreshLocation, offline]);
+  // The app-wide emergency tracker (see useEmergencyTracker) already writes a
+  // fresh fix every 10s, so this page only refreshes on demand — running both
+  // would double every location write.
 
   async function copyCoords() {
     if (!coords) return;
