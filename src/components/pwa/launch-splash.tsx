@@ -44,8 +44,8 @@ export function LaunchSplash() {
         <img
           src="/brand/resqora-logo.png"
           alt="RESQORA — Emergency Response"
-          width={473}
-          height={320}
+          width={827}
+          height={707}
           decoding="sync"
           className="h-auto w-full max-w-[280px] sm:max-w-[340px] lg:max-w-[400px]"
         />
