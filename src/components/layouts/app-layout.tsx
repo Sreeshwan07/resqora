@@ -13,6 +13,7 @@ import { LocationGate } from "@/components/resqora/location-gate";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
 import { PushRegistrar } from "@/components/pwa/push-registrar";
 import { useLivePosition } from "@/hooks/use-live-position";
+import { useEmergencyTracker } from "@/hooks/use-emergency-tracker";
 import { useAuth } from "@/hooks/use-auth";
 import { useAccess } from "@/hooks/use-access";
 import { useSosTheme } from "@/hooks/use-sos-theme";
@@ -25,6 +26,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const { position, address, denied, status, resolvingAddress } = useLivePosition();
   useSosTheme();
+  // Live location keeps flowing to the Guardian from every page, not just /live.
+  useEmergencyTracker();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
   const access = useAccess();
