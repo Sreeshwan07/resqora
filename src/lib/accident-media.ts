@@ -67,11 +67,7 @@ export async function uploadAccidentMedia(input: {
     upload_status: "pending" as const,
   };
 
-  const inserted = await supabase
-    .from("accident_media")
-    .insert(row)
-    .select("id")
-    .maybeSingle();
+  const inserted = await supabase.from("accident_media").insert(row).select("id").maybeSingle();
 
   const { error } = await supabase.storage.from(BUCKET).upload(path, input.file, {
     contentType: input.file.type || undefined,

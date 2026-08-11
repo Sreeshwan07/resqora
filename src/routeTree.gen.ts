@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CaptestRouteImport } from './routes/captest'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AppActivityRouteImport } from './routes/_app.activity'
@@ -66,11 +65,6 @@ const AboutRoute = AboutRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CaptestRoute = CaptestRouteImport.update({
-  id: '/captest',
-  path: '/captest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -249,7 +243,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/captest': typeof CaptestRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/activity': typeof AppActivityRoute
@@ -289,7 +282,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/captest': typeof CaptestRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/activity': typeof AppActivityRoute
@@ -331,7 +323,6 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/about': typeof AboutRoute
   '/auth': typeof AuthRoute
-  '/captest': typeof CaptestRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_app/activity': typeof AppActivityRoute
@@ -373,7 +364,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
-    | '/captest'
     | '/onboarding'
     | '/reset-password'
     | '/activity'
@@ -413,7 +403,6 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/auth'
-    | '/captest'
     | '/onboarding'
     | '/reset-password'
     | '/activity'
@@ -454,7 +443,6 @@ export interface FileRouteTypes {
     | '/_app'
     | '/about'
     | '/auth'
-    | '/captest'
     | '/onboarding'
     | '/reset-password'
     | '/_app/activity'
@@ -496,7 +484,6 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   AboutRoute: typeof AboutRoute
   AuthRoute: typeof AuthRoute
-  CaptestRoute: typeof CaptestRoute
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   MTokenRoute: typeof MTokenRoute
@@ -534,13 +521,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/captest': {
-      id: '/captest'
-      path: '/captest'
-      fullPath: '/captest'
-      preLoaderRoute: typeof CaptestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -851,7 +831,6 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   AboutRoute: AboutRoute,
   AuthRoute: AuthRoute,
-  CaptestRoute: CaptestRoute,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   MTokenRoute: MTokenRoute,
