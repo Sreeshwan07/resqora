@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      accident_media: {
+        Row: {
+          address: string | null
+          analysis: Json | null
+          captured_at: string
+          created_at: string
+          id: string
+          incident_id: string
+          latitude: number | null
+          longitude: number | null
+          media_type: string
+          mime_type: string | null
+          size_bytes: number | null
+          storage_path: string
+          upload_status: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          analysis?: Json | null
+          captured_at?: string
+          created_at?: string
+          id?: string
+          incident_id: string
+          latitude?: number | null
+          longitude?: number | null
+          media_type: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path: string
+          upload_status?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          analysis?: Json | null
+          captured_at?: string
+          created_at?: string
+          id?: string
+          incident_id?: string
+          latitude?: number | null
+          longitude?: number | null
+          media_type?: string
+          mime_type?: string | null
+          size_bytes?: number | null
+          storage_path?: string
+          upload_status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       activity_logs: {
         Row: {
           action: string
