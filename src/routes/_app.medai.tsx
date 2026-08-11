@@ -443,8 +443,10 @@ function MedAiPage() {
                   size="icon"
                   variant={voice.listening ? "destructive" : "outline"}
                   className="size-11 shrink-0"
-                  disabled={!voice.supported}
-                  onClick={() => (voice.listening ? voice.stopListening() : voice.startListening())}
+                  disabled={!voice.supported || voice.micState === "denied"}
+                  onClick={() =>
+                    voice.listening ? voice.stopListening() : void voice.startListening()
+                  }
                   aria-label={voice.listening ? "Stop voice input" : "Speak your symptoms"}
                 >
                   {voice.listening ? <MicOff className="size-4" /> : <Mic className="size-4" />}

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useMicPermission } from "@/hooks/use-mic-permission";
 
 /**
- * Browser voice IO for RESQORA MedAI: speech-to-text dictation and spoken
- * replies, both locale-aware (English, Hindi, Telugu).
+ * Browser voice IO for RESQORA MedAI / RESQ AI: speech-to-text dictation and
+ * spoken replies, both locale-aware (English, Hindi, Telugu). Recognition only
+ * starts once a real microphone is confirmed available.
  */
 type RecognitionEvent = {
   results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }>;
@@ -32,6 +34,7 @@ function recognitionCtor(): RecognitionCtor | null {
 }
 
 export function useMedAiVoice(locale: string) {
+  const mic = useMicPermission();
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -51,10 +54,16 @@ export function useMedAiVoice(locale: string) {
     setListening(false);
   }, []);
 
-  const startListening = useCallback(() => {
+  const startListening = useCallback(async () => {
     const Ctor = recognitionCtor();
     if (!Ctor) {
       setError("Voice input is not supported in this browser — please type instead.");
+      return;
+    }
+    // Confirm a working microphone before showing any listening state.
+    const state = mic.state === "granted" ? "granted" : await mic.request();
+    if (state !== "granted") {
+      setError(mic.error ?? "Microphone access is required for voice input.");
       return;
     }
     setError(null);
@@ -71,18 +80,30 @@ export function useMedAiVoice(locale: string) {
       setTranscript(text);
     };
     recognition.onerror = (event) => {
+      const code = event.error;
       setError(
-        event.error === "not-allowed"
-          ? "Microphone access was blocked. Allow it in your browser settings."
-          : "Voice input failed — please try again or type your symptoms.",
+        code === "not-allowed" || code === "service-not-allowed"
+          ? "Microphone access is blocked. Allow it for this site in your browser settings."
+          : code === "audio-capture"
+            ? "No microphone was detected — check your device and try again."
+            : code === "network"
+              ? "Voice recognition needs a network connection — you can type instead."
+              : code === "no-speech"
+                ? "I didn’t catch that — tap voice and speak again."
+                : "Voice input failed — please try again or type your symptoms.",
       );
       setListening(false);
     };
     recognition.onend = () => setListening(false);
     recognitionRef.current = recognition;
-    recognition.start();
-    setListening(true);
-  }, [locale]);
+    try {
+      recognition.start();
+      setListening(true);
+    } catch {
+      setError("Voice input could not start — please try again.");
+      setListening(false);
+    }
+  }, [locale, mic]);
 
   const speak = useCallback(
     (text: string) => {
@@ -107,13 +128,22 @@ export function useMedAiVoice(locale: string) {
 
   useEffect(() => stopSpeaking, [stopSpeaking]);
 
+  // Losing the microphone mid-session must stop the listening indicator.
+  useEffect(() => {
+    if (listening && mic.state !== "granted") stopListening();
+  }, [listening, mic.state, stopListening]);
+
   return {
     listening,
     speaking,
     transcript,
-    error,
+    error: error ?? (mic.state === "denied" ? mic.error : null),
     supported,
     ttsSupported,
+    micState: mic.state,
+    micError: mic.error,
+    micReady: mic.ready,
+    requestMic: mic.request,
     startListening,
     stopListening,
     speak,

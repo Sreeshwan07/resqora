@@ -18,6 +18,7 @@ import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { activeEmergencyQuery, contactsQuery, profileQuery } from "@/lib/api";
 import { analyzeAccidentScene } from "@/lib/accident.functions";
+import { uploadAccidentMedia } from "@/lib/accident-media";
 import {
   dbSeverity,
   isUrgent,
@@ -125,6 +126,32 @@ export function AccidentResponseEngine() {
       },
     ]);
     setAnalysing(true);
+
+    // The real file is stored privately alongside the incident metadata.
+    const upload = uploadAccidentMedia({
+      userId: user?.id,
+      incidentId: id,
+      file: scene.file,
+      kind: scene.kind,
+      coords,
+      address: address ?? null,
+      capturedAt: now,
+    })
+      .then((result) => {
+        if (result.status === "uploaded") record("Media uploaded", `${scene.kind} stored securely`);
+        else if (result.status === "failed") {
+          toast.error(result.message ?? "The media upload failed.");
+          record("Media upload failed", result.message);
+        } else if (result.message) {
+          record("Media not stored", result.message);
+        }
+      })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : "Upload failed";
+        toast.error(message);
+        record("Media upload failed", message);
+      });
+
     try {
       const result = await analyze({
         data: {
@@ -136,16 +163,33 @@ export function AccidentResponseEngine() {
       });
       setReport(result);
       record("AI analysis completed", `${result.incidentLabel} · confidence ${result.confidence}%`);
+      if (result.confidence < 40) {
+        toast.warning(
+          "Unable to confidently assess the incident. Please contact emergency services.",
+        );
+        record(
+          "Low AI confidence",
+          "Unable to confidently assess the incident. Please contact emergency services.",
+        );
+      }
       record(
         "Medical report generated",
         `Severity ${result.severity} · ${result.possibleInjuries.length} possible injuries noted`,
       );
       void logActivity(user?.id, "Accident reported", `${id} — ${result.incidentLabel}`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Analysis failed");
-      record("AI analysis failed", "Call emergency services directly.");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to confidently assess the incident. Please contact emergency services.",
+      );
+      record(
+        "AI analysis failed",
+        "Unable to confidently assess the incident. Please contact emergency services.",
+      );
     } finally {
       setAnalysing(false);
+      await upload;
     }
   }
 

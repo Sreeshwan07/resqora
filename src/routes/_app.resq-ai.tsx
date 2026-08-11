@@ -33,6 +33,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useNearbyServices } from "@/hooks/use-nearby-services";
 import { useMedAiVoice } from "@/hooks/use-medai-voice";
+import { MicStatus } from "@/components/resqai/mic-status";
 import { profileQuery } from "@/lib/api";
 import { askMedAi } from "@/lib/medai.functions";
 import type { MedAiAssessment } from "@/lib/medai.server";
@@ -447,6 +448,14 @@ function ResqAiPage() {
             <div className="mt-4 space-y-2 border-t border-border pt-3">
               {voice.listening && <VoiceWave label="Listening — speak now" />}
 
+              {voice.supported ? (
+                <MicStatus
+                  state={voice.micState}
+                  error={voice.micError}
+                  onEnable={() => void voice.requestMic()}
+                />
+              ) : null}
+
               {image && (
                 <div className="flex items-center gap-2 rounded-xl bg-muted/50 p-2">
                   <img
@@ -507,8 +516,10 @@ function ResqAiPage() {
                   size="icon"
                   variant={voice.listening ? "destructive" : "outline"}
                   className="size-11 shrink-0"
-                  disabled={!voice.supported}
-                  onClick={() => (voice.listening ? voice.stopListening() : voice.startListening())}
+                  disabled={!voice.supported || voice.micState === "denied"}
+                  onClick={() =>
+                    voice.listening ? voice.stopListening() : void voice.startListening()
+                  }
                   aria-label={voice.listening ? "Stop listening" : "Start listening"}
                 >
                   {voice.listening ? <MicOff className="size-4" /> : <Mic className="size-4" />}
