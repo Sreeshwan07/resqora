@@ -34,6 +34,8 @@ const listeners = new Set<() => void>();
 let started = false;
 let watchId: number | null = null;
 let intervalId: number | null = null;
+/** High-accuracy continuous tracking is reserved for an active emergency. */
+let highAccuracy = false;
 
 function set(patch: Partial<State>) {
   state = { ...state, ...patch };
@@ -120,18 +122,40 @@ function startWatch() {
   if (watchId !== null) return;
   set({ status: state.position ? state.status : "locating" });
   watchId = navigator.geolocation.watchPosition(acceptFix, handleError, {
-    enableHighAccuracy: true,
+    enableHighAccuracy: highAccuracy,
     maximumAge: 10_000,
     timeout: 15_000,
   });
-  // Force a fresh fix every 10s even when the device reports no movement.
-  intervalId = window.setInterval(() => {
-    navigator.geolocation.getCurrentPosition(acceptFix, () => undefined, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 9000,
-    });
-  }, 10_000);
+  // Only while an SOS is active: force a fresh fix every 10s even when the
+  // device reports no movement. Normal browsing just follows the watcher.
+  if (highAccuracy) {
+    intervalId = window.setInterval(() => {
+      navigator.geolocation.getCurrentPosition(acceptFix, () => undefined, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 9000,
+      });
+    }, 10_000);
+  }
+}
+
+function stopWatch() {
+  if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+  if (intervalId !== null) window.clearInterval(intervalId);
+  watchId = null;
+  intervalId = null;
+}
+
+/**
+ * Turns high-accuracy continuous tracking on while an emergency is active and
+ * back off (releasing the GPS radio) once it ends.
+ */
+export function setHighAccuracyTracking(enabled: boolean) {
+  if (typeof window === "undefined" || highAccuracy === enabled) return;
+  highAccuracy = enabled;
+  if (!started || !navigator.geolocation) return;
+  stopWatch();
+  startWatch();
 }
 
 /** Starts the shared geolocation watcher exactly once per page session. */
@@ -210,10 +234,7 @@ export function useLivePosition() {
     return () => {
       listeners.delete(listener);
       if (listeners.size === 0) {
-        if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-        if (intervalId !== null) window.clearInterval(intervalId);
-        watchId = null;
-        intervalId = null;
+        stopWatch();
         started = false;
       }
     };
