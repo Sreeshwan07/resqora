@@ -4,6 +4,8 @@ const EMERGENCY_KEY = "aegis.offline.emergency";
 const PINGS_KEY = "aegis.offline.pings";
 
 export type QueuedEmergency = {
+  /** Temporary local identifier used by queued pings until the real row exists. */
+  localId: string;
   userId: string;
   type: string;
   severity: string;
@@ -16,6 +18,7 @@ export type QueuedEmergency = {
 
 export type QueuedPing = {
   userId: string;
+  /** Either a real emergency id, or a queued emergency's localId. */
   emergencyId: string;
   latitude: number;
   longitude: number;
@@ -42,72 +45,121 @@ function write<T>(key: string, value: T[]) {
   window.localStorage.setItem(key, JSON.stringify(value));
 }
 
-export function queueEmergency(entry: QueuedEmergency) {
-  write(EMERGENCY_KEY, [...read<QueuedEmergency>(EMERGENCY_KEY), entry]);
+export function queueEmergency(entry: Omit<QueuedEmergency, "localId">) {
+  const localId = `local-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  write(EMERGENCY_KEY, [...read<QueuedEmergency>(EMERGENCY_KEY), { ...entry, localId }]);
+  return localId;
+}
+
+/** The most recent queued offline SOS for this user, used to tag queued pings. */
+export function latestQueuedEmergencyId(userId: string) {
+  const items = read<QueuedEmergency>(EMERGENCY_KEY).filter((item) => item.userId === userId);
+  return items.length > 0 ? (items[items.length - 1]?.localId ?? null) : null;
 }
 
 export function queuePing(entry: QueuedPing) {
-  write(PINGS_KEY, [...read<QueuedPing>(PINGS_KEY), entry]);
+  const pings = read<QueuedPing>(PINGS_KEY);
+  // Never queue the same fix twice (same emergency + timestamp).
+  if (pings.some((p) => p.emergencyId === entry.emergencyId && p.createdAt === entry.createdAt))
+    return;
+  write(PINGS_KEY, [...pings, entry]);
 }
 
 export function pendingCount() {
   return read<QueuedEmergency>(EMERGENCY_KEY).length + read<QueuedPing>(PINGS_KEY).length;
 }
 
-/** Pushes everything captured while offline to the backend. Safe to call often. */
+let syncing = false;
+
+/**
+ * Pushes everything captured while offline to the backend. Each queued SOS is
+ * created once, its temporary local id is mapped to the real emergency id, and
+ * only then are its queued location fixes uploaded. Anything that fails stays
+ * queued for the next attempt, so no ping ever references a missing emergency.
+ */
 export async function syncOfflineQueue() {
-  if (isOffline()) return 0;
-  let synced = 0;
+  if (isOffline() || syncing) return 0;
+  syncing = true;
+  try {
+    let synced = 0;
 
-  const emergencies = read<QueuedEmergency>(EMERGENCY_KEY);
-  const remainingEmergencies: QueuedEmergency[] = [];
-  for (const item of emergencies) {
-    const { data, error } = await supabase
-      .from("emergencies")
-      .insert({
+    const emergencies = read<QueuedEmergency>(EMERGENCY_KEY);
+    const remainingEmergencies: QueuedEmergency[] = [];
+    const idMap = new Map<string, string>();
+
+    for (const item of emergencies) {
+      const { data, error } = await supabase
+        .from("emergencies")
+        .insert({
+          user_id: item.userId,
+          type: item.type,
+          severity: item.severity,
+          status: "active",
+          notes: item.notes,
+          latitude: item.latitude,
+          longitude: item.longitude,
+          address: item.address,
+          started_at: item.startedAt,
+        })
+        .select("id")
+        .single();
+      if (error || !data) {
+        remainingEmergencies.push(item);
+        continue;
+      }
+      idMap.set(item.localId, data.id);
+      await supabase.from("emergency_events").insert({
+        emergency_id: data.id,
         user_id: item.userId,
-        type: item.type,
-        severity: item.severity,
-        status: "active",
-        notes: item.notes,
-        latitude: item.latitude,
-        longitude: item.longitude,
-        address: item.address,
-        started_at: item.startedAt,
-      })
-      .select("id")
-      .single();
-    if (error || !data) {
-      remainingEmergencies.push(item);
-      continue;
+        label: "Offline SOS synced",
+        detail: "This alert was captured without connectivity and uploaded once back online.",
+      });
+      synced += 1;
     }
-    await supabase.from("emergency_events").insert({
-      emergency_id: data.id,
-      user_id: item.userId,
-      label: "Offline SOS synced",
-      detail: "This alert was captured without connectivity and uploaded once back online.",
-    });
-    synced += 1;
-  }
-  write(EMERGENCY_KEY, remainingEmergencies);
+    // Remove synced emergencies immediately so a retry can never duplicate them.
+    write(EMERGENCY_KEY, remainingEmergencies);
 
-  const pings = read<QueuedPing>(PINGS_KEY);
-  if (pings.length > 0) {
-    const { error } = await supabase.from("location_pings").insert(
-      pings.map((ping) => ({
-        emergency_id: ping.emergencyId,
-        user_id: ping.userId,
-        latitude: ping.latitude,
-        longitude: ping.longitude,
-        accuracy: ping.accuracy,
-        created_at: ping.createdAt,
-      })),
-    );
-    if (!error) {
-      synced += pings.length;
-      write(PINGS_KEY, []);
+    const pings = read<QueuedPing>(PINGS_KEY);
+    const remainingPings: QueuedPing[] = [];
+    const uploadable: { ping: QueuedPing; emergencyId: string }[] = [];
+    const stillQueued = new Set(remainingEmergencies.map((item) => item.localId));
+
+    for (const ping of pings) {
+      const mapped = idMap.get(ping.emergencyId);
+      if (mapped) {
+        uploadable.push({ ping, emergencyId: mapped });
+      } else if (ping.emergencyId.startsWith("local-")) {
+        // Its emergency has not been created yet — keep waiting (or drop if the
+        // queued emergency is gone entirely, to avoid an orphaned ping forever).
+        if (stillQueued.has(ping.emergencyId)) remainingPings.push(ping);
+      } else {
+        uploadable.push({ ping, emergencyId: ping.emergencyId });
+      }
     }
-  }
 
-  return synced;
+    if (uploadable.length > 0) {
+      const { error } = await supabase.from("location_pings").insert(
+        uploadable.map(({ ping, emergencyId }) => ({
+          emergency_id: emergencyId,
+          user_id: ping.userId,
+          latitude: ping.latitude,
+          longitude: ping.longitude,
+          accuracy: ping.accuracy,
+          created_at: ping.createdAt,
+        })),
+      );
+      if (error) {
+        // Retry later against the real ids, which are now known.
+        for (const { ping, emergencyId } of uploadable)
+          remainingPings.push({ ...ping, emergencyId });
+      } else {
+        synced += uploadable.length;
+      }
+    }
+    write(PINGS_KEY, remainingPings);
+
+    return synced;
+  } finally {
+    syncing = false;
+  }
 }
