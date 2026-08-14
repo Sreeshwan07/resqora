@@ -1,6 +1,6 @@
 /**
  * Guarded service-worker registration. Offline caching must never run inside
- * the Lovable editor preview, an iframe, or dev — stale HTML there would serve
+ * an embedded preview, an iframe, or dev — stale HTML there would serve
  * deleted chunks. `?sw=off` acts as a kill switch.
  */
 function shouldRegister() {
@@ -9,9 +9,6 @@ function shouldRegister() {
   if (window.self !== window.top) return false;
   const host = window.location.hostname;
   if (host.startsWith("id-preview--") || host.startsWith("preview--")) return false;
-  if (host === "lovableproject.com" || host.endsWith(".lovableproject.com")) return false;
-  if (host === "lovableproject-dev.com" || host.endsWith(".lovableproject-dev.com")) return false;
-  if (host === "beta.lovable.dev" || host.endsWith(".beta.lovable.dev")) return false;
   if (new URLSearchParams(window.location.search).has("sw")) {
     return new URLSearchParams(window.location.search).get("sw") !== "off";
   }
