@@ -1,6 +1,6 @@
 /**
  * Server-only brain for RESQORA MedAI. Builds the medical-assistant prompt and
- * calls the Lovable AI gateway, returning a strict JSON assessment the chat UI
+ * calls the configured AI provider, returning a strict JSON assessment the chat UI
  * can render as a doctor-style card.
  */
 export type MedAiTurn = { role: "user" | "assistant"; content: string };
