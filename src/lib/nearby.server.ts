@@ -259,7 +259,7 @@ export async function findNearbyServices(
     blood_bank: [],
   };
 
-  if (process.env.LOVABLE_API_KEY && process.env.GOOGLE_MAPS_API_KEY) {
+  if (process.env["GOOGLE_MAPS_API_KEY"]) {
     try {
       const categories = Object.keys(result) as PlaceCategory[];
       const lists = await Promise.all(
@@ -329,18 +329,11 @@ export async function findNearbyServices(
 
 /** Forward geocode a typed address / city into coordinates. */
 export async function geocodePlace(query: string) {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (lovableKey && connectorKey) {
+  const apiKey = process.env["GOOGLE_MAPS_API_KEY"];
+  if (apiKey) {
     try {
       const res = await fetch(
-        `${GATEWAY_URL}/maps/api/geocode/json?address=${encodeURIComponent(query)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${lovableKey}`,
-            "X-Connection-Api-Key": connectorKey,
-          },
-        },
+        `${GOOGLE_MAPS_API_URL}/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`,
       );
       if (res.ok) {
         const data = (await res.json()) as {
