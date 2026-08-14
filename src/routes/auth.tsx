@@ -5,7 +5,6 @@ import { Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldCheck, UserRound } from 
 import { toast } from "sonner";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import {
   markSessionActive,
   resolveDestination,
@@ -84,23 +83,22 @@ function AuthPage() {
     setGoogleBusy(true);
     storeDestination(preferred ?? undefined);
     setRememberMe(remember);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/auth",
+    // Supabase Auth handles Google OAuth directly: it redirects to Google and
+    // back to /auth on whichever origin the app is running on (localhost in
+    // development, the production domain when deployed).
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth`,
+        queryParams: { prompt: "select_account" },
+      },
     });
-    if (result.error) {
+    if (error) {
       setGoogleBusy(false);
-      toast.error(result.error.message || "Google sign-in failed. Please try again.");
+      toast.error(error.message || "Google sign-in failed. Please try again.");
       return;
     }
-    if (result.redirected) return;
-    const { data } = await supabase.auth.getUser();
-    setGoogleBusy(false);
-    if (!data.user) {
-      toast.error("Could not complete Google sign-in.");
-      return;
-    }
-    toast.success("Signed in with Google");
-    navigate({ to: await resolveDestination(data.user.id, preferred), replace: true });
+    // A full-page redirect follows; the effect above completes sign-in on return.
   }
 
   async function handleSignIn(event: React.FormEvent) {

@@ -1,6 +1,6 @@
 /**
  * Server-only brain for RESQORA MedAI. Builds the medical-assistant prompt and
- * calls the Lovable AI gateway, returning a strict JSON assessment the chat UI
+ * calls the configured AI provider, returning a strict JSON assessment the chat UI
  * can render as a doctor-style card.
  */
 export type MedAiTurn = { role: "user" | "assistant"; content: string };
@@ -116,35 +116,21 @@ export async function runMedAi(input: {
   imageDataUrl?: string | null;
   medicalContext?: string | null;
 }): Promise<MedAiAssessment> {
-  const key = process.env.LOVABLE_API_KEY;
-  if (!key) throw new Error("AI is not configured");
-
   const userContent: unknown[] = [{ type: "text", text: input.message }];
   if (input.imageDataUrl) {
     userContent.push({ type: "image_url", image_url: { url: input.imageDataUrl } });
   }
 
-  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: { "content-type": "application/json", "Lovable-API-Key": key },
-    body: JSON.stringify({
-      model: "google/gemini-3.6-flash",
-      messages: [
-        { role: "system", content: systemPrompt(input.language, input.medicalContext ?? null) },
-        ...input.history.slice(-12),
-        { role: "user", content: userContent },
-      ],
-      response_format: { type: "json_object" },
-    }),
+  const { chatCompletion } = await import("@/lib/ai.server");
+  const content = await chatCompletion({
+    label: "MedAI",
+    jsonObject: true,
+    messages: [
+      { role: "system", content: systemPrompt(input.language, input.medicalContext ?? null) },
+      ...input.history.slice(-12),
+      { role: "user", content: userContent },
+    ],
   });
-
-  if (response.status === 429)
-    throw new Error("MedAI is busy right now — please retry in a moment.");
-  if (response.status === 402) throw new Error("AI credits exhausted for this workspace.");
-  if (!response.ok) throw new Error(`MedAI request failed (${response.status})`);
-
-  const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] };
-  const content = payload.choices?.[0]?.message?.content ?? "";
   const json = content.slice(content.indexOf("{"), content.lastIndexOf("}") + 1);
   try {
     return coerce(JSON.parse(json));

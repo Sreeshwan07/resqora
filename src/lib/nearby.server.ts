@@ -35,7 +35,9 @@ const OVERPASS_ENDPOINTS = [
   "https://overpass.kumi.systems/api/interpreter",
 ];
 
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/google_maps";
+/** Google Maps Platform base URLs (direct, key-authenticated). */
+const GOOGLE_PLACES_URL = "https://places.googleapis.com";
+const GOOGLE_MAPS_API_URL = "https://maps.googleapis.com";
 
 const GOOGLE_TYPES: Record<PlaceCategory, string[]> = {
   hospital: ["hospital"],
@@ -85,23 +87,22 @@ type GooglePlace = {
   location?: { latitude: number; longitude: number };
 };
 
-/** Google Places (New) nearby search through the Lovable connector gateway. */
+/** Google Places (New) nearby search using a Google Maps Platform API key. */
 async function googleNearby(
   origin: { lat: number; lng: number },
   category: PlaceCategory,
   perCategory: number,
 ): Promise<NearbyPlace[]> {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (!lovableKey || !connectorKey) throw new Error("Google Maps connector not linked");
+  const apiKey = process.env["GOOGLE_MAPS_API_KEY"];
+  if (!apiKey) throw new Error("GOOGLE_MAPS_API_KEY is not configured");
 
   // Blood banks and ambulance services have no reliable nearby-search type,
   // so they use a distance-ranked text search instead.
   const isText = category === "blood_bank" || category === "ambulance";
   const textQuery = category === "blood_bank" ? "blood bank" : "ambulance service";
   const endpoint = isText
-    ? `${GATEWAY_URL}/places/v1/places:searchText`
-    : `${GATEWAY_URL}/places/v1/places:searchNearby`;
+    ? `${GOOGLE_PLACES_URL}/v1/places:searchText`
+    : `${GOOGLE_PLACES_URL}/v1/places:searchNearby`;
   const body = isText
     ? {
         textQuery,
@@ -123,8 +124,7 @@ async function googleNearby(
   const res = await fetch(endpoint, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${lovableKey}`,
-      "X-Connection-Api-Key": connectorKey,
+      "X-Goog-Api-Key": apiKey,
       "Content-Type": "application/json",
       "X-Goog-FieldMask":
         "places.id,places.displayName,places.formattedAddress,places.location,places.nationalPhoneNumber,places.internationalPhoneNumber,places.currentOpeningHours.openNow",
@@ -259,7 +259,7 @@ export async function findNearbyServices(
     blood_bank: [],
   };
 
-  if (process.env.LOVABLE_API_KEY && process.env.GOOGLE_MAPS_API_KEY) {
+  if (process.env["GOOGLE_MAPS_API_KEY"]) {
     try {
       const categories = Object.keys(result) as PlaceCategory[];
       const lists = await Promise.all(
@@ -329,18 +329,11 @@ export async function findNearbyServices(
 
 /** Forward geocode a typed address / city into coordinates. */
 export async function geocodePlace(query: string) {
-  const lovableKey = process.env.LOVABLE_API_KEY;
-  const connectorKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (lovableKey && connectorKey) {
+  const apiKey = process.env["GOOGLE_MAPS_API_KEY"];
+  if (apiKey) {
     try {
       const res = await fetch(
-        `${GATEWAY_URL}/maps/api/geocode/json?address=${encodeURIComponent(query)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${lovableKey}`,
-            "X-Connection-Api-Key": connectorKey,
-          },
-        },
+        `${GOOGLE_MAPS_API_URL}/maps/api/geocode/json?address=${encodeURIComponent(query)}&key=${apiKey}`,
       );
       if (res.ok) {
         const data = (await res.json()) as {

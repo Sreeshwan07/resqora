@@ -22,16 +22,15 @@ export type SendAlertsResponse = {
 };
 
 /**
- * Sends the emergency alert over SMS through the connected GatewayAPI account.
- * When no provider is connected the call returns configured:false so the client
+ * Sends the emergency alert over SMS through GatewayAPI (set GATEWAYAPI_TOKEN).
+ * When no provider is configured the call returns configured:false so the client
  * can hand the exact same message to WhatsApp / SMS / email apps instead.
  */
 export const sendEmergencyAlerts = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data }): Promise<SendAlertsResponse> => {
-    const lovableKey = process.env.LOVABLE_API_KEY;
-    const connectionKey = process.env.GATEWAYAPI_API_KEY;
-    if (!lovableKey || !connectionKey) return { configured: false, results: [] };
+    const token = process.env["GATEWAYAPI_TOKEN"] || process.env["GATEWAYAPI_API_KEY"];
+    if (!token) return { configured: false, results: [] };
 
     const results: SendResult[] = [];
     for (const recipient of data.recipients) {
@@ -41,22 +40,18 @@ export const sendEmergencyAlerts = createServerFn({ method: "POST" })
         continue;
       }
       try {
-        const response = await fetch(
-          "https://connector-gateway.lovable.dev/gatewayapi/mobile/single",
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${lovableKey}`,
-              "X-Connection-Api-Key": connectionKey,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              sender: "RESQORA",
-              recipient: msisdn,
-              message: data.message.slice(0, 1000),
-            }),
+        const response = await fetch("https://gatewayapi.eu/rest/mtsms", {
+          method: "POST",
+          headers: {
+            Authorization: `Basic ${btoa(`${token}:`)}`,
+            "Content-Type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            sender: "RESQORA",
+            message: data.message.slice(0, 1000),
+            recipients: [{ msisdn }],
+          }),
+        });
         if (!response.ok) {
           const body = await response.text();
           console.error(`RESQORA SMS failed [${response.status}]: ${body}`);
