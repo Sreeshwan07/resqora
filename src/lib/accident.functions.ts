@@ -72,6 +72,9 @@ export const analyzeAccidentScene = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<AccidentReport> => {
     const { enforceLimit } = await import("@/lib/rate-limit.server");
     enforceLimit(getRequest(), "vision", 10, 60_000);
+    const key = process.env.LOVABLE_API_KEY;
+    if (!key) throw new Error("AI is not configured");
+
     const context = [
       `Media type: ${data.mediaKind}`,
       data.address ? `Reported location: ${data.address}` : null,
@@ -80,23 +83,34 @@ export const analyzeAccidentScene = createServerFn({ method: "POST" })
       .filter(Boolean)
       .join("\n");
 
-    const { chatCompletion } = await import("@/lib/ai.server");
-    const text = await chatCompletion({
-      label: "AI analysis",
-      messages: [
-        { role: "system", content: SYSTEM },
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `Analyse this accident scene for emergency response.\n${context}`,
-            },
-            { type: "image_url", image_url: { url: data.imageDataUrl } },
-          ],
-        },
-      ],
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: { "content-type": "application/json", "Lovable-API-Key": key },
+      body: JSON.stringify({
+        model: "google/gemini-3.6-flash",
+        messages: [
+          { role: "system", content: SYSTEM },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Analyse this accident scene for emergency response.\n${context}`,
+              },
+              { type: "image_url", image_url: { url: data.imageDataUrl } },
+            ],
+          },
+        ],
+      }),
     });
+
+    if (response.status === 429)
+      throw new Error("AI is busy right now — please retry in a moment.");
+    if (response.status === 402) throw new Error("AI credits exhausted for this workspace.");
+    if (!response.ok) throw new Error(`AI analysis failed (${response.status})`);
+
+    const payload = (await response.json()) as { choices?: { message?: { content?: string } }[] };
+    const text = payload.choices?.[0]?.message?.content ?? "";
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error("Could not read the AI analysis");
     const parsed = JSON.parse(match[0]) as Record<string, unknown>;

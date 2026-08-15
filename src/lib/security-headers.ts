@@ -2,8 +2,9 @@
  * HTTP security headers applied to every server response.
  *
  * The CSP is written for how RESQORA actually loads: Google Maps embeds and tiles,
- * the Supabase backend over HTTPS/WSS, and Google Fonts. Framing is limited to
- * this origin so the app stays protected against clickjacking.
+ * the Lovable Cloud backend over HTTPS/WSS, and Google Fonts. Framing is limited
+ * to this origin plus the Lovable editor preview so the app can still be
+ * reviewed in-editor while remaining protected against clickjacking elsewhere.
  */
 const CSP = [
   "default-src 'self'",
@@ -20,7 +21,7 @@ const CSP = [
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.com/maps/ https://www.openstreetmap.org",
-  "frame-ancestors 'self'",
+  "frame-ancestors 'self' https://lovable.dev https://*.lovable.dev https://*.lovable.app https://*.lovableproject.com",
   "upgrade-insecure-requests",
 ].join("; ");
 
