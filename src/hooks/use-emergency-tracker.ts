@@ -14,10 +14,7 @@ const HEARTBEAT_MS = 60_000;
 /** Below this movement the coordinates are effectively identical. */
 const MIN_MOVE_M = 12;
 
-function distanceMeters(
-  a: { lat: number; lng: number },
-  b: { lat: number; lng: number },
-) {
+function distanceMeters(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
   const toRad = Math.PI / 180;
   const x = (b.lng - a.lng) * toRad * Math.cos(((a.lat + b.lat) / 2) * toRad);
   const y = (b.lat - a.lat) * toRad;

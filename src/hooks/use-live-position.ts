@@ -102,7 +102,10 @@ function acceptFix(pos: GeolocationPosition) {
 }
 
 /** Metres between two coordinates (equirectangular approximation). */
-function distanceMeters(a: { lat: number; lng: number }, b: { latitude: number; longitude: number }) {
+function distanceMeters(
+  a: { lat: number; lng: number },
+  b: { latitude: number; longitude: number },
+) {
   const toRad = Math.PI / 180;
   const x = (b.longitude - a.lng) * toRad * Math.cos(((a.lat + b.latitude) / 2) * toRad);
   const y = (b.latitude - a.lat) * toRad;
