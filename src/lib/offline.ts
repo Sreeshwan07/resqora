@@ -1,7 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const EMERGENCY_KEY = "aegis.offline.emergency";
-const PINGS_KEY = "aegis.offline.pings";
+const EMERGENCY_KEY = "resqora.offline.emergency";
+const PINGS_KEY = "resqora.offline.pings";
+/** Pre-rename keys: migrated once so a pending offline SOS is never lost. */
+const LEGACY_KEYS: Record<string, string> = {
+  [EMERGENCY_KEY]: "aegis.offline.emergency",
+  [PINGS_KEY]: "aegis.offline.pings",
+};
 
 export type QueuedEmergency = {
   /** Temporary local identifier used by queued pings until the real row exists. */
@@ -33,7 +38,15 @@ export function isOffline() {
 function read<T>(key: string): T[] {
   if (typeof window === "undefined") return [];
   try {
-    const raw = window.localStorage.getItem(key);
+    let raw = window.localStorage.getItem(key);
+    const legacyKey = LEGACY_KEYS[key];
+    if (!raw && legacyKey) {
+      raw = window.localStorage.getItem(legacyKey);
+      if (raw) {
+        window.localStorage.setItem(key, raw);
+        window.localStorage.removeItem(legacyKey);
+      }
+    }
     return raw ? (JSON.parse(raw) as T[]) : [];
   } catch {
     return [];

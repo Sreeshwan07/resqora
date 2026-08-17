@@ -9,7 +9,7 @@ import type { Emergency, Profile } from "@/lib/api";
  * workspace reopens instantly, and their summary is persisted on the emergency
  * row so guardians and operators read the same conclusion.
  */
-const PLAN_KEY = "aegis.core.plan";
+const PLAN_KEY = "resqora.core.plan";
 
 export type CoreModuleState = "idle" | "ready" | "live" | "attention";
 

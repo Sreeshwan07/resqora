@@ -25,11 +25,14 @@ export function GlobalSosButton() {
   const contacts = useQuery(contactsQuery(user?.id));
   const [confirm, setConfirm] = useState(false);
   const [stopping, setStopping] = useState(false);
+  const [starting, setStarting] = useState(false);
 
   const emergency = active.data;
   const running = Boolean(emergency);
 
   async function startSos() {
+    if (starting) return;
+    setStarting(true);
     await navigate({ to: "/emergency", search: { auto: true } });
   }
 
@@ -68,7 +71,7 @@ export function GlobalSosButton() {
           <motion.button
             type="button"
             whileTap={{ scale: 0.94 }}
-            disabled={stopping}
+            disabled={stopping || starting}
             onClick={() => setConfirm(true)}
             aria-label={running ? "Stop the active emergency SOS" : "Trigger emergency SOS"}
             className={cn(

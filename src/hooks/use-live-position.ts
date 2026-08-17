@@ -12,7 +12,11 @@ export type LocationStatus = "idle" | "locating" | "granted" | "manual" | "denie
 
 export type ManualLocation = { lat: number; lng: number; label: string };
 
-const MANUAL_KEY = "aegis.manual-location";
+const MANUAL_KEY = "resqora.manual-location";
+const LEGACY_MANUAL_KEY = "aegis.manual-location";
+/** Ignore fixes that neither move meaningfully nor improve accuracy. */
+const MIN_MOVE_M = 8;
+const MIN_GAP_MS = 5_000;
 
 type State = {
   status: LocationStatus;
@@ -77,6 +81,13 @@ function resolveAddress(lat: number, lng: number) {
 }
 
 function acceptFix(pos: GeolocationPosition) {
+  const previous = state.position;
+  if (previous && previous.source === "gps") {
+    const movedM = distanceMeters(previous, pos.coords);
+    const sinceMs = Date.now() - previous.updatedAt.getTime();
+    const sharper = pos.coords.accuracy < previous.accuracy - 5;
+    if (movedM < MIN_MOVE_M && sinceMs < MIN_GAP_MS && !sharper) return;
+  }
   set({
     status: "granted",
     position: {
@@ -88,6 +99,17 @@ function acceptFix(pos: GeolocationPosition) {
     },
   });
   resolveAddress(pos.coords.latitude, pos.coords.longitude);
+}
+
+/** Metres between two coordinates (equirectangular approximation). */
+function distanceMeters(
+  a: { lat: number; lng: number },
+  b: { latitude: number; longitude: number },
+) {
+  const toRad = Math.PI / 180;
+  const x = (b.longitude - a.lng) * toRad * Math.cos(((a.lat + b.latitude) / 2) * toRad);
+  const y = (b.latitude - a.lat) * toRad;
+  return Math.sqrt(x * x + y * y) * 6_371_000;
 }
 
 function applyManual(manual: ManualLocation) {
@@ -164,7 +186,8 @@ function start() {
   started = true;
 
   try {
-    const stored = window.localStorage.getItem(MANUAL_KEY);
+    const stored =
+      window.localStorage.getItem(MANUAL_KEY) ?? window.localStorage.getItem(LEGACY_MANUAL_KEY);
     if (stored) applyManual(JSON.parse(stored) as ManualLocation);
   } catch {
     /* ignore malformed cache */
@@ -214,6 +237,7 @@ export function clearManualLocation() {
   set({ manual: null });
   try {
     window.localStorage.removeItem(MANUAL_KEY);
+    window.localStorage.removeItem(LEGACY_MANUAL_KEY);
   } catch {
     /* storage disabled */
   }

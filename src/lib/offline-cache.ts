@@ -11,7 +11,7 @@ export type OfflineSnapshot = {
   contacts: { name: string; phone: string }[];
 };
 
-const KEY = "aegis.offline.snapshot";
+const KEY = "resqora.offline.snapshot";
 
 export function saveOfflineSnapshot(
   profile: Profile | null | undefined,

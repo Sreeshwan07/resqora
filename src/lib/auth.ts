@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
-const REMEMBER_KEY = "aegis.remember-me";
-const SESSION_KEY = "aegis.session-active";
-const DEST_KEY = "aegis.post-auth-destination";
+const REMEMBER_KEY = "resqora.remember-me";
+const SESSION_KEY = "resqora.session-active";
+const DEST_KEY = "resqora.post-auth-destination";
 
 export function setRememberMe(remember: boolean) {
   if (typeof window === "undefined") return;

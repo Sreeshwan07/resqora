@@ -116,6 +116,11 @@ function EmergencyPage() {
         contactCount: contacts.data?.length ?? 0,
         contacts: contacts.data ?? [],
         profile: profile.data ?? null,
+        // Show EMERGENCY ACTIVE the moment the session exists — GPS, email,
+        // guardian, push and AI keep running in the background after this.
+        onCreated: (emergency) => {
+          queryClient.setQueryData(["active-emergency", user.id], emergency);
+        },
       });
       await refresh();
       const email = created.notifications.find((n) => n.channel === "email");
