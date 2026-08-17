@@ -125,7 +125,7 @@ const LIMITS: Record<RateLimitAction, { max: number; windowMs: number; label: st
   "share-send": { max: 20, windowMs: 5 * 60_000, label: "alert sends" },
 };
 
-const KEY = "aegis.rate-limit";
+const KEY = "resqora.rate-limit";
 
 function readBuckets(): Record<string, number[]> {
   if (typeof window === "undefined") return {};

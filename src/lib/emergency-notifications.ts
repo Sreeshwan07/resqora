@@ -1,6 +1,6 @@
 import { pushPermission, requestPushPermission, showPush } from "@/lib/push";
 
-const ASK_KEY = "aegis.notifications.asked";
+const ASK_KEY = "resqora.notifications.asked";
 
 /** Asks for notification permission exactly once per device. */
 export async function ensureNotificationPermission() {

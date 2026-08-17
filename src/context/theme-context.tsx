@@ -10,7 +10,7 @@ type ThemeContextValue = {
 
 export const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const STORAGE_KEY = "aegis-theme";
+const STORAGE_KEY = "resqora-theme";
 
 function systemTheme(): "light" | "dark" {
   if (typeof window === "undefined") return "light";
