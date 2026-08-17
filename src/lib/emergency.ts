@@ -155,6 +155,11 @@ export async function createEmergency(options: {
   contactCount: number;
   contacts?: EmergencyContact[];
   profile?: Profile | null;
+  /**
+   * Fired the instant the emergency row exists, before GPS/notifications run,
+   * so the UI can flip to "EMERGENCY ACTIVE" without waiting for the workflow.
+   */
+  onCreated?: (emergency: Emergency) => void;
 }): Promise<EmergencyWithReport> {
   const report: NotificationOutcome[] = [];
   const errorText = (error: unknown) =>
@@ -189,6 +194,23 @@ export async function createEmergency(options: {
     );
   }
 
+  // Double-tap / retry protection: a user can only ever have one live session,
+  // so reuse the running emergency instead of creating a duplicate.
+  const { data: running } = await supabase
+    .from("emergencies")
+    .select("*")
+    .eq("user_id", options.userId)
+    .neq("status", "resolved")
+    .neq("status", "cancelled")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (running) {
+    const existing = running as Emergency;
+    options.onCreated?.(existing);
+    return { ...existing, notifications: [] };
+  }
+
   const { data, error } = await supabase
     .from("emergencies")
     .insert({
@@ -201,6 +223,9 @@ export async function createEmergency(options: {
     .select("*")
     .single();
   if (error) throw new Error(error.message);
+
+  // The session exists — surface it immediately; everything below is async work.
+  options.onCreated?.(data as Emergency);
 
   await logEvent(data.id, options.userId, "SOS triggered", "Alert created on your device.");
 
