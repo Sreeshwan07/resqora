@@ -1,6 +1,16 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { HeartPulse, LogOut, QrCode, Settings, ShieldCheck, UserRound, Users } from "lucide-react";
+import {
+  Download,
+  HeartPulse,
+  LogOut,
+  QrCode,
+  Settings,
+  ShieldCheck,
+  Smartphone,
+  UserRound,
+  Users,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -16,6 +26,7 @@ import { useAccess } from "@/hooks/use-access";
 import { profileQuery } from "@/lib/api";
 import { supabase } from "@/integrations/supabase/client";
 import { logSecurityEvent } from "@/lib/audit";
+import { useInstallApp } from "@/hooks/use-install-app";
 
 const ITEMS = [
   { label: "My Profile", to: "/profile", icon: UserRound },
@@ -35,6 +46,7 @@ export function ProfileMenu() {
   const { isAdmin } = useAccess();
   const { data: profile } = useQuery(profileQuery(user?.id));
   const queryClient = useQueryClient();
+  const installer = useInstallApp();
   const navigate = useNavigate();
 
   const name = profile?.full_name || user?.email || "Account";
@@ -83,6 +95,40 @@ export function ProfileMenu() {
             </Link>
           </DropdownMenuItem>
         ))}
+        {!installer.installed && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              className="rounded-xl"
+              onSelect={(event) => {
+                event.preventDefault();
+                if (installer.mode === "native") {
+                  void installer.install().then((outcome) => {
+                    if (outcome === "accepted")
+                      toast.success("RESQORA is installing on your device");
+                    if (outcome === "unavailable")
+                      toast.info(
+                        "Your browser handles installs from its own menu — look for “Install app”.",
+                      );
+                  });
+                  return;
+                }
+                if (installer.mode === "ios-instructions") {
+                  toast.info("Tap Share, then “Add to Home Screen” to install RESQORA.");
+                  return;
+                }
+                toast.info("Install RESQORA from your browser menu — look for “Install app”.");
+              }}
+            >
+              {installer.mode === "native" ? (
+                <Download className="size-4" aria-hidden="true" />
+              ) : (
+                <Smartphone className="size-4" aria-hidden="true" />
+              )}
+              📱 Install RESQORA
+            </DropdownMenuItem>
+          </>
+        )}
         {isAdmin && (
           <>
             <DropdownMenuSeparator />
