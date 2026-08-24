@@ -14,6 +14,7 @@ import { GuardianShortcut } from "@/components/landing/guardian-shortcut";
 import { CompactNearestServices } from "@/components/landing/compact-nearest-services";
 import { RecentActivityFeed } from "@/components/landing/recent-activity-feed";
 import { MobileNav } from "@/components/layouts/mobile-nav";
+import { InstallCard } from "@/components/pwa/install-card";
 import { LocationGate } from "@/components/resqora/location-gate";
 import { ApprovalGate } from "@/components/system/approval-gate";
 import { useLivePosition } from "@/hooks/use-live-position";
@@ -83,6 +84,8 @@ function Index() {
           ) : (
             <>
               <GuardianShortcut />
+
+              <InstallCard />
 
               <EmergencyStatusCard
                 status={status}
