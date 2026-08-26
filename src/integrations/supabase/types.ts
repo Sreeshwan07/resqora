@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -130,18 +130,25 @@ export type Database = {
       }
       emergencies: {
         Row: {
+          ack_at: string | null
+          ack_by: string | null
+          ack_timeout_seconds: number
           address: string | null
           ai_first_aid: string[] | null
           ai_recommendation: string | null
           ai_summary: string | null
           created_at: string
           duration_seconds: number | null
+          escalated_at: string | null
+          escalation_level: number
           id: string
           latitude: number | null
           live_status: string
           location_updated_at: string | null
           longitude: number | null
           notes: string | null
+          notified_at: string | null
+          relay_state: string
           resolved_at: string | null
           severity: string
           started_at: string
@@ -151,18 +158,25 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ack_at?: string | null
+          ack_by?: string | null
+          ack_timeout_seconds?: number
           address?: string | null
           ai_first_aid?: string[] | null
           ai_recommendation?: string | null
           ai_summary?: string | null
           created_at?: string
           duration_seconds?: number | null
+          escalated_at?: string | null
+          escalation_level?: number
           id?: string
           latitude?: number | null
           live_status?: string
           location_updated_at?: string | null
           longitude?: number | null
           notes?: string | null
+          notified_at?: string | null
+          relay_state?: string
           resolved_at?: string | null
           severity?: string
           started_at?: string
@@ -172,18 +186,25 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ack_at?: string | null
+          ack_by?: string | null
+          ack_timeout_seconds?: number
           address?: string | null
           ai_first_aid?: string[] | null
           ai_recommendation?: string | null
           ai_summary?: string | null
           created_at?: string
           duration_seconds?: number | null
+          escalated_at?: string | null
+          escalation_level?: number
           id?: string
           latitude?: number | null
           live_status?: string
           location_updated_at?: string | null
           longitude?: number | null
           notes?: string | null
+          notified_at?: string | null
+          relay_state?: string
           resolved_at?: string | null
           severity?: string
           started_at?: string
@@ -443,6 +464,7 @@ export type Database = {
       }
       guardian_sessions: {
         Row: {
+          acknowledged_at: string | null
           active: boolean
           created_at: string
           emergency_id: string
@@ -452,11 +474,13 @@ export type Database = {
           guardian_name: string
           guardian_phone: string | null
           id: string
+          opened_at: string | null
           token: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          acknowledged_at?: string | null
           active?: boolean
           created_at?: string
           emergency_id: string
@@ -466,11 +490,13 @@ export type Database = {
           guardian_name: string
           guardian_phone?: string | null
           id?: string
+          opened_at?: string | null
           token: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          acknowledged_at?: string | null
           active?: boolean
           created_at?: string
           emergency_id?: string
@@ -480,6 +506,7 @@ export type Database = {
           guardian_name?: string
           guardian_phone?: string | null
           id?: string
+          opened_at?: string | null
           token?: string
           updated_at?: string
           user_id?: string
@@ -1015,7 +1042,15 @@ export type Database = {
         Args: { _emergency_id: string; _note: string; _token: string }
         Returns: Json
       }
+      escalate_unacknowledged: {
+        Args: { _emergency_id: string }
+        Returns: Json
+      }
       get_donor_phone: { Args: { _donor_id: string }; Returns: string }
+      get_guardian_relay: {
+        Args: { _emergency_id: string; _token: string }
+        Returns: Json
+      }
       get_guardian_view: {
         Args: { _emergency_id: string; _token: string }
         Returns: Json
@@ -1034,9 +1069,14 @@ export type Database = {
           speed: number
         }[]
       }
+      guardian_acknowledge: {
+        Args: { _emergency_id: string; _token: string }
+        Returns: Json
+      }
       guardian_session_for: {
         Args: { _emergency_id: string; _token: string }
         Returns: {
+          acknowledged_at: string | null
           active: boolean
           created_at: string
           emergency_id: string
@@ -1046,6 +1086,7 @@ export type Database = {
           guardian_name: string
           guardian_phone: string | null
           id: string
+          opened_at: string | null
           token: string
           updated_at: string
           user_id: string
