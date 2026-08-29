@@ -82,9 +82,13 @@ export function GuardianRelay({
                 : "Escalated to backup contacts"}
             </p>
           )}
-          <Button variant="hero" className="mt-3 h-12 w-full rounded-2xl" disabled={busy} onClick={acknowledge}>
-            <CheckCircle2 className="size-5" />
-            I am responding — acknowledge
+          <Button
+            variant="hero"
+            className="mt-3 h-12 w-full rounded-2xl"
+            disabled={busy}
+            onClick={acknowledge}
+          >
+            <CheckCircle2 className="size-5" />I am responding — acknowledge
           </Button>
         </>
       )}

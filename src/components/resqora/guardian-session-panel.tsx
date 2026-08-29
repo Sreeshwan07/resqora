@@ -67,49 +67,49 @@ export function GuardianSessionPanel({
   return (
     <div className="space-y-3">
       <RelayStatusCard emergency={emergency} />
-    <div className="rounded-2xl border border-border bg-card/60 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="flex items-center gap-2 text-sm font-semibold">
-          <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
-          Guardian mode · {guardian.name}
-        </h2>
-        <Badge variant="outline" className="rounded-full text-[10px]">
-          {url ? "Dashboard active" : "Not created yet"}
-        </Badge>
-      </div>
-      {url && (
-        <p className="mt-3 truncate rounded-xl bg-muted px-3 py-2 font-mono text-xs">{url}</p>
-      )}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button variant="hero" onClick={send} disabled={sending}>
-          <Send className="size-4" />
-          {url ? "Resend Guardian alert" : "Notify Guardian"}
-        </Button>
+      <div className="rounded-2xl border border-border bg-card/60 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 text-sm font-semibold">
+            <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
+            Guardian mode · {guardian.name}
+          </h2>
+          <Badge variant="outline" className="rounded-full text-[10px]">
+            {url ? "Dashboard active" : "Not created yet"}
+          </Badge>
+        </div>
         {url && (
-          <>
-            <Button
-              variant="outline"
-              onClick={async () => {
-                await copyText(url);
-                toast.success("Guardian dashboard link copied");
-              }}
-            >
-              <Copy className="size-4" />
-              Copy link
-            </Button>
-            <Button asChild variant="outline">
-              <a href={url} target="_blank" rel="noreferrer">
-                <ExternalLink className="size-4" />
-                Preview dashboard
-              </a>
-            </Button>
-          </>
+          <p className="mt-3 truncate rounded-xl bg-muted px-3 py-2 font-mono text-xs">{url}</p>
         )}
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button variant="hero" onClick={send} disabled={sending}>
+            <Send className="size-4" />
+            {url ? "Resend Guardian alert" : "Notify Guardian"}
+          </Button>
+          {url && (
+            <>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  await copyText(url);
+                  toast.success("Guardian dashboard link copied");
+                }}
+              >
+                <Copy className="size-4" />
+                Copy link
+              </Button>
+              <Button asChild variant="outline">
+                <a href={url} target="_blank" rel="noreferrer">
+                  <ExternalLink className="size-4" />
+                  Preview dashboard
+                </a>
+              </Button>
+            </>
+          )}
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          The link works only for this emergency and expires automatically once it ends.
+        </p>
       </div>
-      <p className="mt-2 text-[11px] text-muted-foreground">
-        The link works only for this emergency and expires automatically once it ends.
-      </p>
-    </div>
     </div>
   );
 }
