@@ -40,6 +40,12 @@ let watchId: number | null = null;
 let intervalId: number | null = null;
 /** High-accuracy continuous tracking is reserved for an active emergency. */
 let highAccuracy = false;
+/** Transient GPS failures (timeout / temporarily unavailable) before giving up. */
+const MAX_SOFT_FAILURES = 3;
+let softFailures = 0;
+let retryTimer: number | null = null;
+let teardownTimer: number | null = null;
+let visibilityBound = false;
 
 function set(patch: Partial<State>) {
   state = { ...state, ...patch };
