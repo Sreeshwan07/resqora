@@ -15,6 +15,7 @@ import { ConnectionBanner } from "@/components/pwa/connection-banner";
 import { PushRegistrar } from "@/components/pwa/push-registrar";
 import { useLivePosition } from "@/hooks/use-live-position";
 import { useEmergencyTracker } from "@/hooks/use-emergency-tracker";
+import { useRelayEscalation } from "@/hooks/use-relay-escalation";
 import { useAuth } from "@/hooks/use-auth";
 import { useAccess } from "@/hooks/use-access";
 import { useSosTheme } from "@/hooks/use-sos-theme";
@@ -29,6 +30,8 @@ export function AppLayout({ children }: { children: ReactNode }) {
   useSosTheme();
   // Live location keeps flowing to the Guardian from every page, not just /live.
   useEmergencyTracker();
+  // Escalates to backup contacts when the Guardian does not acknowledge in time.
+  useRelayEscalation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useAuth();
   const access = useAccess();

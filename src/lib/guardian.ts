@@ -168,6 +168,9 @@ export async function notifyGuardian(input: {
     guardian: input.guardian,
   });
   const dashboardUrl = guardianUrl(session);
+  // Relay chain: the acknowledgement window opens the moment the Guardian is told.
+  const { markRelayNotified } = await import("@/lib/relay");
+  await markRelayNotified(input.emergency.id).catch(() => undefined);
   const { pushEmergencyAlert } = await import("@/lib/emergency-notifications");
   void pushEmergencyAlert({
     kind: "guardian",

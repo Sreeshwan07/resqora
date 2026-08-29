@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { copyText } from "@/lib/alerts";
 import type { Emergency, EmergencyContact, Profile } from "@/lib/api";
 import { guardianOf, guardianSessionQuery, guardianUrl, notifyGuardian } from "@/lib/guardian";
+import { RelayStatusCard } from "@/components/resqora/relay-status-card";
 
 /** Guardian session status, secure dashboard link and manual re-send. */
 export function GuardianSessionPanel({
@@ -64,6 +65,8 @@ export function GuardianSessionPanel({
   };
 
   return (
+    <div className="space-y-3">
+      <RelayStatusCard emergency={emergency} />
     <div className="rounded-2xl border border-border bg-card/60 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
@@ -106,6 +109,7 @@ export function GuardianSessionPanel({
       <p className="mt-2 text-[11px] text-muted-foreground">
         The link works only for this emergency and expires automatically once it ends.
       </p>
+    </div>
     </div>
   );
 }

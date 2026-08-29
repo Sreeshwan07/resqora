@@ -10,6 +10,7 @@ import { GuardianMap } from "@/components/guardian/guardian-map";
 import { GuardianMedical } from "@/components/guardian/guardian-medical";
 import { GuardianMissions } from "@/components/guardian/guardian-missions";
 import { GuardianNotes } from "@/components/guardian/guardian-notes";
+import { GuardianRelay } from "@/components/guardian/guardian-relay";
 import { GuardianQuickActions } from "@/components/guardian/guardian-quick-actions";
 import { GuardianServices } from "@/components/guardian/guardian-services";
 import { GuardianStatusGrid } from "@/components/guardian/guardian-status-grid";
@@ -104,6 +105,13 @@ function GuardianDashboard() {
         </header>
 
         <GuardianHeader view={data} now={now} />
+
+        <GuardianRelay
+          view={data}
+          emergencyId={emergencyId}
+          token={token}
+          onAcknowledged={() => void view.refetch()}
+        />
 
         {/* One scrollable command centre: every section appears exactly once. */}
         <GuardianStatusGrid view={data} />
