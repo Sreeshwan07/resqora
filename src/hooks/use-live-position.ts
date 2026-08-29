@@ -137,13 +137,40 @@ function applyManual(manual: ManualLocation) {
 }
 
 function handleError(error: GeolocationPositionError) {
-  // Only fall back to the "denied" flow when there is nothing usable yet.
+  // A hard permission denial is final: stop burning the GPS radio and let the
+  // LocationGate offer the manual fallback.
+  if (error.code === error.PERMISSION_DENIED) {
+    softFailures = 0;
+    stopWatch();
+    if (state.position) return;
+    set({ status: state.manual ? "manual" : "denied" });
+    return;
+  }
+
+  // Timeouts and "position unavailable" are routine on mobile (indoors, cold
+  // GPS start, tab resumed). Keep locating and retry before declaring failure.
   if (state.position) return;
+  softFailures += 1;
+  if (softFailures < MAX_SOFT_FAILURES) {
+    set({ status: state.manual ? "manual" : "locating" });
+    if (retryTimer === null && typeof window !== "undefined") {
+      retryTimer = window.setTimeout(() => {
+        retryTimer = null;
+        if (state.position || !navigator.geolocation) return;
+        navigator.geolocation.getCurrentPosition(acceptFix, handleError, {
+          enableHighAccuracy: highAccuracy,
+          maximumAge: 0,
+          timeout: 20_000,
+        });
+      }, 4000);
+    }
+    return;
+  }
   if (state.manual) {
     set({ status: "manual" });
     return;
   }
-  set({ status: error.code === error.PERMISSION_DENIED ? "denied" : "unavailable" });
+  set({ status: "unavailable" });
 }
 
 function startWatch() {
@@ -152,7 +179,15 @@ function startWatch() {
   watchId = navigator.geolocation.watchPosition(acceptFix, handleError, {
     enableHighAccuracy: highAccuracy,
     maximumAge: 10_000,
-    timeout: 15_000,
+    // Cold GPS starts on phones regularly exceed 15s; give the first fix room.
+    timeout: highAccuracy ? 15_000 : 30_000,
+  });
+  // Kick off an immediate lower-accuracy attempt so the UI is not stuck on
+  // "Getting your location…" while the watcher waits for a precise fix.
+  navigator.geolocation.getCurrentPosition(acceptFix, handleError, {
+    enableHighAccuracy: false,
+    maximumAge: 60_000,
+    timeout: 12_000,
   });
   // Only while an SOS is active: force a fresh fix every 10s even when the
   // device reports no movement. Normal browsing just follows the watcher.
