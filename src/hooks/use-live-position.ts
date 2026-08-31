@@ -87,6 +87,12 @@ function resolveAddress(lat: number, lng: number) {
 }
 
 function acceptFix(pos: GeolocationPosition) {
+  // A good fix clears any pending retry / soft-failure streak.
+  softFailures = 0;
+  if (retryTimer !== null) {
+    window.clearTimeout(retryTimer);
+    retryTimer = null;
+  }
   const previous = state.position;
   if (previous && previous.source === "gps") {
     const movedM = distanceMeters(previous, pos.coords);
