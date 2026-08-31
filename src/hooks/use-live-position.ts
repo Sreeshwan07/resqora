@@ -198,6 +198,16 @@ function startWatch() {
     maximumAge: 60_000,
     timeout: 12_000,
   });
+  // Some devices never resolve and never error (weak signal, virtualised GPS).
+  // Never leave an emergency user stuck on "Getting your location…": surface the
+  // manual-address fallback while the watcher keeps trying in the background.
+  if (ceilingTimer === null) {
+    ceilingTimer = window.setTimeout(() => {
+      ceilingTimer = null;
+      if (state.position) return;
+      set({ status: state.manual ? "manual" : "unavailable" });
+    }, ACQUIRE_CEILING_MS);
+  }
   // Only while an SOS is active: force a fresh fix every 10s even when the
   // device reports no movement. Normal browsing just follows the watcher.
   if (highAccuracy) {
