@@ -46,6 +46,9 @@ let softFailures = 0;
 let retryTimer: number | null = null;
 let teardownTimer: number | null = null;
 let visibilityBound = false;
+/** After this long with no fix, offer the manual fallback (GPS keeps trying). */
+const ACQUIRE_CEILING_MS = 25_000;
+let ceilingTimer: number | null = null;
 
 function set(patch: Partial<State>) {
   state = { ...state, ...patch };
