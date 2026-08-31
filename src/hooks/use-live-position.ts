@@ -46,6 +46,9 @@ let softFailures = 0;
 let retryTimer: number | null = null;
 let teardownTimer: number | null = null;
 let visibilityBound = false;
+/** After this long with no fix, offer the manual fallback (GPS keeps trying). */
+const ACQUIRE_CEILING_MS = 25_000;
+let ceilingTimer: number | null = null;
 
 function set(patch: Partial<State>) {
   state = { ...state, ...patch };
@@ -87,6 +90,16 @@ function resolveAddress(lat: number, lng: number) {
 }
 
 function acceptFix(pos: GeolocationPosition) {
+  // A good fix clears any pending retry / soft-failure streak.
+  softFailures = 0;
+  if (retryTimer !== null) {
+    window.clearTimeout(retryTimer);
+    retryTimer = null;
+  }
+  if (ceilingTimer !== null) {
+    window.clearTimeout(ceilingTimer);
+    ceilingTimer = null;
+  }
   const previous = state.position;
   if (previous && previous.source === "gps") {
     const movedM = distanceMeters(previous, pos.coords);
@@ -189,6 +202,16 @@ function startWatch() {
     maximumAge: 60_000,
     timeout: 12_000,
   });
+  // Some devices never resolve and never error (weak signal, virtualised GPS).
+  // Never leave an emergency user stuck on "Getting your location…": surface the
+  // manual-address fallback while the watcher keeps trying in the background.
+  if (ceilingTimer === null) {
+    ceilingTimer = window.setTimeout(() => {
+      ceilingTimer = null;
+      if (state.position) return;
+      set({ status: state.manual ? "manual" : "unavailable" });
+    }, ACQUIRE_CEILING_MS);
+  }
   // Only while an SOS is active: force a fresh fix every 10s even when the
   // device reports no movement. Normal browsing just follows the watcher.
   if (highAccuracy) {
@@ -205,8 +228,10 @@ function startWatch() {
 function stopWatch() {
   if (watchId !== null) navigator.geolocation.clearWatch(watchId);
   if (intervalId !== null) window.clearInterval(intervalId);
+  if (ceilingTimer !== null) window.clearTimeout(ceilingTimer);
   watchId = null;
   intervalId = null;
+  ceilingTimer = null;
 }
 
 /**
@@ -221,9 +246,35 @@ export function setHighAccuracyTracking(enabled: boolean) {
   startWatch();
 }
 
+/**
+ * Mobile browsers suspend geolocation watchers for backgrounded tabs, and some
+ * silently stop delivering fixes afterwards. On resume, ask for one fresh fix.
+ */
+function bindVisibilityRecovery() {
+  if (visibilityBound || typeof document === "undefined") return;
+  visibilityBound = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") return;
+    if (!started || !navigator.geolocation || state.status === "denied") return;
+    const stale = !state.position || Date.now() - state.position.updatedAt.getTime() > 60_000;
+    if (!stale) return;
+    navigator.geolocation.getCurrentPosition(acceptFix, handleError, {
+      enableHighAccuracy: highAccuracy,
+      maximumAge: 0,
+      timeout: 20_000,
+    });
+  });
+}
+
 /** Starts the shared geolocation watcher exactly once per page session. */
 function start() {
-  if (started || typeof window === "undefined") return;
+  if (typeof window === "undefined") return;
+  // A route change may have scheduled a teardown; cancel it and keep the fix.
+  if (teardownTimer !== null) {
+    window.clearTimeout(teardownTimer);
+    teardownTimer = null;
+  }
+  if (started) return;
   started = true;
 
   try {
@@ -234,8 +285,38 @@ function start() {
     /* ignore malformed cache */
   }
 
-  if (!navigator.geolocation) {
+  // Geolocation needs a secure context: http:// on a phone silently never fires.
+  if (!navigator.geolocation || (!window.isSecureContext && window.location.hostname !== "localhost")) {
     if (!state.manual) set({ status: "unavailable" });
+    return;
+  }
+
+  bindVisibilityRecovery();
+
+  // Ask the Permissions API first: an already-blocked permission must not
+  // re-trigger a prompt on every load, and a granted one skips the "locating"
+  // flash. Browsers without it (older Safari) fall straight through to a watch.
+  const permissions = navigator.permissions as Navigator["permissions"] | undefined;
+  if (permissions?.query) {
+    void permissions
+      .query({ name: "geolocation" as PermissionName })
+      .then((permission) => {
+        const apply = () => {
+          if (permission.state === "denied") {
+            stopWatch();
+            if (!state.position) set({ status: state.manual ? "manual" : "denied" });
+            return;
+          }
+          softFailures = 0;
+          startWatch();
+        };
+        apply();
+        permission.onchange = () => {
+          if (!started) return;
+          apply();
+        };
+      })
+      .catch(() => startWatch());
     return;
   }
   startWatch();
@@ -247,6 +328,10 @@ export async function requestLocationPermission(): Promise<LocationStatus> {
     set({ status: "unavailable" });
     return "unavailable";
   }
+  // A manual retry deserves a clean slate, not the previous failure streak.
+  softFailures = 0;
+  started = true;
+  bindVisibilityRecovery();
   set({ status: state.position?.source === "gps" ? "granted" : "locating" });
   return new Promise<LocationStatus>((resolve) => {
     navigator.geolocation.getCurrentPosition(
@@ -298,10 +383,20 @@ export function useLivePosition() {
     listener();
     return () => {
       listeners.delete(listener);
-      if (listeners.size === 0) {
+      // Navigating between pages unmounts/remounts consumers within the same
+      // tick. Keep the watcher alive briefly so routing never restarts GPS
+      // (which re-prompted and reset the fix); only a real exit tears it down.
+      if (listeners.size > 0 || teardownTimer !== null) return;
+      teardownTimer = window.setTimeout(() => {
+        teardownTimer = null;
+        if (listeners.size > 0) return;
         stopWatch();
+        if (retryTimer !== null) {
+          window.clearTimeout(retryTimer);
+          retryTimer = null;
+        }
         started = false;
-      }
+      }, 15_000);
     };
   }, []);
 
