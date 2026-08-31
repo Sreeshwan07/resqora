@@ -309,6 +309,10 @@ export async function requestLocationPermission(): Promise<LocationStatus> {
     set({ status: "unavailable" });
     return "unavailable";
   }
+  // A manual retry deserves a clean slate, not the previous failure streak.
+  softFailures = 0;
+  started = true;
+  bindVisibilityRecovery();
   set({ status: state.position?.source === "gps" ? "granted" : "locating" });
   return new Promise<LocationStatus>((resolve) => {
     navigator.geolocation.getCurrentPosition(
