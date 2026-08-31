@@ -96,6 +96,10 @@ function acceptFix(pos: GeolocationPosition) {
     window.clearTimeout(retryTimer);
     retryTimer = null;
   }
+  if (ceilingTimer !== null) {
+    window.clearTimeout(ceilingTimer);
+    ceilingTimer = null;
+  }
   const previous = state.position;
   if (previous && previous.source === "gps") {
     const movedM = distanceMeters(previous, pos.coords);
