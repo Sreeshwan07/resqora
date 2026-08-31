@@ -364,10 +364,20 @@ export function useLivePosition() {
     listener();
     return () => {
       listeners.delete(listener);
-      if (listeners.size === 0) {
+      // Navigating between pages unmounts/remounts consumers within the same
+      // tick. Keep the watcher alive briefly so routing never restarts GPS
+      // (which re-prompted and reset the fix); only a real exit tears it down.
+      if (listeners.size > 0 || teardownTimer !== null) return;
+      teardownTimer = window.setTimeout(() => {
+        teardownTimer = null;
+        if (listeners.size > 0) return;
         stopWatch();
+        if (retryTimer !== null) {
+          window.clearTimeout(retryTimer);
+          retryTimer = null;
+        }
         started = false;
-      }
+      }, 15_000);
     };
   }, []);
 
