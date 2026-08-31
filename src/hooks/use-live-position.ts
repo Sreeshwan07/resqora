@@ -224,8 +224,10 @@ function startWatch() {
 function stopWatch() {
   if (watchId !== null) navigator.geolocation.clearWatch(watchId);
   if (intervalId !== null) window.clearInterval(intervalId);
+  if (ceilingTimer !== null) window.clearTimeout(ceilingTimer);
   watchId = null;
   intervalId = null;
+  ceilingTimer = null;
 }
 
 /**
