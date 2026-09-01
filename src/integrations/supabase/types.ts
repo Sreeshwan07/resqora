@@ -1042,6 +1042,16 @@ export type Database = {
         Args: { _emergency_id: string; _note: string; _token: string }
         Returns: Json
       }
+      bystander_activate_emergency: {
+        Args: {
+          _accuracy?: number
+          _code: string
+          _latitude?: number
+          _longitude?: number
+          _note?: string
+        }
+        Returns: Json
+      }
       escalate_unacknowledged: {
         Args: { _emergency_id: string }
         Returns: Json
