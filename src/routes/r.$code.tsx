@@ -152,7 +152,16 @@ function EmergencySummaryPage() {
             </dl>
           </section>
 
+          <BystanderActivate
+            code={code}
+            victimName={value(data.full_name)}
+            guardianName={data.guardian_name}
+            hasActiveEmergency={Boolean(live)}
+            onActivated={() => void summary.refetch()}
+          />
+
           <section className="mt-4 space-y-3">
+
             <h2 className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               Quick emergency actions
             </h2>
