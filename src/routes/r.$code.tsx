@@ -19,7 +19,9 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import { Button } from "@/components/ui/button";
+import { BystanderActivate } from "@/components/resqora/bystander-activate";
 import { NOT_PROVIDED, resqrSummaryQuery } from "@/lib/resqr";
+
 
 export const Route = createFileRoute("/r/$code")({
   head: () => ({
