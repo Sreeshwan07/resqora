@@ -293,3 +293,50 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Mobile floating-layer strategy.
+ *
+ * Every fixed element on a phone stacks in a single predictable column so the
+ * bottom navigation, SOS control, active-emergency widget and install prompt
+ * can never overlap. Each layer is derived from the one below it plus the
+ * device safe-area inset, instead of arbitrary bottom-* values.
+ */
+:root {
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --mobile-nav-height: 4.25rem;
+  /* layer 1: SOS control, sits directly above the bottom navigation */
+  --float-layer-1: calc(var(--safe-bottom) + var(--mobile-nav-height) + 0.75rem);
+  /* layer 2: active-emergency widget, above the 4rem SOS button */
+  --float-layer-2: calc(var(--float-layer-1) + 4.75rem);
+  /* layer 3: install prompt, above everything else */
+  --float-layer-3: calc(var(--float-layer-2) + 9rem);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --mobile-nav-height: 0rem;
+    --float-layer-1: calc(var(--safe-bottom) + 2rem);
+    --float-layer-2: calc(var(--float-layer-1) + 6rem);
+    --float-layer-3: calc(var(--safe-bottom) + 1rem);
+  }
+}
+
+.float-layer-1 {
+  bottom: var(--float-layer-1);
+}
+.float-layer-2 {
+  bottom: var(--float-layer-2);
+}
+.float-layer-3 {
+  bottom: var(--float-layer-3);
+}
+
+/* Toasts clear the bottom navigation and the SOS control on phones. */
+@media (max-width: 1023px) {
+  [data-sonner-toaster][data-y-position="bottom"] {
+    --offset: var(--float-layer-3) !important;
+    --offset-bottom: var(--float-layer-3) !important;
+    --mobile-offset-bottom: var(--float-layer-3) !important;
+  }
+}

@@ -12,7 +12,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Primary mobile"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/85 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/85 px-2 pb-[var(--safe-bottom)] backdrop-blur-xl lg:hidden"
     >
       <ul className="mx-auto flex max-w-md items-end justify-between">
         {mobileNav.map((item) => {
@@ -55,6 +55,7 @@ export function MobileNav() {
             <li key={item.to} className="flex-1">
               <Link
                 to={item.to}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex min-h-14 min-w-11 flex-col items-center justify-center gap-1 rounded-xl py-2 text-[11px] font-medium transition-colors",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",

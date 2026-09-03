@@ -29,7 +29,7 @@ export function InstallPrompt() {
     <div
       role="dialog"
       aria-label="Install RESQORA"
-      className="glass-panel fixed inset-x-3 bottom-20 z-[70] flex items-center gap-3 rounded-2xl p-3 shadow-lg sm:left-auto sm:right-4 sm:w-96 lg:bottom-4"
+      className="glass-panel float-layer-3 fixed inset-x-3 z-70 flex items-center gap-3 rounded-2xl p-3 shadow-lg sm:left-auto sm:right-4 sm:w-96"
     >
       <img src="/icons/icon-192.png" alt="" className="size-10 shrink-0 rounded-xl" />
       <div className="min-w-0 flex-1">

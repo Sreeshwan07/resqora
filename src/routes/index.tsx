@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { LandingNav } from "@/components/landing/landing-nav";
@@ -11,8 +11,6 @@ import { EmergencyConsole } from "@/components/landing/emergency-console";
 import { EmergencyContactsCard } from "@/components/landing/emergency-contacts-card";
 import { EmergencyTools } from "@/components/landing/emergency-tools";
 import { GuardianShortcut } from "@/components/landing/guardian-shortcut";
-import { CompactNearestServices } from "@/components/landing/compact-nearest-services";
-import { RecentActivityFeed } from "@/components/landing/recent-activity-feed";
 import { MobileNav } from "@/components/layouts/mobile-nav";
 import { InstallCard } from "@/components/pwa/install-card";
 import { LocationGate } from "@/components/resqora/location-gate";
@@ -23,6 +21,23 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAccess } from "@/hooks/use-access";
 import { useSosTheme } from "@/hooks/use-sos-theme";
 import { activeEmergencyQuery } from "@/lib/api";
+
+// Emergency-critical UI (status, SOS, tools) renders first; these secondary
+// sections load in a separate chunk so the first screen stays fast.
+const CompactNearestServices = lazy(() =>
+  import("@/components/landing/compact-nearest-services").then((m) => ({
+    default: m.CompactNearestServices,
+  })),
+);
+const RecentActivityFeed = lazy(() =>
+  import("@/components/landing/recent-activity-feed").then((m) => ({
+    default: m.RecentActivityFeed,
+  })),
+);
+
+function SectionFallback() {
+  return <div className="h-40 animate-pulse rounded-3xl border border-border bg-card" />;
+}
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -100,13 +115,17 @@ function Index() {
 
               <EmergencyTools />
 
-              <CompactNearestServices nearby={nearby} />
+              <Suspense fallback={<SectionFallback />}>
+                <CompactNearestServices nearby={nearby} />
+              </Suspense>
 
               {emergency && emergency.status !== "resolved" && (
                 <EmergencyContactsCard notified={emergency.status !== "created"} />
               )}
 
-              <RecentActivityFeed />
+              <Suspense fallback={<SectionFallback />}>
+                <RecentActivityFeed />
+              </Suspense>
             </>
           )}
         </div>

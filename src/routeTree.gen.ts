@@ -31,6 +31,7 @@ import { Route as AppHistoryRouteImport } from './routes/_app.history'
 import { Route as AppLiveRouteImport } from './routes/_app.live'
 import { Route as AppMedaiRouteImport } from './routes/_app.medai'
 import { Route as AppMedicalIdRouteImport } from './routes/_app.medical-id'
+import { Route as AppMenuRouteImport } from './routes/_app.menu'
 import { Route as AppNearbyRouteImport } from './routes/_app.nearby'
 import { Route as AppNotesRouteImport } from './routes/_app.notes'
 import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
@@ -157,6 +158,11 @@ const AppMedicalIdRoute = AppMedicalIdRouteImport.update({
   path: '/medical-id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppMenuRoute = AppMenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppNearbyRoute = AppNearbyRouteImport.update({
   id: '/nearby',
   path: '/nearby',
@@ -261,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/live': typeof AppLiveRoute
   '/medai': typeof AppMedaiRoute
   '/medical-id': typeof AppMedicalIdRoute
+  '/menu': typeof AppMenuRoute
   '/nearby': typeof AppNearbyRoute
   '/notes': typeof AppNotesRoute
   '/notifications': typeof AppNotificationsRoute
@@ -300,6 +307,7 @@ export interface FileRoutesByTo {
   '/live': typeof AppLiveRoute
   '/medai': typeof AppMedaiRoute
   '/medical-id': typeof AppMedicalIdRoute
+  '/menu': typeof AppMenuRoute
   '/nearby': typeof AppNearbyRoute
   '/notes': typeof AppNotesRoute
   '/notifications': typeof AppNotificationsRoute
@@ -341,6 +349,7 @@ export interface FileRoutesById {
   '/_app/live': typeof AppLiveRoute
   '/_app/medai': typeof AppMedaiRoute
   '/_app/medical-id': typeof AppMedicalIdRoute
+  '/_app/menu': typeof AppMenuRoute
   '/_app/nearby': typeof AppNearbyRoute
   '/_app/notes': typeof AppNotesRoute
   '/_app/notifications': typeof AppNotificationsRoute
@@ -382,6 +391,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/medai'
     | '/medical-id'
+    | '/menu'
     | '/nearby'
     | '/notes'
     | '/notifications'
@@ -421,6 +431,7 @@ export interface FileRouteTypes {
     | '/live'
     | '/medai'
     | '/medical-id'
+    | '/menu'
     | '/nearby'
     | '/notes'
     | '/notifications'
@@ -461,6 +472,7 @@ export interface FileRouteTypes {
     | '/_app/live'
     | '/_app/medai'
     | '/_app/medical-id'
+    | '/_app/menu'
     | '/_app/nearby'
     | '/_app/notes'
     | '/_app/notifications'
@@ -649,6 +661,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppMedicalIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/menu': {
+      id: '/_app/menu'
+      path: '/menu'
+      fullPath: '/menu'
+      preLoaderRoute: typeof AppMenuRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/nearby': {
       id: '/_app/nearby'
       path: '/nearby'
@@ -781,6 +800,7 @@ interface AppRouteChildren {
   AppLiveRoute: typeof AppLiveRoute
   AppMedaiRoute: typeof AppMedaiRoute
   AppMedicalIdRoute: typeof AppMedicalIdRoute
+  AppMenuRoute: typeof AppMenuRoute
   AppNearbyRoute: typeof AppNearbyRoute
   AppNotesRoute: typeof AppNotesRoute
   AppNotificationsRoute: typeof AppNotificationsRoute
@@ -811,6 +831,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLiveRoute: AppLiveRoute,
   AppMedaiRoute: AppMedaiRoute,
   AppMedicalIdRoute: AppMedicalIdRoute,
+  AppMenuRoute: AppMenuRoute,
   AppNearbyRoute: AppNearbyRoute,
   AppNotesRoute: AppNotesRoute,
   AppNotificationsRoute: AppNotificationsRoute,

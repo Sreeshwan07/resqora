@@ -25,6 +25,7 @@ import {
   ScanLine,
   LifeBuoy,
   Cpu,
+  Menu,
 } from "lucide-react";
 import type { NavSection, NavItem } from "@/types";
 
@@ -262,6 +263,29 @@ export const mobileNav: NavItem[] = [
   { label: "Home", to: "/", icon: Home, description: "Emergency dashboard" },
   { label: "Nearby", to: "/nearby", icon: MapPinned, description: "Emergency services near you" },
   { label: "SOS", to: "/emergency", icon: Siren, description: "Trigger assistance" },
-  resqAiNav,
-  { label: "Profile", to: "/profile", icon: UserRound, description: "Your safety identity" },
+  { label: "RESQ AI", to: "/resq-ai", icon: Stethoscope, description: "AI medical assistant" },
+  { label: "Menu", to: "/menu", icon: Menu, description: "All RESQORA features" },
+];
+
+/**
+ * The mobile Menu screen. Bottom navigation stays at five entries; everything
+ * else lives here, grouped the way a user thinks about an emergency.
+ */
+export const mobileMenuSections: NavSection[] = [
+  {
+    title: "Emergency",
+    items: [reportNav, liveLocationNav, digitalTwinNav, activityNav],
+  },
+  {
+    title: "My safety",
+    items: [resqrIdNav, medicalIdNav, contactsNav, checkinsNav, { label: "Emergency history", to: "/history", icon: History, description: "Previous SOS and reports" }],
+  },
+  {
+    title: "Tools",
+    items: [{ label: "Nearby services", to: "/nearby", icon: MapPinned, description: "Hospitals, police, fire, blood banks" }, donorsNav, coreNav, notesNav, documentsNav],
+  },
+  {
+    title: "Account",
+    items: [{ label: "Profile", to: "/profile", icon: UserRound, description: "Account details" }, { label: "Settings", to: "/settings", icon: Settings, description: "Preferences & privacy" }, { label: "About", to: "/about", icon: Info, description: "Platform information" }, supportPageNav],
+  },
 ];
