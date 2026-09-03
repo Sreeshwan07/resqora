@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ChevronRight, Lock } from "lucide-react";
+import { ChevronRight, LayoutGrid, Lock } from "lucide-react";
 import { PageHeader } from "@/components/system/page-header";
 import { mobileMenuSections } from "@/lib/navigation";
 import { isUnrestrictedPath } from "@/lib/access";
@@ -31,7 +31,7 @@ function MenuPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Menu" description="Everything RESQORA can do, grouped by what you need." />
+      <PageHeader icon={LayoutGrid} title="Menu" description="Everything RESQORA can do, grouped by what you need." />
 
       {mobileMenuSections.map((section) => (
         <section key={section.title} className="space-y-2">
