@@ -12,7 +12,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Primary mobile"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/85 px-2 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border/70 bg-card/85 px-2 pb-[var(--safe-bottom)] backdrop-blur-xl lg:hidden"
     >
       <ul className="mx-auto flex max-w-md items-end justify-between">
         {mobileNav.map((item) => {

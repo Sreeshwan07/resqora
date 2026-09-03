@@ -59,7 +59,7 @@ export function GlobalSosButton() {
 
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 bottom-20 z-50 flex justify-center lg:inset-x-auto lg:bottom-8 lg:right-8 lg:justify-end">
+      <div className="float-layer-1 pointer-events-none fixed inset-x-0 z-50 flex justify-center lg:inset-x-auto lg:right-8 lg:justify-end">
         <div className="relative pointer-events-auto">
           <span
             aria-hidden="true"

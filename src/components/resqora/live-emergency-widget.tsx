@@ -40,7 +40,7 @@ export function LiveEmergencyWidget() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         aria-label="Active emergency"
-        className="fixed inset-x-3 bottom-40 z-50 mx-auto max-w-sm rounded-2xl border border-alert/40 bg-card/95 p-4 shadow-2xl shadow-alert/20 backdrop-blur lg:inset-x-auto lg:bottom-32 lg:right-8"
+        className="float-layer-2 fixed inset-x-3 z-50 mx-auto max-w-sm rounded-2xl border border-alert/40 bg-card/95 p-4 shadow-2xl shadow-alert/20 backdrop-blur lg:inset-x-auto lg:right-8"
       >
         <div className="flex items-start justify-between gap-3">
           <p className="flex items-center gap-2 text-sm font-semibold text-alert">

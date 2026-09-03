@@ -198,7 +198,7 @@ function RootComponent() {
           <LaunchSplash />
           {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
           <Outlet />
-          <Toaster position="top-right" richColors closeButton />
+          <Toaster position="bottom-center" richColors closeButton visibleToasts={3} />
         </ThemeProvider>
       </AuthProvider>
     </QueryClientProvider>
