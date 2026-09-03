@@ -55,6 +55,7 @@ export function MobileNav() {
             <li key={item.to} className="flex-1">
               <Link
                 to={item.to}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex min-h-14 min-w-11 flex-col items-center justify-center gap-1 rounded-xl py-2 text-[11px] font-medium transition-colors",
                   active ? "text-primary" : "text-muted-foreground hover:text-foreground",
