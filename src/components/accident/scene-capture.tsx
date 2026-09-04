@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { MAX_MEDIA_BYTES } from "@/lib/accident-media";
+import { compressPhoto, MAX_MEDIA_BYTES } from "@/lib/accident-media";
 
 const MAX_RECORD_SECONDS = 60;
 
@@ -144,14 +144,17 @@ export function SceneCapture({
     });
   }
 
-  async function stage(file: Blob, kind: "photo" | "video", label: string) {
+async function stage(file: Blob, kind: "photo" | "video", label: string) {
     setPreparing(true);
     try {
-      const dataUrl = kind === "video" ? await grabVideoFrame(file) : await readFile(file);
+      // Photos are downscaled before storage so uploads stay small and the AI
+      // analysis gets a leaner payload; videos are kept as recorded.
+      const stored = kind === "photo" ? await compressPhoto(file) : file;
+      const dataUrl = kind === "video" ? await grabVideoFrame(file) : await readFile(stored);
       clearPending();
       setPending({
-        scene: { dataUrl, kind, file },
-        objectUrl: URL.createObjectURL(file),
+        scene: { dataUrl, kind, file: stored },
+        objectUrl: URL.createObjectURL(stored),
         label,
       });
     } catch (err) {
