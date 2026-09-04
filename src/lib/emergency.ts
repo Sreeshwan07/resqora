@@ -194,38 +194,26 @@ export async function createEmergency(options: {
     );
   }
 
-  // Double-tap / retry protection: a user can only ever have one live session,
-  // so reuse the running emergency instead of creating a duplicate.
-  const { data: running } = await supabase
-    .from("emergencies")
-    .select("*")
-    .eq("user_id", options.userId)
-    .neq("status", "resolved")
-    .neq("status", "cancelled")
-    .order("started_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (running) {
-    const existing = running as Emergency;
-    options.onCreated?.(existing);
-    return { ...existing, notifications: [] };
-  }
-
-  const { data, error } = await supabase
-    .from("emergencies")
-    .insert({
-      user_id: options.userId,
-      type: options.type,
-      severity: options.severity ?? "high",
-      status: "created",
-      notes,
-    })
-    .select("*")
-    .single();
+// One atomic server-side call creates the session or reuses the user's
+  // running one. The partial unique index on live emergencies makes even a
+  // race between two tabs yield exactly one session, so the client-side
+  // select-then-insert window that used to allow duplicates is gone.
+  const { data: session, error } = await supabase.rpc("start_emergency_session", {
+    _type: options.type,
+    _severity: options.severity ?? "high",
+    _notes: notes ?? undefined,
+  });
   if (error) throw new Error(error.message);
+  const started = session as unknown as { emergency: Emergency; reused: boolean } | null;
+  if (!started?.emergency) throw new Error("Could not start the emergency session.");
 
   // The session exists — surface it immediately; everything below is async work.
-  options.onCreated?.(data as Emergency);
+  const data = started.emergency;
+  options.onCreated?.(data);
+
+  // A reused session was already announced, tracked and notified when it was
+  // first created — never run the notification workflow a second time.
+  if (started.reused) return { ...data, notifications: [] };
 
   await logEvent(data.id, options.userId, "SOS triggered", "Alert created on your device.");
 

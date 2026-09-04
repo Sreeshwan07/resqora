@@ -9,6 +9,44 @@ export type AccidentMediaUpload = {
   message?: string;
 };
 
+/**
+ * Downscales a photo in the browser before it is stored or analysed. Phone
+ * photos are typically 3-12 MB; this lands them well under ~500 KB (long edge
+ * ≤ 1600px, JPEG 0.82), cutting storage cost and speeding up the Gemini
+ * analysis payload. Formats the browser cannot decode (e.g. HEIC) or results
+ * that are not actually smaller pass through untouched.
+ */
+export async function compressPhoto(file: Blob): Promise<Blob> {
+  if (typeof createImageBitmap === "undefined" || typeof document === "undefined") return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const maxEdge = 1600;
+    const longEdge = Math.max(bitmap.width, bitmap.height);
+    if (longEdge <= maxEdge && bitmap.width * bitmap.height <= maxEdge * maxEdge) {
+      bitmap.close();
+      return file;
+    }
+    const scale = Math.min(1, maxEdge / longEdge);
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+    canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      bitmap.close();
+      return file;
+    }
+    ctx.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    bitmap.close();
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, "image/jpeg", 0.82),
+    );
+    if (!blob || blob.size >= file.size) return file;
+    return blob;
+  } catch {
+    return file;
+  }
+}
+
 function extensionFor(file: Blob, kind: "photo" | "video") {
   const type = file.type.split(";")[0] ?? "";
   const map: Record<string, string> = {

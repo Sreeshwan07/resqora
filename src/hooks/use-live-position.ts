@@ -212,17 +212,31 @@ function startWatch() {
       set({ status: state.manual ? "manual" : "unavailable" });
     }, ACQUIRE_CEILING_MS);
   }
-  // Only while an SOS is active: force a fresh fix every 10s even when the
+// Only while an SOS is active: force a fresh fix every 10s even when the
   // device reports no movement. Normal browsing just follows the watcher.
-  if (highAccuracy) {
-    intervalId = window.setInterval(() => {
-      navigator.geolocation.getCurrentPosition(acceptFix, () => undefined, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 9000,
-      });
-    }, 10_000);
+  syncEmergencyInterval();
+}
+
+/**
+ * The 10s emergency heartbeat only runs while the tab is visible. A
+ * backgrounded desktop tab would otherwise keep polling GPS every 10s and
+ * drain the battery for nobody; mobile browsers suspend the tab anyway and
+ * the visibility-recovery handler forces a fresh fix when the user returns.
+ */
+function syncEmergencyInterval() {
+  if (intervalId !== null) {
+    window.clearInterval(intervalId);
+    intervalId = null;
   }
+  if (!highAccuracy) return;
+  if (typeof document !== "undefined" && document.visibilityState !== "visible") return;
+  intervalId = window.setInterval(() => {
+    navigator.geolocation.getCurrentPosition(acceptFix, () => undefined, {
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 9000,
+    });
+  }, 10_000);
 }
 
 function stopWatch() {
@@ -253,7 +267,9 @@ export function setHighAccuracyTracking(enabled: boolean) {
 function bindVisibilityRecovery() {
   if (visibilityBound || typeof document === "undefined") return;
   visibilityBound = true;
-  document.addEventListener("visibilitychange", () => {
+document.addEventListener("visibilitychange", () => {
+    // Pause the 10s emergency heartbeat while hidden; restart it on return.
+    syncEmergencyInterval();
     if (document.visibilityState !== "visible") return;
     if (!started || !navigator.geolocation || state.status === "denied") return;
     const stale = !state.position || Date.now() - state.position.updatedAt.getTime() > 60_000;
