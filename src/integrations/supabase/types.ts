@@ -1158,6 +1158,10 @@ export type Database = {
         }
         Returns: Json
       }
+      start_emergency_session: {
+        Args: { _notes: string; _severity: string; _type: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "guardian"
