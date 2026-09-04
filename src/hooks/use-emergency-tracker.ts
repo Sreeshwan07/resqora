@@ -42,8 +42,12 @@ export function useEmergencyTracker() {
     return () => setHighAccuracyTracking(false);
   }, [emergencyId]);
 
-  useEffect(() => {
+useEffect(() => {
     if (!emergencyId || !user?.id || !position) return;
+    // Power mode: never write pings from a backgrounded tab — mobile browsers
+    // suspend the GPS watcher there anyway, and the visibility-recovery fix on
+    // return delivers one fresh position instead of a burst of stale ones.
+    if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
     if (inFlight.current) return;
     if (Date.now() - lastWrite.current < INTERVAL_MS) return;
     const { lat, lng, accuracy } = position;

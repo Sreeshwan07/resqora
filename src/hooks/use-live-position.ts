@@ -267,7 +267,9 @@ export function setHighAccuracyTracking(enabled: boolean) {
 function bindVisibilityRecovery() {
   if (visibilityBound || typeof document === "undefined") return;
   visibilityBound = true;
-  document.addEventListener("visibilitychange", () => {
+document.addEventListener("visibilitychange", () => {
+    // Pause the 10s emergency heartbeat while hidden; restart it on return.
+    syncEmergencyInterval();
     if (document.visibilityState !== "visible") return;
     if (!started || !navigator.geolocation || state.status === "denied") return;
     const stale = !state.position || Date.now() - state.position.updatedAt.getTime() > 60_000;
