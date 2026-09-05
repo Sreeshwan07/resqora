@@ -201,7 +201,7 @@ export async function createEmergency(options: {
   const { data: session, error } = await supabase.rpc("start_emergency_session", {
     _type: options.type,
     _severity: options.severity ?? "high",
-    _notes: notes ?? undefined,
+    _notes: notes ?? "",
   });
   if (error) throw new Error(error.message);
   const started = session as unknown as { emergency: Emergency; reused: boolean } | null;
