@@ -98,6 +98,16 @@ export const sendEmergencyAlerts = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => Input.parse(input))
   .handler(async ({ data, context }): Promise<SendAlertsResponse> => {
     const { supabase, userId } = context;
+    const recordOutcome = async (id: string, status: SmsStatus, error?: string) => {
+      await supabase
+        .from("emergency_alert_deliveries")
+        .update({
+          status,
+          error: error ?? null,
+          sent_at: status === "sent" || status === "delivered" ? new Date().toISOString() : null,
+        })
+        .eq("id", id);
+    };
     const request = getRequest();
 
     // 1. Rate limiting — per-instance burst guard plus a durable per-user cap.
@@ -221,7 +231,7 @@ export const sendEmergencyAlerts = createServerFn({ method: "POST" })
 
       const msisdn = Number((row.contact_phone ?? "").replace(/[^\d]/g, ""));
       if (!msisdn) {
-        await recordOutcome(supabase, row.id, "failed", "Invalid phone number");
+        await recordOutcome(row.id, "failed", "Invalid phone number");
         results.push({
           id: row.id,
           contactId: row.contact_id,
@@ -249,7 +259,7 @@ export const sendEmergencyAlerts = createServerFn({ method: "POST" })
           const body = await response.text();
           // Provider detail stays in the server log only.
           console.error(`RESQORA SMS failed [${response.status}]: ${body.slice(0, 300)}`);
-          await recordOutcome(supabase, row.id, "failed", `Provider error ${response.status}`);
+          await recordOutcome(row.id, "failed", `Provider error ${response.status}`);
           results.push({
             id: row.id,
             contactId: row.contact_id,
@@ -259,10 +269,10 @@ export const sendEmergencyAlerts = createServerFn({ method: "POST" })
           continue;
         }
         // Accepted by the provider — not proof of handset delivery.
-        await recordOutcome(supabase, row.id, "sent");
+        await recordOutcome(row.id, "sent");
         results.push({ id: row.id, contactId: row.contact_id, status: "sent" });
       } catch {
-        await recordOutcome(supabase, row.id, "failed", "Network error");
+        await recordOutcome(row.id, "failed", "Network error");
         results.push({
           id: row.id,
           contactId: row.contact_id,
@@ -285,22 +295,9 @@ export const sendEmergencyAlerts = createServerFn({ method: "POST" })
   });
 
 function sanitizeText(value: string | undefined) {
-  const clean = (value ?? "").replace(/[\u0000-\u001f]/g, " ").trim();
+  const clean = Array.from(value ?? "")
+    .map((char) => (char.charCodeAt(0) < 32 ? " " : char))
+    .join("")
+    .trim();
   return clean.slice(0, 300);
-}
-
-async function recordOutcome(
-  supabase: { from: (table: string) => any },
-  id: string,
-  status: SmsStatus,
-  error?: string,
-) {
-  await supabase
-    .from("emergency_alert_deliveries")
-    .update({
-      status,
-      error: error ?? null,
-      sent_at: status === "sent" || status === "delivered" ? new Date().toISOString() : null,
-    })
-    .eq("id", id);
 }

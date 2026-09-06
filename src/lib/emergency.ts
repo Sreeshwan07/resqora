@@ -10,12 +10,7 @@ import {
 import { logActivity } from "@/lib/activity";
 import { reverseGeocode } from "@/lib/geocode";
 import { ensureLiveShareLink, shareUrl } from "@/lib/share";
-import {
-  buildEmergencyAlert,
-  buildResolvedAlert,
-  dispatchDeliveries,
-  seedDeliveries,
-} from "@/lib/alert-delivery";
+import { dispatchDeliveries, seedDeliveries } from "@/lib/alert-delivery";
 import { isOffline, queueEmergency } from "@/lib/offline";
 import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { prepareWhatsappShares } from "@/lib/whatsapp-alerts";
@@ -194,7 +189,7 @@ export async function createEmergency(options: {
     );
   }
 
-// One atomic server-side call creates the session or reuses the user's
+  // One atomic server-side call creates the session or reuses the user's
   // running one. The partial unique index on live emergencies makes even a
   // race between two tabs yield exactly one session, so the client-side
   // select-then-insert window that used to allow duplicates is gone.
