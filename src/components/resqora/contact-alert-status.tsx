@@ -65,7 +65,13 @@ export function ContactAlertStatus({
           contacts,
         });
       }
-      const automatic = await dispatchDeliveries({ deliveries: current, message });
+      const automatic = await dispatchDeliveries({
+        emergencyId: emergency.id,
+        kind: "alert",
+        contactIds: contacts.map((contact) => contact.id),
+        trackingUrl,
+        address,
+      });
       await refresh();
       toast[automatic ? "success" : "message"](
         automatic

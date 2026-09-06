@@ -326,13 +326,11 @@ export async function createEmergency(options: {
         contacts,
       });
       const configured = await dispatchDeliveries({
-        deliveries,
-        message: buildEmergencyAlert({
-          emergency: currentEmergency,
-          profile: options.profile,
-          address,
-          trackingUrl,
-        }),
+        emergencyId: data.id,
+        kind: "alert",
+        contactIds: contacts.map((contact) => contact.id),
+        trackingUrl,
+        address,
       });
       report.push({
         channel: "sms",
@@ -628,8 +626,9 @@ export async function confirmSafe(input: {
         kind: "resolved",
       });
       await dispatchDeliveries({
-        deliveries,
-        message: buildResolvedAlert({ emergency, profile }),
+        emergencyId: emergency.id,
+        kind: "resolved",
+        contactIds: contacts.map((contact) => contact.id),
       });
     } catch {
       /* resolution notices can be resent from the history page */
@@ -736,8 +735,9 @@ export async function cancelEmergency(
         kind: "resolved",
       });
       await dispatchDeliveries({
-        deliveries,
-        message: buildResolvedAlert({ emergency, profile: extra?.profile }),
+        emergencyId: emergency.id,
+        kind: "resolved",
+        contactIds: contacts.map((contact) => contact.id),
       });
     } catch {
       /* the notice can be resent from the share centre */
