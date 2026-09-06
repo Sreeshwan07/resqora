@@ -10,12 +10,7 @@ import {
 import { logActivity } from "@/lib/activity";
 import { reverseGeocode } from "@/lib/geocode";
 import { ensureLiveShareLink, shareUrl } from "@/lib/share";
-import {
-  buildEmergencyAlert,
-  buildResolvedAlert,
-  dispatchDeliveries,
-  seedDeliveries,
-} from "@/lib/alert-delivery";
+import { dispatchDeliveries, seedDeliveries } from "@/lib/alert-delivery";
 import { isOffline, queueEmergency } from "@/lib/offline";
 import { sendEmergencyEmailAlerts } from "@/lib/email-alerts";
 import { prepareWhatsappShares } from "@/lib/whatsapp-alerts";
@@ -194,7 +189,7 @@ export async function createEmergency(options: {
     );
   }
 
-// One atomic server-side call creates the session or reuses the user's
+  // One atomic server-side call creates the session or reuses the user's
   // running one. The partial unique index on live emergencies makes even a
   // race between two tabs yield exactly one session, so the client-side
   // select-then-insert window that used to allow duplicates is gone.
@@ -326,13 +321,11 @@ export async function createEmergency(options: {
         contacts,
       });
       const configured = await dispatchDeliveries({
-        deliveries,
-        message: buildEmergencyAlert({
-          emergency: currentEmergency,
-          profile: options.profile,
-          address,
-          trackingUrl,
-        }),
+        emergencyId: data.id,
+        kind: "alert",
+        contactIds: contacts.map((contact) => contact.id),
+        trackingUrl,
+        address,
       });
       report.push({
         channel: "sms",
@@ -628,8 +621,9 @@ export async function confirmSafe(input: {
         kind: "resolved",
       });
       await dispatchDeliveries({
-        deliveries,
-        message: buildResolvedAlert({ emergency, profile }),
+        emergencyId: emergency.id,
+        kind: "resolved",
+        contactIds: contacts.map((contact) => contact.id),
       });
     } catch {
       /* resolution notices can be resent from the history page */
@@ -736,8 +730,9 @@ export async function cancelEmergency(
         kind: "resolved",
       });
       await dispatchDeliveries({
-        deliveries,
-        message: buildResolvedAlert({ emergency, profile: extra?.profile }),
+        emergencyId: emergency.id,
+        kind: "resolved",
+        contactIds: contacts.map((contact) => contact.id),
       });
     } catch {
       /* the notice can be resent from the share centre */

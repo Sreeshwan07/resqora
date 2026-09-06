@@ -75,7 +75,10 @@ export function buildResolvedAlert(input: {
   ].join("\n");
 }
 
-/** Creates one pending delivery row per trusted contact. */
+/**
+ * Creates one pending delivery row per trusted contact. Duplicates are ignored
+ * by the database uniqueness rule, so re-running this never doubles a row.
+ */
 export async function seedDeliveries(input: {
   userId: string;
   emergencyId: string;
@@ -83,6 +86,7 @@ export async function seedDeliveries(input: {
   kind?: "alert" | "resolved";
 }) {
   if (input.contacts.length === 0) return [];
+  const kind = input.kind ?? "alert";
   const rows = input.contacts.map((contact) => ({
     user_id: input.userId,
     emergency_id: input.emergencyId,
@@ -91,13 +95,19 @@ export async function seedDeliveries(input: {
     contact_phone: contact.phone,
     channel: "sms",
     status: "pending",
-    kind: input.kind ?? "alert",
+    kind,
   }));
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from("emergency_alert_deliveries")
-    .insert(rows)
-    .select("*");
+    .upsert(rows, { onConflict: "emergency_id,kind,channel,contact_id", ignoreDuplicates: true });
   if (error) throw new Error(error.message);
+  const { data, error: readError } = await supabase
+    .from("emergency_alert_deliveries")
+    .select("*")
+    .eq("emergency_id", input.emergencyId)
+    .eq("kind", kind)
+    .eq("channel", "sms");
+  if (readError) throw new Error(readError.message);
   return data as AlertDelivery[];
 }
 
@@ -119,29 +129,27 @@ export async function markDelivery(
 }
 
 /**
- * Attempts automatic delivery through the connected SMS provider and records the
- * outcome per contact. Returns false when no provider is connected so the UI can
- * offer WhatsApp / SMS / email hand-off instead.
+ * Asks the server to send the emergency SMS. The server owns ownership checks,
+ * recipient selection, the message body, rate limiting and idempotency — the
+ * client only names its own emergency. Returns false when no SMS provider is
+ * connected so the UI can offer WhatsApp / SMS / email hand-off instead.
  */
-export async function dispatchDeliveries(input: { deliveries: AlertDelivery[]; message: string }) {
-  const targets = input.deliveries.filter((d) => d.status !== "delivered" && d.contact_phone);
-  if (targets.length === 0) return true;
+export async function dispatchDeliveries(input: {
+  emergencyId: string;
+  kind?: "alert" | "resolved";
+  contactIds?: string[];
+  trackingUrl?: string | null;
+  address?: string | null;
+}) {
   const { sendEmergencyAlerts } = await import("@/lib/alerts.functions");
   const response = await sendEmergencyAlerts({
     data: {
-      message: input.message,
-      recipients: targets.map((d) => ({
-        id: d.id,
-        name: d.contact_name,
-        phone: d.contact_phone!,
-      })),
+      emergencyId: input.emergencyId,
+      kind: input.kind ?? "alert",
+      ...(input.contactIds?.length ? { contactIds: input.contactIds } : {}),
+      ...(input.trackingUrl ? { trackingUrl: input.trackingUrl } : {}),
+      ...(input.address ? { address: input.address } : {}),
     },
   });
-  if (!response.configured) return false;
-  await Promise.all(
-    response.results.map((result) =>
-      markDelivery(result.id, result.status, { channel: "sms", error: result.error ?? null }),
-    ),
-  );
-  return true;
+  return response.configured;
 }
