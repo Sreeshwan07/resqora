@@ -8,6 +8,7 @@
  */
 import type { Messaging } from "firebase/messaging";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureServiceWorker } from "@/lib/register-sw";
 
 const TOKEN_KEY = "resqora.fcm.token";
 
@@ -64,15 +65,16 @@ async function getMessaging() {
   return messagingPromise;
 }
 
+/**
+ * Push shares the single root worker (/sw.js), which imports the Firebase
+ * background handler. Registering a second root-scoped worker here would
+ * duplicate notifications and fight Workbox for control of "/".
+ */
 async function messagingRegistration() {
-  const existing = await navigator.serviceWorker.getRegistrations();
-  const found = existing.find((registration) =>
-    (registration.active?.scriptURL ?? registration.installing?.scriptURL ?? "").includes(
-      "firebase-messaging-sw.js",
-    ),
-  );
-  if (found) return found;
-  return navigator.serviceWorker.register("/firebase-messaging-sw.js", { scope: "/" });
+  const registration = await ensureServiceWorker();
+  if (!registration) return null;
+  await navigator.serviceWorker.ready;
+  return registration;
 }
 
 async function storeToken(userId: string, token: string) {
@@ -116,6 +118,8 @@ export async function registerPushDevice(userId: string): Promise<PushRegistrati
     if (!messaging) return { status: "unsupported" };
     const { getToken } = await import("firebase/messaging");
     const registration = await messagingRegistration();
+    // No root worker (dev, editor preview, iframe) means no background push.
+    if (!registration) return { status: "unsupported" };
     const token = await getToken(messaging, {
       vapidKey: config.vapidKey,
       serviceWorkerRegistration: registration,
