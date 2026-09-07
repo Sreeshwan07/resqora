@@ -64,16 +64,18 @@ async function getMessaging() {
   return messagingPromise;
 }
 
+/**
+ * Push shares the single root worker (/sw.js), which imports the Firebase
+ * background handler. Registering a second root-scoped worker here would
+ * duplicate notifications and fight Workbox for control of "/".
+ */
 async function messagingRegistration() {
-  const existing = await navigator.serviceWorker.getRegistrations();
-  const found = existing.find((registration) =>
-    (registration.active?.scriptURL ?? registration.installing?.scriptURL ?? "").includes(
-      "firebase-messaging-sw.js",
-    ),
-  );
-  if (found) return found;
-  return navigator.serviceWorker.register("/firebase-messaging-sw.js", { scope: "/" });
+  const registration = await ensureServiceWorker();
+  if (!registration) return null;
+  await navigator.serviceWorker.ready;
+  return registration;
 }
+
 
 async function storeToken(userId: string, token: string) {
   const { error } = await supabase.from("push_tokens").upsert(
