@@ -8,6 +8,7 @@
  */
 import type { Messaging } from "firebase/messaging";
 import { supabase } from "@/integrations/supabase/client";
+import { ensureServiceWorker } from "@/lib/register-sw";
 
 const TOKEN_KEY = "resqora.fcm.token";
 
