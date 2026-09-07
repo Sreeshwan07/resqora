@@ -284,13 +284,22 @@ VITE_EMAILJS_PUBLIC_KEY=
 VITE_EMAILJS_SERVICE_ID=
 VITE_EMAILJS_TEMPLATE_ID=
 
-VITE_FIREBASE_API_KEY=
-VITE_FIREBASE_AUTH_DOMAIN=
-VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
-VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_FIREBASE_APP_ID=
-VITE_FIREBASE_VAPID_KEY=
+Push notification settings are server-only — they are never exposed with a VITE_
+prefix. The browser reads the publishable subset from /api/public/push-config:
+
+FIREBASE_API_KEY=
+FIREBASE_AUTH_DOMAIN=
+FIREBASE_PROJECT_ID=
+FIREBASE_MESSAGING_SENDER_ID=
+FIREBASE_APP_ID=
+FIREBASE_VAPID_KEY=
+
+Sending pushes additionally requires the private service account, which must stay
+server-side and must never be given a VITE_ prefix:
+
+FIREBASE_SERVICE_ACCOUNT_JSON=
+
+If these are absent, push simply stays off; nothing else in the app breaks.
 
 Only configure variables actually required by the current application.
 
