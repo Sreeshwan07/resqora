@@ -119,6 +119,8 @@ export async function registerPushDevice(userId: string): Promise<PushRegistrati
     if (!messaging) return { status: "unsupported" };
     const { getToken } = await import("firebase/messaging");
     const registration = await messagingRegistration();
+    // No root worker (dev, editor preview, iframe) means no background push.
+    if (!registration) return { status: "unsupported" };
     const token = await getToken(messaging, {
       vapidKey: config.vapidKey,
       serviceWorkerRegistration: registration,
