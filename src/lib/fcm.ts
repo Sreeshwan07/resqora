@@ -77,7 +77,6 @@ async function messagingRegistration() {
   return registration;
 }
 
-
 async function storeToken(userId: string, token: string) {
   const { error } = await supabase.from("push_tokens").upsert(
     {

@@ -49,9 +49,7 @@ async function unregisterAppWorker() {
   if (!supported()) return;
   const registrations = await navigator.serviceWorker.getRegistrations();
   await Promise.allSettled(
-    registrations
-      .filter((reg) => scriptUrl(reg).endsWith(SW_URL))
-      .map((reg) => reg.unregister()),
+    registrations.filter((reg) => scriptUrl(reg).endsWith(SW_URL)).map((reg) => reg.unregister()),
   );
 }
 
