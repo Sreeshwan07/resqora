@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>RESQORA — Offline</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.png" />
+    <meta name="theme-color" content="#e11d2f" />
+    <style>
+      :root {
+        color-scheme: light dark;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 24px calc(24px + env(safe-area-inset-right)) calc(24px + env(safe-area-inset-bottom))
+          calc(24px + env(safe-area-inset-left));
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        background: #f7f9fc;
+        color: #0f172a;
+      }
+      main {
+        max-width: 24rem;
+        text-align: center;
+      }
+      img {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+      }
+      h1 {
+        font-size: 1.25rem;
+        margin: 20px 0 8px;
+      }
+      p {
+        margin: 0 0 20px;
+        line-height: 1.5;
+        opacity: 0.75;
+        font-size: 0.95rem;
+      }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        background: #e11d2f;
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 999px;
+      }
+      button {
+        margin-top: 18px;
+        width: 100%;
+        min-height: 52px;
+        border: 0;
+        border-radius: 20px;
+        background: #0f172a;
+        color: #fff;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      .call {
+        margin-top: 10px;
+        display: block;
+        color: #e11d2f;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #0b1120;
+          color: #f8fafc;
+        }
+        button {
+          background: #f8fafc;
+          color: #0b1120;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="/icons/icon-192.png" alt="RESQORA" />
+      <p class="status">Offline</p>
+      <h1>No connection right now</h1>
+      <p>
+        RESQORA can't reach the server, so live emergency information is not available. Emergency
+        calls still work from your phone's dialler.
+      </p>
+      <a class="call" href="tel:112">Call 112</a>
+      <button type="button" onclick="location.reload()">Try again</button>
+    </main>
+  </body>
+</html>
