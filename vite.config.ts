@@ -30,23 +30,37 @@ export default defineConfig({
           globDirectory: "dist/client",
           swDest: "dist/client/sw.js",
           globPatterns: ["**/*.{js,css,html,png,jpg,webp,svg,ico,woff2,webmanifest}"],
-          // The FCM worker is a separate registration and must never be precached.
-          // iOS launch images are painted by Safari before the SW is involved, so
-          // precaching ~800 KB of them would only slow the first install.
-          globIgnores: ["**/firebase-messaging-sw.js", "brand/splash-*.jpg"],
+          // Firebase background push lives INSIDE this worker, so /sw.js stays the
+          // only root-scoped worker. The retired standalone messaging worker and the
+          // handler itself must not be precached; iOS launch images are painted by
+          // Safari before the SW is involved, so precaching ~800 KB of them would
+          // only slow the first install.
+          importScripts: ["/fcm-sw-handler.js"],
+          globIgnores: [
+            "**/firebase-messaging-sw.js",
+            "**/fcm-sw-handler.js",
+            "brand/splash-*.jpg",
+          ],
+          // Drop caches left by previous precache revisions on activation, while
+          // leaving the caches the new worker still needs untouched.
+          cleanupOutdatedCaches: true,
+          clientsClaim: true,
+          skipWaiting: true,
+          // Never let the shell answer server routes: emergency, auth and API
+          // traffic must always hit the network.
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           runtimeCaching: [
             {
               urlPattern: ({ request }) => request.mode === "navigate",
               handler: "NetworkFirst",
-              options: { cacheName: "resqora-pages", networkTimeoutSeconds: 5 },
+              options: { cacheName: "resqora-pages-v1", networkTimeoutSeconds: 5 },
             },
             {
               urlPattern: ({ request, sameOrigin }) =>
                 sameOrigin && ["script", "style", "font", "image"].includes(request.destination),
               handler: "CacheFirst",
               options: {
-                cacheName: "resqora-assets",
+                cacheName: "resqora-assets-v1",
                 expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 30 },
               },
             },
