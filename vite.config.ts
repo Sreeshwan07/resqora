@@ -52,7 +52,6 @@ export default defineConfig({
           // /nav-sw.js (network first, then last page, then /offline.html).
           navigateFallbackDenylist: [/^\/~oauth/, /^\/api\//],
           runtimeCaching: [
-
             {
               urlPattern: ({ request, sameOrigin }) =>
                 sameOrigin && ["script", "style", "font", "image"].includes(request.destination),
