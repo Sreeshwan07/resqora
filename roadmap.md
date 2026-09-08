@@ -19,3 +19,9 @@ Resumed from the mobile-first audit (Phases 1-37 done).
 - [ ] L. Legacy cleanup — remove any remaining AEGIS references
 
 Each phase is verified before moving to the next.
+## PWA / service-worker architecture pass (done)
+- [x] Single root worker: /sw.js (Workbox) importScripts /nav-sw.js (navigations) + /fcm-sw-handler.js (FCM background push)
+- [x] Retired /firebase-messaging-sw.js turned into a self-unregistering kill switch; client unregisters legacy workers
+- [x] /sw.js verified present in dist/client and served 200 from root; offline.html fallback precached
+- [x] Update safety: cleanupOutdatedCaches, skipWaiting, clientsClaim, versioned cache names
+- [x] No API/auth/emergency responses cached (api + ~oauth bypassed)
